@@ -270,13 +270,15 @@ header {
             <div class="source-row">
                 <div class="field">
                     <label>Source</label>
-                    <select id="sourceSelect" onchange="renderProspects()">
+                    <select id="sourceSelect" onchange="document.getElementById('listLengthInput').value=SOURCES[this.value].listLength; renderProspects();">
                         <option value="pipeline">MLB Pipeline</option>
                         <option value="ba">Baseball America</option>
                         <option value="fangraphs">FanGraphs</option>
                         <option value="br">Bleacher Report</option>
                         <option value="espn">ESPN</option>
                         <option value="justbaseball">Just Baseball</option>
+                        <option value="rotoprospects">RotoProspects</option>
+                        <option value="prospect361">Prospect361</option>
                     </select>
                 </div>
                 <div class="field">
@@ -311,13 +313,15 @@ header {
             <div class="source-row" style="margin-bottom:.75rem;">
                 <div class="field">
                     <label>Source</label>
-                    <select id="pasteSourceSelect">
+                    <select id="pasteSourceSelect" onchange="document.getElementById('pasteListLength').value=SOURCES[this.value].listLength;">
                         <option value="pipeline">MLB Pipeline</option>
                         <option value="ba">Baseball America</option>
                         <option value="fangraphs">FanGraphs</option>
                         <option value="br">Bleacher Report</option>
                         <option value="espn">ESPN</option>
                         <option value="justbaseball">Just Baseball</option>
+                        <option value="rotoprospects">RotoProspects</option>
+                        <option value="prospect361">Prospect361</option>
                     </select>
                 </div>
                 <div class="field">
@@ -393,7 +397,9 @@ const SOURCES = {
     fangraphs:    { label:"FanGraphs",        listLength:100 },
     br:           { label:"Bleacher Report",  listLength:100 },
     espn:         { label:"ESPN",             listLength:100 },
-    justbaseball: { label:"Just Baseball",    listLength:100 }
+    justbaseball: { label:"Just Baseball",    listLength:100 },
+    rotoprospects:{ label:"RotoProspects",    listLength:100 },
+    prospect361:  { label:"Prospect361",      listLength:100 }
 };
 
 // Holds a reference to index.html once the user links it.
@@ -586,6 +592,8 @@ const TEAM_MAP = {
     "tampa bay rays":"TB","texas rangers":"TEX","toronto blue jays":"TOR",
     "washington nationals":"WAS"
 };
+// RotoProspects uses "SL" for St. Louis — normalize to STL
+const ROTOPROSPECTS_TEAM_ALIAS = { "SL":"STL" };
 
 // ============================================================
 // SOURCE → PARSER MAP
@@ -599,7 +607,9 @@ const SOURCE_PARSER = {
     fangraphs:    'numbered',   // placeholder
     br:           'numbered',   // placeholder
     espn:         'numbered',   // placeholder
-    justbaseball: 'numbered'    // placeholder
+    justbaseball: 'numbered',   // placeholder
+    rotoprospects:'rotoprospects',  // Tab-separated: Rank	Name	Pos	Team	B/T	Grades	Level	Age	ETA	Last
+    prospect361:  'prospect361'    // "1. Name (Pos, Team) – description"
 };
 
 // ============================================================
@@ -677,6 +687,52 @@ function parsePipeline(rawText) {
     return out;
 }
 
+// Prospect361: "1. Name (Pos, Team) – description" — one per line, em dash separates meta from blurb
+function parseProspect361(rawText) {
+    const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out = [];
+    // Prospect361 team abbreviations -> our codes (most map 1:1 when uppercased)
+    const TEAM_ABBREV = { "pit":"PIT","mil":"MIL","det":"DET","stl":"STL","min":"MIN","bal":"BAL","tex":"TEX","phi":"PHI","bos":"BOS","lad":"LAD","sea":"SEA","nym":"NYM","tor":"TOR","cin":"CIN","chc":"CHC","mia":"MIA","hou":"HOU","ath":"ATH","ari":"ARI","tb":"TB","chw":"CHW","cle":"CLE","col":"COL","was":"WAS","atl":"ATL","sd":"SD","kc":"KC","nyy":"NYY","sf":"SF" };
+    const POS_ALIAS = { "BHP":"SPRP", "INF":"SS", "DH":"1B" };
+
+    for (const line of lines) {
+        // Match: "1. Name (Pos, Team) –" or "1. Name (Pos, Team) -" (em dash or hyphen)
+        const m = line.match(/^(\d+)\.\s+(.+?)\s+\(([^,]+),\s*([^)]+)\)\s+[–\-]/);
+        if (!m) continue;
+        const rank = parseInt(m[1], 10);
+        const name = m[2].trim();
+        let pos = (m[3] || '').trim();
+        if (pos && pos.includes('/')) pos = pos.split('/')[0].trim();
+        pos = POS_ALIAS[pos] || pos || null;
+        const teamRaw = (m[4] || '').trim().toLowerCase();
+        const team = TEAM_ABBREV[teamRaw] || teamRaw.toUpperCase() || null;
+        out.push({ rank, name, pos, team });
+    }
+    return out;
+}
+
+// RotoProspects: tab-separated — Rank, Name, Pos, Team, B/T, Grades, Level, Age, ETA, Last
+function parseRotoProspects(rawText) {
+    const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out = [];
+    for (const line of lines) {
+        const cols = line.split('\t');
+        if (cols.length < 4) continue;
+        const rankNum = parseInt(cols[0], 10);
+        if (isNaN(rankNum) || rankNum < 1) continue;
+        const name = cols[1].trim();
+        if (!name) continue;
+        let pos = (cols[2] || '').trim();
+        if (pos && pos.includes('/')) pos = pos.split('/')[0].trim(); // "2B/SS" -> "2B"
+        let team = (cols[3] || '').trim().toUpperCase();
+        if (ROTOPROSPECTS_TEAM_ALIAS[team]) team = ROTOPROSPECTS_TEAM_ALIAS[team];
+        const age = cols.length > 7 ? parseInt(cols[7], 10) : null;
+        const eta = cols.length > 8 ? cols[8].trim() : null;
+        out.push({ rank: rankNum, name, pos: pos || null, team: team || null, age, eta });
+    }
+    return out;
+}
+
 // Numbered list: "1. Name" or "1) Name", one per line
 function parseNumbered(rawText) {
     return rawText.split('\n')
@@ -701,9 +757,11 @@ function runParser() {
     const source = document.getElementById('pasteSourceSelect').value;
     const fmt    = SOURCE_PARSER[source] || 'numbered';
     const text   = document.getElementById('pasteInput').value;
-    if (fmt === 'ba')        return parseBA(text);
-    if (fmt === 'pipeline')  return parsePipeline(text);
-    if (fmt === 'numbered')  return parseNumbered(text);
+    if (fmt === 'ba')            return parseBA(text);
+    if (fmt === 'pipeline')      return parsePipeline(text);
+    if (fmt === 'rotoprospects') return parseRotoProspects(text);
+    if (fmt === 'prospect361')   return parseProspect361(text);
+    if (fmt === 'numbered')      return parseNumbered(text);
     return parseNamesOnly(text);
 }
 
@@ -986,6 +1044,12 @@ function loadFromStorage() {
         const data = JSON.parse(raw);
         if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
             prospects = data.prospects;
+            // Backfill any new source keys (e.g. rotoprospects) so existing prospects have null for them
+            prospects.forEach(p => {
+                Object.keys(SOURCES).forEach(s => {
+                    if (!(s in p.ranks)) p.ranks[s] = null;
+                });
+            });
             // Restore list lengths from saved SOURCES
             if (data.SOURCES) {
                 Object.keys(data.SOURCES).forEach(k => {
