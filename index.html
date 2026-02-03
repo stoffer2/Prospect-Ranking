@@ -68,21 +68,22 @@ header {
 .hero-pill { font-size:.78rem; color:#7dd3fc; display:flex; align-items:center; gap:.35rem; }
 .hero-pill span.ico { font-size:1rem; }
 
-/* ── STAT BAR ── */
-.stat-bar {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 1px;
-    background: var(--border);
+/* ── METHOD PILLS ── */
+.method-pills {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.5rem;
+    background: var(--bg-deep);
     border-bottom: 1px solid var(--border);
 }
-.stat-item {
-    background: var(--bg-deep);
-    padding: 1.1rem 1rem;
-    text-align:center;
+.method-pill {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: 0.5px;
 }
-.stat-val { font-family:'Bebas Neue',cursive; font-size:1.6rem; letter-spacing:1px; color:#fff; }
-.stat-lbl { font-size:.7rem; color:var(--text-lo); text-transform:uppercase; letter-spacing:1.2px; margin-top:.15rem; }
 
 /* ── FILTER BAR ── */
 .filter-bar {
@@ -241,14 +242,60 @@ footer {
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width:700px) {
-    .stat-bar { grid-template-columns:repeat(2,1fr); }
-    .method-grid { grid-template-columns:1fr; }
-    thead th, td { padding:.6rem .4rem; font-size:.78rem; }
-    .vol-num { display:none; }
-    header { padding:0 1rem; }
-    .hero { padding:1.8rem 1rem 1.5rem; }
-    .hero h1 { font-size:2rem; }
+/* Tablet and below */
+@media (max-width: 768px) {
+    header { padding: 0 1rem; height: 56px; }
+    .logo-title { font-size: 1.45rem; }
+    .btn-pro { padding: 0.4rem 0.85rem; font-size: 0.75rem; }
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 0.9rem; }
+    .hero-pills { gap: 0.75rem; }
+    .hero-pill { font-size: 0.72rem; }
+    .method-pills { padding: 0.85rem 1rem; gap: 0.75rem; }
+    .method-pill { font-size: 0.72rem; }
+    .filter-bar { margin: 1rem auto 0.75rem; padding: 0 1rem; gap: 0.6rem; }
+    .filter-group { min-width: 0; flex: 1 1 45%; }
+    .filter-group[style*="flex:2"] { flex: 1 1 100%; }
+    .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap::after { content: ''; display: block; height: 1px; }
+    table { min-width: 680px; }
+    thead th, td { padding: 0.6rem 0.5rem; font-size: 0.8rem; }
+    thead th:first-child, td:first-child { padding-left: 0.75rem; }
+    .rank-pill { width: 34px; height: 34px; font-size: 0.8rem; }
+    .p-name { font-size: 0.85rem; }
+    .method-section { margin: 0 auto 1.5rem; padding: 0 1rem; }
+    .method-card { padding: 1.5rem; }
+    .method-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .method-item p { font-size: 0.78rem; }
+    footer { padding: 1.5rem 1rem; font-size: 0.7rem; }
+}
+
+/* Mobile (small phones) */
+@media (max-width: 480px) {
+    header { padding: 0 0.75rem; height: 52px; }
+    .logo-title { font-size: 1.3rem; letter-spacing: 1px; }
+    .hero { padding: 1.5rem 0.75rem 1.25rem; }
+    .hero h1 { font-size: 1.85rem; }
+    .hero p { font-size: 0.85rem; }
+    .hero-pills { flex-direction: column; align-items: center; gap: 0.5rem; }
+    .method-pills { padding: 0.75rem 0.75rem; gap: 0.6rem; flex-direction: column; align-items: center; }
+    .method-pill { font-size: 0.7rem; }
+    .filter-bar { padding: 0 0.75rem; flex-direction: column; }
+    .filter-group { flex: 1 1 auto !important; width: 100%; }
+    .filter-group input, .filter-group select { padding: 0.55rem 0.75rem; min-height: 44px; font-size: 1rem; }
+    .table-wrap { padding: 0 0.5rem; margin-left: -0.25rem; margin-right: -0.25rem; }
+    table { min-width: 640px; font-size: 0.78rem; }
+    thead th, td { padding: 0.5rem 0.4rem; font-size: 0.75rem; }
+    thead th:first-child, td:first-child { padding-left: 0.5rem; }
+    .rank-pill { width: 30px; height: 30px; font-size: 0.75rem; }
+    .pos-badge { padding: 0.15rem 0.4rem; font-size: 0.65rem; }
+    .vol-badge { font-size: 0.6rem; padding: 0.12rem 0.35rem; }
+    .cons-dot { width: 6px; height: 6px; }
+    .method-card { padding: 1.25rem; }
+    .method-card h3 { font-size: 1.15rem; }
+    .method-item h4 { font-size: 0.75rem; }
+    .method-item p { font-size: 0.75rem; }
 }
 </style>
 </head>
@@ -264,21 +311,15 @@ footer {
 
 <!-- HERO -->
 <div class="hero">
-    <h1>MLB Prospect Rankings</h1>
-    <p>A consensus ranking built by combining insights from 8 trusted sources. Each prospect receives a Rankle Score based on where experts place them — higher scores mean stronger consensus support.</p>
-    <div class="hero-pills">
-        <div class="hero-pill"><span class="ico">📊</span> Normalized across list lengths</div>
-        <div class="hero-pill"><span class="ico">📈</span> Volatility scoring</div>
-        <div class="hero-pill"><span class="ico">🔄</span> Updated weekly</div>
-    </div>
+    <h1>Data-Driven Consensus</h1>
+    <p>Rankle aggregates expert rankings with a robust algorithm to generate the Rankle Score: one consensus view that vastly simplifies and improves prospect ranking.</p>
 </div>
 
-<!-- STAT BAR -->
-<div class="stat-bar">
-    <div class="stat-item"><div class="stat-val" id="statSources">8</div><div class="stat-lbl">Sources</div></div>
-    <div class="stat-item"><div class="stat-val" id="statProspects">–</div><div class="stat-lbl">Prospects</div></div>
-    <div class="stat-item"><div class="stat-val" id="statConsensus">–</div><div class="stat-lbl">High Consensus</div></div>
-    <div class="stat-item"><div class="stat-val" id="statLowVol">–</div><div class="stat-lbl">Low Volatility</div></div>
+<!-- METHOD PILLS -->
+<div class="method-pills">
+    <span class="method-pill">Z-score aggregation</span>
+    <span class="method-pill">Volatility scoring</span>
+    <span class="method-pill">Multi-source consensus</span>
 </div>
 
 <!-- FILTERS -->
@@ -732,10 +773,6 @@ function render() {
         tbody.appendChild(lockRow);
     }
 
-    // Update stat bar
-    document.getElementById('statProspects').textContent  = ALL_PROSPECTS.length;
-    document.getElementById('statConsensus').textContent  = ALL_PROSPECTS.filter(p => p.sourceCount >= 4).length;
-    document.getElementById('statLowVol').textContent     = ALL_PROSPECTS.filter(p => p.volatility === 'Low').length;
 }
 
 // ── Wire up filters & initial render ──
