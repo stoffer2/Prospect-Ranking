@@ -43,17 +43,7 @@ header {
     height: 64px;
     display: flex; align-items: center; justify-content: space-between;
 }
-.logo { display:flex; align-items:center; gap:0.75rem; }
-.logo-icon {
-    width:40px; height:40px;
-    background: linear-gradient(135deg,#3b82f6,#2563eb);
-    border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Bebas Neue',cursive; font-size:1.4rem; color:#fff;
-    letter-spacing:1px;
-}
 .logo-title { font-family:'Bebas Neue',cursive; font-size:1.7rem; letter-spacing:2px; color:#fff; }
-.logo-sub { font-size:0.72rem; color:var(--text-lo); text-transform:uppercase; letter-spacing:1.5px; margin-left:0.25rem; }
 
 .header-right { display:flex; align-items:center; gap:1rem; }
 .btn-pro {
@@ -193,6 +183,8 @@ td:first-child { padding-left:1rem; }
 .cons-dot  { width:8px; height:8px; border-radius:50%; background:var(--border); }
 .cons-dot.on { background:var(--gold); box-shadow:0 0 4px rgba(245,158,11,.4); }
 
+
+
 /* single-source warning */
 .warn-badge {
     display:inline-flex; align-items:center; gap:.25rem;
@@ -266,13 +258,7 @@ footer {
 
 <!-- HEADER -->
 <header>
-    <div class="logo">
-        <div class="logo-icon">PR</div>
-        <div>
-            <span class="logo-title">Rankle</span>
-            <span class="logo-sub">⚾ Consensus</span>
-        </div>
-    </div>
+    <span class="logo-title">Rankle</span>
     <div class="header-right">
         <button class="btn-pro">⭐ Upgrade to Pro</button>
     </div>
@@ -337,7 +323,6 @@ footer {
                 <th>Median</th>
                 <th>Volatility</th>
                 <th>Consensus</th>
-            </tr>
         </thead>
         <tbody id="tbody"></tbody>
     </table>
