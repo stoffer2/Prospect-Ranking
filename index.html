@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProspectRank - Consensus MLB Prospect Rankings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Work Sans', sans-serif;
+        }
+        
+        .header-font {
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 2px;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .baseball-texture {
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.02) 10px, rgba(255,255,255,.02) 20px);
+        }
+        
+        .card-shadow {
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                0 1px 2px rgba(0,0,0,0.24),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .rank-badge {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+            color: #1e293b;
+        }
+        
+        .rank-silver {
+            background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%);
+            box-shadow: 0 2px 8px rgba(156, 163, 175, 0.4);
+            color: #1e293b;
+        }
+        
+        .rank-bronze {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+            color: white;
+        }
+        
+        .rank-other {
+            background: #475569;
+            color: #cbd5e1;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .premium-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .prospect-row {
+            transition: all 0.3s ease;
+        }
+        
+        .prospect-row:hover {
+            transform: translateX(8px);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #475569;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+            padding: 0 1.5rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .logo-text {
+            font-size: 1.875rem;
+            color: white;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
+            padding: 3rem 0;
+            text-align: center;
+        }
+        
+        .hero h2 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: #93c5fd;
+            margin-bottom: 1.5rem;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            color: #93c5fd;
+            font-size: 0.875rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: -2rem auto 2rem;
+            padding: 0 1rem;
+        }
+        
+        .stat-box {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+        
+        .filters {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .filter-group label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .filter-group input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .rankings-table {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        
+        .rank-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        
+        .player-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+        
+        .player-desc {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        
+        .position-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+        
+        .team-name {
+            color: white;
+            font-weight: 500;
+        }
+        
+        .age-text, .eta-text {
+            color: #cbd5e1;
+        }
+        
+        .borda-score {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+        
+        .trend-up {
+            color: #4ade80;
+        }
+        
+        .trend-down {
+            color: #f87171;
+        }
+        
+        .trend-stable {
+            color: #94a3b8;
+        }
+        
+        .consensus-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .consensus-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+        }
+        
+        .consensus-dot.active {
+            background: #fbbf24;
+        }
+        
+        .consensus-dot.inactive {
+            background: #475569;
+        }
+        
+        .lock-overlay {
+            position: relative;
+            padding: 3rem 0;
+            text-align: center;
+        }
+        
+        .lock-content {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 28rem;
+            margin: 0 auto;
+        }
+        
+        .lock-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .lock-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lock-text {
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-upgrade {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .locked-rows {
+            filter: blur(4px);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .methodology {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .methodology h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .methodology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .methodology-item h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .methodology-item p {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        
+        footer {
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid #475569;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        
+        .footer-section h4 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .footer-section a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #475569;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+            }
+            
+            .player-desc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="baseball-texture">
+    <!-- Header -->
+    <header>
+        <div class="header-content container">
+            <div class="logo">
+                <div class="logo-icon header-font">PR</div>
+                <h1 class="logo-text header-font">ProspectRank</h1>
+            </div>
+            <button class="btn-primary premium-badge">⭐ Upgrade to Pro</button>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container">
+            <h2 class="header-font">MLB Prospect Rankings</h2>
+            <p>Aggregated from 6+ trusted sources using our proprietary Borda Count algorithm</p>
+            <div class="features">
+                <div class="feature-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Data-driven consensus</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 1.5rem;">🔄</span>
+                    <span>Updated weekly</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 1.5rem;">⚡</span>
+                    <span>Track risers & fallers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card stat-box card-shadow">
+                <div class="stat-value header-font">6+</div>
+                <div class="stat-label">Ranking Sources</div>
+            </div>
+            <div class="stat-card stat-box card-shadow">
+                <div class="stat-value header-font" id="totalProspects">30</div>
+                <div class="stat-label">Total Prospects</div>
+            </div>
+            <div class="stat-card stat-box card-shadow">
+                <div class="stat-value header-font">8</div>
+                <div class="stat-label">Strong Consensus</div>
+            </div>
+            <div class="stat-card stat-box card-shadow">
+                <div class="stat-value header-font">12</div>
+                <div class="stat-label">Rising Prospects</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Filters -->
+        <div class="filters card-shadow">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" id="searchInput" placeholder="Search by name or team...">
+                </div>
+                <div class="filter-group">
+                    <label>Position</label>
+                    <select id="positionFilter">
+                        <option value="ALL">ALL</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Team</label>
+                    <select id="teamFilter">
+                        <option value="ALL">ALL</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rankings Table -->
+        <div class="rankings-table card-shadow">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Pos</th>
+                        <th>Team</th>
+                        <th>Age</th>
+                        <th>ETA</th>
+                        <th>Score</th>
+                        <th>Trend</th>
+                        <th>Consensus</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingsBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Methodology Section -->
+        <div class="methodology card-shadow">
+            <h3 class="header-font">Our Methodology</h3>
+            <div class="methodology-grid">
+                <div class="methodology-item">
+                    <h4>Borda Count Aggregation</h4>
+                    <p>
+                        We analyze rankings from MLB Pipeline, Baseball America, FanGraphs, Bleacher Report, ESPN, 
+                        and Just Baseball using the Borda Count method. Each prospect receives points based on their 
+                        ranking position (#1 = 100 points, #2 = 99 points, etc.). We sum points across all sources 
+                        to create our consensus rankings.
+                    </p>
+                </div>
+                <div class="methodology-item">
+                    <h4>Why This Works Better</h4>
+                    <p>
+                        Unlike simple averaging, Borda Count handles missing data elegantly and naturally weights 
+                        top rankings more heavily. A prospect ranked #1 by two sources and #25 by another deserves 
+                        to rank higher than one with consistent mid-range rankings - and our algorithm captures that.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>About ProspectRank</h4>
+                    <p>
+                        We aggregate MLB prospect rankings from 6+ trusted sources using advanced 
+                        statistical methods to give you the most accurate consensus view.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Data Sources</h4>
+                    <ul>
+                        <li>MLB Pipeline</li>
+                        <li>Baseball America</li>
+                        <li>FanGraphs</li>
+                        <li>Bleacher Report</li>
+                        <li>ESPN</li>
+                        <li>Just Baseball</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                © 2026 ProspectRank. All rights reserved. Rankings are transformative works aggregated 
+                from publicly available sources.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample prospect data
+        const prospects = [
+            { rank: 1, name: "Kevin McGonigle", pos: "SS", team: "DET", age: 19, eta: "2027", bordaScore: 297, consensus: 3, trend: "up", description: "Elite hit tool with plus power potential" },
+            { rank: 2, name: "Konnor Griffin", pos: "SS", team: "PIT", age: 18, eta: "2028", bordaScore: 294, consensus: 2, trend: "up", description: "Five-tool shortstop with exceptional athleticism" },
+            { rank: 3, name: "Jesús Made", pos: "SS", team: "MIL", age: 18, eta: "2027", bordaScore: 289, consensus: 3, trend: "stable", description: "Advanced hit approach with premium defense" },
+            { rank: 4, name: "Bubba Chandler", pos: "RHP", team: "PIT", age: 22, eta: "2026", bordaScore: 285, consensus: 3, trend: "up", description: "Power arm with improving command" },
+            { rank: 5, name: "Sebastian Walcott", pos: "SS", team: "TEX", age: 19, eta: "2027", bordaScore: 280, consensus: 1, trend: "stable", description: "High-ceiling athlete with raw tools" },
+            { rank: 6, name: "Leo De Vries", pos: "SS", team: "ATH", age: 20, eta: "2026", bordaScore: 276, consensus: 2, trend: "up", description: "Strong defensive profile with improving bat" },
+            { rank: 7, name: "JJ Wetherholt", pos: "SS", team: "STL", age: 21, eta: "2026", bordaScore: 273, consensus: 3, trend: "stable", description: "Advanced college bat with solid tools" },
+            { rank: 8, name: "Samuel Basallo", pos: "C", team: "BAL", age: 20, eta: "2026", bordaScore: 270, consensus: 2, trend: "up", description: "Power-hitting catcher with above-average defense" },
+            { rank: 9, name: "Nolan McLean", pos: "RHP", team: "NYM", age: 23, eta: "2025", bordaScore: 268, consensus: 1, trend: "up", description: "High-strikeout arm close to MLB ready" },
+            { rank: 10, name: "Trey Yesavage", pos: "RHP", team: "TOR", age: 23, eta: "2025", bordaScore: 265, consensus: 1, trend: "stable", description: "Proven starter with World Series experience" },
+            { rank: 11, name: "Bryce Eldridge", pos: "1B", team: "SF", age: 20, eta: "2027", bordaScore: 262, consensus: 2, trend: "stable", description: "Two-way talent with power potential" },
+            { rank: 12, name: "Colt Emerson", pos: "SS", team: "SEA", age: 20, eta: "2027", bordaScore: 259, consensus: 2, trend: "up", description: "Athletic middle infielder with speed" },
+            { rank: 13, name: "Thomas White", pos: "LHP", team: "MIA", age: 21, eta: "2026", bordaScore: 256, consensus: 2, trend: "stable", description: "Crafty lefty with deceptive delivery" },
+            { rank: 14, name: "Andrew Painter", pos: "RHP", team: "PHI", age: 22, eta: "2026", bordaScore: 253, consensus: 2, trend: "down", description: "Ace potential if healthy" },
+            { rank: 15, name: "Josue De Paula", pos: "OF", team: "LAD", age: 19, eta: "2028", bordaScore: 250, consensus: 2, trend: "up", description: "Five-tool outfielder with high upside" },
+            { rank: 16, name: "Ethan Holliday", pos: "SS", team: "COL", age: 18, eta: "2028", bordaScore: 247, consensus: 1, trend: "stable", description: "Bloodlines and tools to dream on" },
+            { rank: 17, name: "Max Clark", pos: "OF", team: "DET", age: 20, eta: "2027", bordaScore: 244, consensus: 3, trend: "up", description: "Sweet-swinging outfielder with hit tool" },
+            { rank: 18, name: "Zyhir Hope", pos: "OF", team: "LAD", age: 19, eta: "2028", bordaScore: 241, consensus: 1, trend: "stable", description: "Raw athlete with developing skills" },
+            { rank: 19, name: "Luis Peña", pos: "SS", team: "MIL", age: 19, eta: "2027", bordaScore: 238, consensus: 1, trend: "up", description: "Breakout prospect with plus bat speed" },
+            { rank: 20, name: "Kade Anderson", pos: "LHP", team: "SEA", age: 21, eta: "2026", bordaScore: 235, consensus: 1, trend: "up", description: "Dominant college arm, fast mover" },
+            { rank: 21, name: "Walker Jenkins", pos: "OF", team: "MIN", age: 19, eta: "2027", bordaScore: 232, consensus: 3, trend: "stable", description: "Balanced five-tool profile" },
+            { rank: 22, name: "Lazaro Montes", pos: "OF", team: "SEA", age: 20, eta: "2027", bordaScore: 229, consensus: 1, trend: "stable", description: "Power and patience at the plate" },
+            { rank: 23, name: "Seth Hernandez", pos: "RHP", team: "PIT", age: 21, eta: "2026", bordaScore: 226, consensus: 1, trend: "up", description: "Power fastball with developing secondaries" },
+            { rank: 24, name: "Eli Willits", pos: "SS", team: "WAS", age: 18, eta: "2028", bordaScore: 223, consensus: 1, trend: "stable", description: "2025 #1 overall pick, speed and hit tool" },
+            { rank: 25, name: "Travis Bazzana", pos: "2B", team: "CLE", age: 22, eta: "2026", bordaScore: 220, consensus: 2, trend: "up", description: "Advanced college bat with power" },
+            { rank: 26, name: "Bryce Rainer", pos: "SS", team: "DET", age: 20, eta: "2027", bordaScore: 217, consensus: 1, trend: "stable", description: "Defensive wizard with developing bat" },
+            { rank: 27, name: "George Lombard Jr.", pos: "SS", team: "NYY", age: 19, eta: "2027", bordaScore: 214, consensus: 1, trend: "up", description: "Advanced approach beyond his years" },
+            { rank: 28, name: "Noah Schultz", pos: "LHP", team: "CWS", age: 22, eta: "2026", bordaScore: 211, consensus: 1, trend: "down", description: "Big frame with frontline potential" },
+            { rank: 29, name: "Carson Benge", pos: "OF", team: "NYM", age: 21, eta: "2026", bordaScore: 208, consensus: 1, trend: "up", description: "Athletic outfielder with tools across board" },
+            { rank: 30, name: "Moises Ballesteros", pos: "C", team: "CHC", age: 21, eta: "2026", bordaScore: 205, consensus: 1, trend: "stable", description: "Bat-first catcher with power" },
+        ];
+        
+        const freeLimit = 30;
+        let currentProspects = prospects.slice(0, freeLimit);
+        
+        // Get unique positions and teams
+        const positions = ['ALL', ...new Set(prospects.map(p => p.pos))];
+        const teams = ['ALL', ...new Set(prospects.map(p => p.team))].sort();
+        
+        // Populate filter dropdowns
+        const positionFilter = document.getElementById('positionFilter');
+        const teamFilter = document.getElementById('teamFilter');
+        
+        positions.forEach(pos => {
+            const option = document.createElement('option');
+            option.value = pos;
+            option.textContent = pos;
+            positionFilter.appendChild(option);
+        });
+        
+        teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team;
+            option.textContent = team;
+            teamFilter.appendChild(option);
+        });
+        
+        // Render prospects
+        function renderProspects(prospectsToRender) {
+            const tbody = document.getElementById('rankingsBody');
+            tbody.innerHTML = '';
+            
+            prospectsToRender.forEach(prospect => {
+                const row = document.createElement('tr');
+                row.className = 'prospect-row';
+                
+                const rankClass = 
+                    prospect.rank <= 3 ? 'rank-badge' :
+                    prospect.rank <= 10 ? 'rank-silver' :
+                    prospect.rank <= 25 ? 'rank-bronze' :
+                    'rank-other';
+                
+                const trendIcon = 
+                    prospect.trend === 'up' ? '↗' :
+                    prospect.trend === 'down' ? '↘' :
+                    '→';
+                
+                const trendClass = 
+                    prospect.trend === 'up' ? 'trend-up' :
+                    prospect.trend === 'down' ? 'trend-down' :
+                    'trend-stable';
+                
+                row.innerHTML = `
+                    <td>
+                        <span class="rank-cell ${rankClass}">#${prospect.rank}</span>
+                    </td>
+                    <td>
+                        <div class="player-name">${prospect.name}</div>
+                        <div class="player-desc">${prospect.description}</div>
+                    </td>
+                    <td>
+                        <span class="position-badge">${prospect.pos}</span>
+                    </td>
+                    <td class="team-name">${prospect.team}</td>
+                    <td class="age-text">${prospect.age}</td>
+                    <td class="eta-text">${prospect.eta}</td>
+                    <td class="borda-score">${prospect.bordaScore}</td>
+                    <td>
+                        <span class="${trendClass}">
+                            <span style="margin-right: 0.25rem;">${trendIcon}</span>
+                            <span style="font-size: 0.75rem; font-weight: 500;">${prospect.trend}</span>
+                        </span>
+                    </td>
+                    <td>
+                        <div class="consensus-dots">
+                            ${[1, 2, 3].map(i => 
+                                `<div class="consensus-dot ${i <= prospect.consensus ? 'active' : 'inactive'}"></div>`
+                            ).join('')}
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Add lock overlay for free users
+            const lockRow = document.createElement('tr');
+            lockRow.innerHTML = `
+                <td colspan="9" class="lock-overlay">
+                    <div class="lock-content">
+                        <div class="lock-icon">🔒</div>
+                        <h3 class="lock-title header-font">Unlock Full Rankings</h3>
+                        <p class="lock-text">Get access to all 100+ prospects, advanced filters, and weekly updates</p>
+                        <button class="btn-upgrade glow">Upgrade to Pro - $7/month</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(lockRow);
+            
+            // Add blurred locked rows
+            const lockedProspects = prospects.slice(freeLimit, freeLimit + 5);
+            lockedProspects.forEach(prospect => {
+                const row = document.createElement('tr');
+                row.className = 'prospect-row locked-rows';
+                row.innerHTML = `
+                    <td><span class="rank-cell rank-other">#${prospect.rank}</span></td>
+                    <td>
+                        <div class="player-name">${prospect.name}</div>
+                        <div class="player-desc">${prospect.description}</div>
+                    </td>
+                    <td><span class="position-badge">${prospect.pos}</span></td>
+                    <td class="team-name">${prospect.team}</td>
+                    <td class="age-text">${prospect.age}</td>
+                    <td class="eta-text">${prospect.eta}</td>
+                    <td class="borda-score">${prospect.bordaScore}</td>
+                    <td><span class="trend-stable">→</span></td>
+                    <td>
+                        <div class="consensus-dots">
+                            ${[1, 2, 3].map(() => '<div class="consensus-dot inactive"></div>').join('')}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Filter function
+        function filterProspects() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const posFilter = document.getElementById('positionFilter').value;
+            const tmFilter = document.getElementById('teamFilter').value;
+            
+            const filtered = currentProspects.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || 
+                                     p.team.toLowerCase().includes(searchTerm);
+                const matchesPos = posFilter === 'ALL' || p.pos === posFilter;
+                const matchesTeam = tmFilter === 'ALL' || p.team === tmFilter;
+                return matchesSearch && matchesPos && matchesTeam;
+            });
+            
+            renderProspects(filtered);
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterProspects);
+        document.getElementById('positionFilter').addEventListener('change', filterProspects);
+        document.getElementById('teamFilter').addEventListener('change', filterProspects);
+        
+        // Initial render
+        renderProspects(currentProspects);
+    </script>
+</body>
+</html>
