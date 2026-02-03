@@ -281,7 +281,7 @@ footer {
 <!-- HERO -->
 <div class="hero">
     <h1>MLB Prospect Rankings</h1>
-    <p>Aggregated from 6+ trusted sources using a normalized Borda Count algorithm. Volatility scores reveal how much sources disagree on each prospect.</p>
+    <p>A consensus ranking built by combining insights from 6+ trusted sources. Each prospect receives a Rankle Score based on where experts place them — higher scores mean stronger consensus support.</p>
     <div class="hero-pills">
         <div class="hero-pill"><span class="ico">📊</span> Normalized across list lengths</div>
         <div class="hero-pill"><span class="ico">📈</span> Volatility scoring</div>
@@ -333,7 +333,7 @@ footer {
                 <th>Team</th>
                 <th>Age</th>
                 <th>ETA</th>
-                <th>Borda</th>
+                <th>Score</th>
                 <th>Median</th>
                 <th>Volatility</th>
                 <th>Consensus</th>
@@ -353,8 +353,8 @@ footer {
                 <p>Raw ranks are converted to a 0–100 scale using the formula <strong style="color:var(--accent-hi);">score = 100 × (1 − (rank−1) / (N−1))</strong>. This means #1 on a Top-100 list scores identically to #1 on a Top-500 list. Being in the top 10% of any list produces the same normalized score regardless of list length.</p>
             </div>
             <div class="method-item">
-                <h4>Borda Count Aggregation</h4>
-                <p>Each source contributes a normalized score. We average those scores across all sources that ranked a given prospect to produce the final Borda score (0–100). This rewards appearing on many lists while keeping single-source prospects fairly compared.</p>
+                <h4>Rankle Score</h4>
+                <p>Each source's rankings are statistically normalized to account for differences in list length and depth. Scores are then combined using a proprietary weighting method that rewards broad consensus across multiple experts.</p>
             </div>
             <div class="method-item">
                 <h4>Median Rank</h4>
@@ -380,37 +380,57 @@ footer {
 
 // Normalize a single rank to 0–100 given the source list length.
 // rank 1 → 100, rank N → 0, linear between.
-function normalizeScore(rank, listLength) {
-    if (listLength <= 1) return 100;
-    return 100 * (1 - (rank - 1) / (listLength - 1));
+// ============================================================
+// Z-SCORE ENGINE — "Rankle Score"
+// Each source's ranks are converted to Z-scores using the
+// theoretical mean and stddev of a 1..N uniform distribution.
+// Z-scores are averaged across sources, then scaled to 0-100.
+// ============================================================
+
+// Precompute mean + stddev for a uniform 1..N list
+function sourceStats(listLength) {
+    const mean = (listLength + 1) / 2;
+    const sd   = Math.sqrt((listLength * listLength - 1) / 12);
+    return { mean, sd };
 }
 
 // Given player meta and an array of { source, rank, listLength },
 // return the full computed prospect object.
 function computeProspect(meta, sourceRankings) {
-    const scores   = sourceRankings.map(s => normalizeScore(s.rank, s.listLength));
+    const n = sourceRankings.length;
+    if (n === 0) return { ...meta, sourceCount: 0, rankleScore: 0, median: null, sd: null, volatility: "N/A" };
+
+    // Convert each ranking to a Z-score
+    const zScores  = sourceRankings.map(s => {
+        const { mean, sd } = sourceStats(s.listLength);
+        return -(s.rank - mean) / sd;   // negated: rank 1 = highest Z
+    });
     const rawRanks = sourceRankings.map(s => s.rank);
-    const n        = sourceRankings.length;
 
-    // Borda = mean of normalized scores across sources that ranked this prospect
-    const bordaAvg = scores.reduce((a, b) => a + b, 0) / n;
+    // Average Z across all sources
+    const zAvg = zScores.reduce((a, b) => a + b, 0) / n;
 
-    // Median of raw ranks (intuitive for users)
+    // Scale to 0-100 Rankle Score
+    // Z range for a 100-item list is roughly -1.7 to +1.7
+    // 50 + z*29.4 maps that to 0-100
+    const rankleScore = Math.max(0, Math.min(100, 50 + zAvg * 29.4));
+
+    // Median of raw ranks (intuitive reference)
     const sorted = [...rawRanks].sort((a, b) => a - b);
     const mid    = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 !== 0
         ? sorted[mid]
         : (sorted[mid - 1] + sorted[mid]) / 2;
 
-    // Sample standard deviation of normalized scores (volatility)
+    // Volatility: stddev of Z-scores across sources
     let sd = null, volatility = "N/A";
     if (n >= 2) {
-        const variance = scores.reduce((sum, s) => sum + (s - bordaAvg) ** 2, 0) / (n - 1);
+        const variance = zScores.reduce((sum, z) => sum + (z - zAvg) ** 2, 0) / (n - 1);
         sd = Math.sqrt(variance);
-        volatility = sd < 10 ? "Low" : sd < 25 ? "Moderate" : "High";
+        volatility = sd < 0.3 ? "Low" : sd < 0.7 ? "Moderate" : "High";
     }
 
-    return { ...meta, sourceCount: n, bordaAvg, median, sd, volatility };
+    return { ...meta, sourceCount: n, rankleScore: Math.round(rankleScore * 10) / 10, median, sd, volatility };
 }
 
 // ============================================================
@@ -419,12 +439,12 @@ function computeProspect(meta, sourceRankings) {
 // normalization matter. Change these as you add real sources.
 // ============================================================
 const SOURCES = {
-    pipeline:     { label: "MLB Pipeline",     listLength: 100 },
-    ba:           { label: "Baseball America", listLength: 100 },
-    fangraphs:    { label: "FanGraphs",        listLength: 100 },
-    br:           { label: "Bleacher Report",  listLength: 100 },
-    espn:         { label: "ESPN",             listLength: 100 },
-    justbaseball: { label: "Just Baseball",    listLength: 100 }
+    pipeline:      { label: "MLB Pipeline",      listLength: 100 },
+    ba:            { label: "Baseball America",  listLength: 100 },
+    fangraphs:     { label: "FanGraphs",         listLength: 100 },
+    br:            { label: "Bleacher Report",   listLength: 100 },
+    espn:          { label: "ESPN",              listLength: 100 },
+    justbaseball:  { label: "Just Baseball",     listLength: 100 }
 };
 
 // ============================================================
@@ -434,31 +454,106 @@ const SOURCES = {
 // To change a list length: edit SOURCES[key].listLength.
 // ============================================================
 const RAW_DATA = [
-    { name:"Kevin McGonigle",    pos:"SS",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:7,  ba:3,  fangraphs:5,  br:1,  espn:4,  justbaseball:6  } },
-    { name:"Konnor Griffin",     pos:"SS",  team:"PIT", age:18, eta:"2028", ranks:{ pipeline:13, ba:1,  fangraphs:8,  br:2,  espn:null, justbaseball:1 } },
-    { name:"Jesús Made",         pos:"SS",  team:"MIL", age:18, eta:"2027", ranks:{ pipeline:8,  ba:5,  fangraphs:6,  br:3,  espn:7,  justbaseball:2  } },
-    { name:"Bubba Chandler",     pos:"RHP", team:"PIT", age:22, eta:"2026", ranks:{ pipeline:15, ba:4,  fangraphs:9,  br:4,  espn:5,  justbaseball:4  } },
-    { name:"Walker Jenkins",     pos:"OF",  team:"MIN", age:19, eta:"2027", ranks:{ pipeline:3,  ba:8,  fangraphs:7,  br:21, espn:6,  justbaseball:5  } },
-    { name:"Leo De Vries",       pos:"SS",  team:"ATH", age:20, eta:"2026", ranks:{ pipeline:18, ba:2,  fangraphs:4,  br:6,  espn:3,  justbaseball:null} },
-    { name:"Max Clark",          pos:"OF",  team:"DET", age:20, eta:"2027", ranks:{ pipeline:6,  ba:9,  fangraphs:null,br:17, espn:8,  justbaseball:3  } },
-    { name:"JJ Wetherholt",      pos:"SS",  team:"STL", age:21, eta:"2026", ranks:{ pipeline:23, ba:6,  fangraphs:10, br:7,  espn:9,  justbaseball:7  } },
-    { name:"Samuel Basallo",     pos:"C",   team:"BAL", age:20, eta:"2026", ranks:{ pipeline:11, ba:7,  fangraphs:12, br:8,  espn:11, justbaseball:null} },
-    { name:"Andrew Painter",     pos:"RHP", team:"PHI", age:22, eta:"2026", ranks:{ pipeline:8,  ba:10, fangraphs:11, br:14, espn:10, justbaseball:null} },
-    { name:"Nolan McLean",       pos:"RHP", team:"NYM", age:23, eta:"2025", ranks:{ pipeline:null,ba:11, fangraphs:14, br:9,  espn:12, justbaseball:8  } },
-    { name:"Sebastian Walcott",  pos:"SS",  team:"TEX", age:19, eta:"2027", ranks:{ pipeline:4,  ba:null,fangraphs:null,br:5, espn:null, justbaseball:null} },
-    { name:"Trey Yesavage",      pos:"RHP", team:"TOR", age:23, eta:"2025", ranks:{ pipeline:null,ba:null,fangraphs:15,br:10, espn:14, justbaseball:9  } },
-    { name:"Bryce Eldridge",     pos:"1B",  team:"SF",  age:20, eta:"2027", ranks:{ pipeline:24, ba:12, fangraphs:null,br:11, espn:15, justbaseball:null} },
-    { name:"Colt Emerson",       pos:"SS",  team:"SEA", age:20, eta:"2027", ranks:{ pipeline:20, ba:14, fangraphs:16, br:12, espn:null, justbaseball:null} },
-    { name:"Thomas White",       pos:"LHP", team:"MIA", age:21, eta:"2026", ranks:{ pipeline:41, ba:13, fangraphs:null,br:13, espn:16, justbaseball:null} },
-    { name:"Josue De Paula",     pos:"OF",  team:"LAD", age:19, eta:"2028", ranks:{ pipeline:40, ba:15, fangraphs:18, br:15, espn:null, justbaseball:null} },
-    { name:"Ethan Holliday",     pos:"SS",  team:"COL", age:18, eta:"2028", ranks:{ pipeline:null,ba:16, fangraphs:null,br:16, espn:null, justbaseball:null} },
-    { name:"Travis Bazzana",     pos:"2B",  team:"CLE", age:22, eta:"2026", ranks:{ pipeline:10, ba:18, fangraphs:19, br:25, espn:13, justbaseball:null} },
-    { name:"Eli Willits",        pos:"SS",  team:"WAS", age:18, eta:"2028", ranks:{ pipeline:null,ba:20, fangraphs:null,br:24, espn:null, justbaseball:null} },
-    { name:"Luis Peña",          pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null,ba:17, fangraphs:null,br:19, espn:null, justbaseball:null} },
-    { name:"Kade Anderson",      pos:"LHP", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:null,ba:19, fangraphs:null,br:20, espn:null, justbaseball:null} },
-    { name:"Noah Schultz",       pos:"LHP", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:null,ba:22, fangraphs:20, br:28, espn:null, justbaseball:null} },
-    { name:"Carson Benge",       pos:"OF",  team:"NYM", age:21, eta:"2026", ranks:{ pipeline:null,ba:21, fangraphs:null,br:29, espn:18, justbaseball:null} },
-    { name:"Moises Ballesteros", pos:"C",   team:"CHC", age:21, eta:"2026", ranks:{ pipeline:null,ba:23, fangraphs:null,br:30, espn:19, justbaseball:null} },
+    { name:"Konnor Griffin",        pos:"SS",  team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:1,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kevin McGonigle",       pos:"SS",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:null, ba:2,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"JJ Wetherholt",         pos:"SS",  team:"STL", age:19, eta:"2027", ranks:{ pipeline:null, ba:3,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jesus Made",            pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:4,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Walker Jenkins",        pos:"OF",  team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:5,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Max Clark",             pos:"OF",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:null, ba:6,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Colt Emerson",          pos:"SS",  team:"SEA", age:19, eta:"2027", ranks:{ pipeline:null, ba:7,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Nolan McLean",          pos:"RHP", team:"NYM", age:19, eta:"2027", ranks:{ pipeline:null, ba:8,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Samuel Basallo",        pos:"C",   team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:9,   fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Trey Yesavage",         pos:"RHP", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:10,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Carter Jensen",         pos:"C",   team:"KC",  age:19, eta:"2027", ranks:{ pipeline:null, ba:11,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Leo De Vries",          pos:"SS",  team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:12,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Thomas White",          pos:"LHP", team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:13,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Aidan Miller",          pos:"SS",  team:"PHI", age:19, eta:"2027", ranks:{ pipeline:null, ba:14,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Bubba Chandler",        pos:"RHP", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:15,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Sebastian Walcott",     pos:"SS",  team:"TEX", age:19, eta:"2027", ranks:{ pipeline:null, ba:16,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Payton Tolle",          pos:"LHP", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:null, ba:17,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Bryce Eldridge",        pos:"1B",  team:"SF",  age:19, eta:"2027", ranks:{ pipeline:null, ba:18,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Carson Benge",          pos:"OF",  team:"NYM", age:19, eta:"2027", ranks:{ pipeline:null, ba:19,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Eduardo Quintero",      pos:"OF",  team:"LAD", age:19, eta:"2027", ranks:{ pipeline:null, ba:20,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Dylan Beavers",         pos:"OF",  team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:21,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Travis Bazzana",        pos:"2B",  team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:22,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Sal Stewart",           pos:"3B",  team:"CIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:23,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Josue De Paula",        pos:"OF",  team:"LAD", age:19, eta:"2027", ranks:{ pipeline:null, ba:24,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kade Anderson",         pos:"LHP", team:"SEA", age:19, eta:"2027", ranks:{ pipeline:null, ba:25,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Noah Schultz",          pos:"LHP", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:26,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Caleb Bonemer",         pos:"SS",  team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:27,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Edward Florentino",     pos:"OF",  team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:28,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Bryce Rainer",          pos:"SS",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:null, ba:29,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Josuar Gonzalez",       pos:"SS",  team:"SF",  age:19, eta:"2027", ranks:{ pipeline:null, ba:30,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Eli Willits",           pos:"SS",  team:"WAS", age:19, eta:"2027", ranks:{ pipeline:null, ba:31,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Andrew Painter",        pos:"RHP", team:"PHI", age:19, eta:"2027", ranks:{ pipeline:null, ba:32,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Liam Doyle",            pos:"LHP", team:"STL", age:19, eta:"2027", ranks:{ pipeline:null, ba:33,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Chase DeLauter",        pos:"OF",  team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:34,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Rainiel Rodriguez",     pos:"RHP", team:"NYY", age:19, eta:"2027", ranks:{ pipeline:null, ba:35,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Moises Ballesteros",    pos:"C",   team:"CHC", age:19, eta:"2027", ranks:{ pipeline:null, ba:36,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Brody Hopkins",         pos:"RHP", team:"TB",  age:19, eta:"2027", ranks:{ pipeline:null, ba:37,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Seth Hernandez",        pos:"RHP", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:38,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jamie Arnold",          pos:"LHP", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:39,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Gage Jump",             pos:"LHP", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:40,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Robby Snelling",        pos:"LHP", team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:41,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Aiva Arquette",         pos:"SS",  team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:42,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Owen Caissie",          pos:"OF",  team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:43,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jonah Tong",            pos:"RHP", team:"NYM", age:19, eta:"2027", ranks:{ pipeline:null, ba:44,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Mike Sirota",           pos:"OF",  team:"LAD", age:19, eta:"2027", ranks:{ pipeline:null, ba:45,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"George Lombard",        pos:"SS",  team:"NYY", age:19, eta:"2027", ranks:{ pipeline:null, ba:46,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Luis Pena",             pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:47,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Ryan Waldschmidt",      pos:"OF",  team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:48,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Franklin Arias",        pos:"SS",  team:"BOS", age:19, eta:"2027", ranks:{ pipeline:null, ba:49,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Cooper Pratt",          pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:50,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Tyler Bremner",         pos:"RHP", team:"LAA", age:19, eta:"2027", ranks:{ pipeline:null, ba:51,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Connelly Early",        pos:"LHP", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:null, ba:52,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Cam Caminiti",          pos:"LHP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:null, ba:53,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Joshua Baez",           pos:"OF",  team:"STL", age:19, eta:"2027", ranks:{ pipeline:null, ba:54,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Joe Mack",              pos:"C",   team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:55,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Ralphy Velazquez",      pos:"1B",  team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:56,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Lazaro Montes",         pos:"OF",  team:"SEA", age:19, eta:"2027", ranks:{ pipeline:null, ba:57,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Rainiel Rodriguez 2",   pos:"RHP", team:"NYY", age:19, eta:"2027", ranks:{ pipeline:null, ba:58,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Ryan Sloan",            pos:"RHP", team:"SEA", age:19, eta:"2027", ranks:{ pipeline:null, ba:59,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Dax Kilby",             pos:"SS",  team:"NYY", age:19, eta:"2027", ranks:{ pipeline:null, ba:60,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Arjun Nimmala",         pos:"SS",  team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:61,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Zyhir Hope",            pos:"OF",  team:"LAD", age:19, eta:"2027", ranks:{ pipeline:null, ba:62,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Theo Gillen",           pos:"OF",  team:"TB",  age:19, eta:"2027", ranks:{ pipeline:null, ba:63,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Caden Scarborough",     pos:"RHP", team:"TEX", age:19, eta:"2027", ranks:{ pipeline:null, ba:64,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"JoJo Parker",           pos:"SS",  team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:65,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Angel Genao",           pos:"SS",  team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:66,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jarlin Susana",         pos:"RHP", team:"WAS", age:19, eta:"2027", ranks:{ pipeline:null, ba:67,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kyson Witherspoon",     pos:"RHP", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:null, ba:68,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jacob Melton",          pos:"OF",  team:"TB",  age:19, eta:"2027", ranks:{ pipeline:null, ba:69,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jett Williams",         pos:"SS",  team:"TB",  age:19, eta:"2027", ranks:{ pipeline:null, ba:70,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Trey Gibson",           pos:"RHP", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:71,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Braden Montgomery",     pos:"OF",  team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:72,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kaelen Culpepper",      pos:"SS",  team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:73,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Justin Crawford",       pos:"OF",  team:"PHI", age:19, eta:"2027", ranks:{ pipeline:null, ba:74,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Josue Briceno",         pos:"C",   team:"DET", age:19, eta:"2027", ranks:{ pipeline:null, ba:75,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Alfredo Duno",          pos:"C",   team:"CIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:76,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jaxon Wiggins",         pos:"RHP", team:"CHC", age:19, eta:"2027", ranks:{ pipeline:null, ba:77,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Rhett Lowder",          pos:"RHP", team:"CIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:78,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Ethan Holliday",        pos:"SS",  team:"COL", age:19, eta:"2027", ranks:{ pipeline:null, ba:79,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Ethan Salas",           pos:"C",   team:"SD",  age:19, eta:"2027", ranks:{ pipeline:null, ba:80,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Brandon Sproat",        pos:"RHP", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:81,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kendry Chourio",        pos:"RHP", team:"KC",  age:19, eta:"2027", ranks:{ pipeline:null, ba:82,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"A.J. Ewing",            pos:"OF",  team:"NYM", age:19, eta:"2027", ranks:{ pipeline:null, ba:83,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"JR Ritchie",            pos:"RHP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:null, ba:84,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Nate George",           pos:"OF",  team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:85,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Bo Davidson",           pos:"OF",  team:"SF",  age:19, eta:"2027", ranks:{ pipeline:null, ba:86,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Parker Messick",        pos:"LHP", team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:87,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Braylon Doughty",       pos:"RHP", team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:88,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Hagen Smith",           pos:"LHP", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:89,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Billy Carlson",         pos:"SS",  team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:90,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Carlos Lagrange",       pos:"RHP", team:"NYY", age:19, eta:"2027", ranks:{ pipeline:null, ba:91,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Connor Prielipp",       pos:"LHP", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:92,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Luis De Leon",          pos:"LHP", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:93,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Logan Henderson",       pos:"RHP", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:94,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Kayson Cunningham",     pos:"SS",  team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:95,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Jhonny Level",          pos:"SS",  team:"SF",  age:19, eta:"2027", ranks:{ pipeline:null, ba:96,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Harry Ford",            pos:"C",   team:"WAS", age:19, eta:"2027", ranks:{ pipeline:null, ba:97,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Tanner McDougal",       pos:"RHP", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:98,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Player 99",             pos:"SS",  team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:99,  fangraphs:null, br:null, espn:null, justbaseball:null } },
+    { name:"Player 100",            pos:"SS",  team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:100, fangraphs:null, br:null, espn:null, justbaseball:null } },
 ];
 
 // ============================================================
@@ -477,12 +572,12 @@ function buildProspects() {
             sourceRankings
         );
     })
-    .sort((a, b) => b.bordaAvg - a.bordaAvg)          // primary: Borda descending
+    .sort((a, b) => b.rankleScore - a.rankleScore)     // primary: Rankle Score descending
     .map((p, i) => ({ ...p, displayRank: i + 1 }));   // assign final display rank
 }
 
 const ALL_PROSPECTS = buildProspects();
-const FREE_LIMIT    = 10;   // ← top 10 are free
+const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
 // POPULATE FILTER DROPDOWNS
@@ -585,7 +680,7 @@ function render() {
             <td class="team-col">${p.team}</td>
             <td class="num-col">${p.age}</td>
             <td class="num-col">${p.eta}</td>
-            <td class="borda-col">${p.bordaAvg.toFixed(1)}</td>
+            <td class="borda-col">${p.rankleScore.toFixed(1)}</td>
             <td class="median-col">#${p.median}</td>
             <td>
                 <div class="vol-wrap">
@@ -599,7 +694,8 @@ function render() {
     });
 
     // If every filtered result was free, still show the lock wall at the bottom
-    if (!lockInserted) {
+    // (only if paywall is active)
+    if (!lockInserted && FREE_LIMIT < ALL_PROSPECTS.length) {
         const lockRow = document.createElement('tr');
         lockRow.className = 'lock-row';
         lockRow.innerHTML = `
