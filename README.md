@@ -2,7 +2,7 @@
 
 
 
-Consensus MLB prospect rankings aggregated from 6+ sources using a normalized Borda Count algorithm.
+Consensus MLB prospect rankings from 6+ sources using Borda Count.
 
 
 
@@ -10,13 +10,19 @@ Consensus MLB prospect rankings aggregated from 6+ sources using a normalized Bo
 
 
 
-\- \*\*Percentile Normalization\*\* - ranks are mapped to a 0-100 score so that #1 on a Top-500 list equals #1 on a Top-100 list.
+Percentile Normalization - ranks mapped to 0-100 so list length does not matter.
 
-\- \*\*Borda Score\*\* - mean of normalized scores across all sources that ranked a prospect.
 
-\- \*\*Median Rank\*\* - median of raw ranks, robust to outliers.
 
-\- \*\*Volatility\*\* - sample standard deviation of normalized scores. Low SD = sources agree.
+Borda Score - mean of normalized scores across all sources.
+
+
+
+Median Rank - median of raw ranks, robust to outliers.
+
+
+
+Volatility - sample standard deviation. Low SD means sources agree.
 
 
 
@@ -24,5 +30,5 @@ Consensus MLB prospect rankings aggregated from 6+ sources using a normalized Bo
 
 
 
-Open index.html in any browser. No build step, no dependencies.
+Open index.html in any browser. No build step needed.
 
