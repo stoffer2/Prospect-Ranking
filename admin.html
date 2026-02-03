@@ -258,6 +258,7 @@ header {
         <button class="tab active" onclick="switchTab('enter')">📝 Enter Rankings</button>
         <button class="tab" onclick="switchTab('paste')">📋 Paste Rankings</button>
         <button class="tab" onclick="switchTab('export')">💾 Export Code</button>
+        <button class="tab" onclick="switchTab('status')">📅 Last Updated</button>
     </div>
 
     <!-- ════════════════════════════════════════════════════════ -->
@@ -313,7 +314,7 @@ header {
             <div class="source-row" style="margin-bottom:.75rem;">
                 <div class="field">
                     <label>Source</label>
-                    <select id="pasteSourceSelect" onchange="document.getElementById('pasteListLength').value=SOURCES[this.value].listLength;">
+                    <select id="pasteSourceSelect" onchange="document.getElementById('pasteListLength').value=SOURCES[this.value].listLength; saveToStorage();">
                         <option value="pipeline">MLB Pipeline</option>
                         <option value="ba">Baseball America</option>
                         <option value="fangraphs">FanGraphs</option>
@@ -322,6 +323,7 @@ header {
                         <option value="justbaseball">Just Baseball</option>
                         <option value="rotoprospects">RotoProspects</option>
                         <option value="prospect361">Prospect361</option>
+                        <option value="rotochamp">RotoChamp</option>
                     </select>
                 </div>
                 <div class="field">
@@ -336,7 +338,7 @@ header {
             <div class="paste-hint">Junk lines (ads, headers, image captions) are filtered out automatically. Names are fuzzy-matched.</div>
 
             <div style="margin-top:1rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" onclick="importPasted()">Import Rankings</button>
+                <button class="btn btn-primary btn-sm" id="importBtn" onclick="importPasted()">Import & Save</button>
                 <button class="btn btn-ghost btn-sm" onclick="previewParse()">👁 Preview</button>
                 <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             </div>
@@ -358,6 +360,23 @@ header {
                         <tbody id="previewBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Bulk update ages & ETA -->
+        <div class="card" style="margin-top:1rem;">
+            <div class="section-title"><span class="ico">🎂</span> Bulk Update Ages &amp; ETA</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:.75rem; line-height:1.5;">Paste one per line: <strong>Name	Age</strong> or <strong>Name	Age	ETA</strong>. Use tab or comma between columns. ETA = year (e.g. 2026). Copy from RotoProspects, Baseball-Reference, etc.</p>
+            <p style="color:var(--text-lo); font-size:.75rem; margin-bottom:.5rem;">When sources disagree on ETA, we use the <strong>earliest</strong> (most optimistic) year.</p>
+            <div class="paste-zone" style="min-height:80px;">
+                <textarea id="agePasteInput" placeholder="Konnor Griffin	20	2027&#10;Kevin McGonigle	20	2026&#10;Walker Jenkins	20	2027"></textarea>
+            </div>
+            <div style="margin-top:.75rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" onclick="bulkUpdateAges()">Update Ages</button>
+                <button class="btn btn-ghost btn-sm" id="fetchAgesBtn" onclick="fetchAgesFromMLB()">⚡ Fetch from MLB API</button>
+                <button class="btn btn-ghost btn-sm" id="fetchRemainingBtn" onclick="fetchRemainingAges()">⚡ Fetch remaining only</button>
+                <button class="btn btn-ghost btn-sm" id="assignIdsBtn" onclick="assignIds()">🆔 Assign IDs</button>
+                <span id="ageResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             </div>
         </div>
     </div>
@@ -385,6 +404,19 @@ header {
         </div>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- TAB: LAST UPDATED                                       -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-status">
+        <div class="card">
+            <div class="section-title"><span class="ico">📅</span> Source Update Timestamps</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
+                When you import a list from the Paste tab, the timestamp for that source is updated. Use this to track which lists need refreshing.
+            </p>
+            <div style="display:grid; gap:.5rem;" id="statusList"></div>
+        </div>
+    </div>
+
 </div><!-- /wrap -->
 
 <script>
@@ -399,15 +431,43 @@ const SOURCES = {
     espn:         { label:"ESPN",             listLength:100 },
     justbaseball: { label:"Just Baseball",    listLength:100 },
     rotoprospects:{ label:"RotoProspects",    listLength:100 },
-    prospect361:  { label:"Prospect361",      listLength:100 }
+    prospect361:  { label:"Prospect361",      listLength:100 },
+    rotochamp:    { label:"RotoChamp",        listLength:100 }
 };
 
-// Holds a reference to index.html once the user links it.
-// Persists for the entire browser session — only need to link once.
+// Holds a reference to index.html. Persisted in IndexedDB across sessions.
 let indexFileHandle = null;
+const IDB_NAME = 'rankle-admin';
+const IDB_STORE = 'file-handle';
+
+async function persistFileHandle(handle) {
+    try {
+        const db = await new Promise((res,rej)=>{ const r = indexedDB.open(IDB_NAME,1); r.onerror=rej; r.onsuccess=()=>res(r.result); r.onupgradeneeded=e=>{ e.target.result.createObjectStore(IDB_STORE); }; });
+        await new Promise((res,rej)=>{ const t=db.transaction(IDB_STORE,'readwrite'); t.objectStore(IDB_STORE).put(handle,'index'); t.oncomplete=res; t.onerror=rej; });
+    } catch(e) { /* ignore */ }
+}
+async function restoreFileHandle() {
+    try {
+        const db = await new Promise((res,rej)=>{ const r = indexedDB.open(IDB_NAME); r.onerror=rej; r.onsuccess=()=>res(r.result); });
+        const handle = await new Promise((res,rej)=>{ const t=db.transaction(IDB_STORE,'readonly'); const r=t.objectStore(IDB_STORE).get('index'); r.onsuccess=()=>res(r.result); r.onerror=rej; });
+        if (handle) {
+            await handle.getFile(); // verify still valid
+            indexFileHandle = handle;
+            document.getElementById('linkStatus').style.display = 'inline';
+            document.getElementById('linkBtn').style.display = 'none';
+            document.getElementById('linkStatus').textContent = '✓ linked to index.html';
+        }
+    } catch(e) { /* handle invalidated */ }
+}
+async function clearPersistedHandle() {
+    try {
+        const db = await new Promise((res,rej)=>{ const r = indexedDB.open(IDB_NAME); r.onerror=rej; r.onsuccess=()=>res(r.result); });
+        await new Promise((res,rej)=>{ const t=db.transaction(IDB_STORE,'readwrite'); t.objectStore(IDB_STORE).delete('index'); t.oncomplete=res; t.onerror=rej; });
+    } catch(e) { /* ignore */ }
+}
 
 // ============================================================
-// LINK index.html — grab a file handle once, reuse forever
+// LINK index.html — grab a file handle, persist across sessions
 // ============================================================
 async function linkIndexHTML() {
     if (!window.showOpenFilePicker) {
@@ -419,16 +479,17 @@ async function linkIndexHTML() {
             types: [{ description:'HTML Files', accept:{'text/html':['.html']} }],
             suggestedName: 'index.html'
         });
-        // Verify it's actually our file
-        const file    = await handle.getFile();
+        const file = await handle.getFile();
         const content = await file.text();
         if (!content.includes('const SOURCES =') || !content.includes('const RAW_DATA =')) {
             alert("That doesn't look like a Rankle index.html — no SOURCES or RAW_DATA found.");
             return;
         }
         indexFileHandle = handle;
+        await persistFileHandle(handle);
         document.getElementById('linkStatus').style.display = 'inline';
-        document.getElementById('linkBtn').style.display    = 'none';
+        document.getElementById('linkStatus').textContent = '✓ linked to index.html';
+        document.getElementById('linkBtn').style.display = 'none';
     } catch (e) {
         if (e.name !== 'AbortError') alert("Error: " + e.message);
     }
@@ -440,20 +501,27 @@ async function linkIndexHTML() {
 async function writeToIndex() {
     if (!indexFileHandle) return false;
     try {
-        const file      = await indexFileHandle.getFile();
-        const content   = await file.text();
-        const newData   = generateExportCode(); // shared function, returns the string
-        const startIdx  = content.indexOf('const SOURCES =');
+        const file = await indexFileHandle.getFile();
+        const content = await file.text();
+        const newData = generateExportCode();
+        const startIdx = content.indexOf('const SOURCES =');
         const afterStart = content.slice(startIdx);
-        const endMatch  = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];/);
+        const endMatch = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];/);
         if (startIdx === -1 || !endMatch) return false;
-        const endIdx     = startIdx + endMatch.index + endMatch[0].length;
+        const endIdx = startIdx + endMatch.index + endMatch[0].length;
         const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
-        const writable   = await indexFileHandle.createWritable();
+        if (typeof indexFileHandle.queryPermission === 'function' && (await indexFileHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+            if (typeof indexFileHandle.requestPermission === 'function' && (await indexFileHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') return false;
+        }
+        const writable = await indexFileHandle.createWritable();
         await writable.write(newContent);
         await writable.close();
         return true;
     } catch (e) {
+        indexFileHandle = null;
+        await clearPersistedHandle();
+        document.getElementById('linkStatus').style.display = 'none';
+        document.getElementById('linkBtn').style.display = 'inline-block';
         return false;
     }
 }
@@ -469,11 +537,13 @@ const TEAMS = ["ATH","ATL","ARI","BAL","BOS","CHC","CWS","CIN","CLE","COL","DET"
 // ============================================================
 // TAB SWITCHING
 // ============================================================
+const TAB_ORDER = ['enter','paste','export','status'];
 function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['enter','paste','export'][i] === name));
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', TAB_ORDER[i] === name));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-'+name).classList.add('active');
     if (name === 'export') renderExport();
+    if (name === 'status') renderStatus();
 }
 
 // ============================================================
@@ -594,6 +664,7 @@ const TEAM_MAP = {
 };
 // RotoProspects uses "SL" for St. Louis — normalize to STL
 const ROTOPROSPECTS_TEAM_ALIAS = { "SL":"STL" };
+const ROTOCHAMP_TEAM_ALIAS = { "KAN":"KC", "CWS":"CHW", "OAK":"ATH" };
 
 // ============================================================
 // SOURCE → PARSER MAP
@@ -609,7 +680,8 @@ const SOURCE_PARSER = {
     espn:         'numbered',   // placeholder
     justbaseball: 'numbered',   // placeholder
     rotoprospects:'rotoprospects',  // Tab-separated: Rank	Name	Pos	Team	B/T	Grades	Level	Age	ETA	Last
-    prospect361:  'prospect361'    // "1. Name (Pos, Team) – description"
+    prospect361:  'prospect361',   // "1. Name (Pos, Team) – description"
+    rotochamp:   'rotochamp'      // Tab: Rank	Name	Team	Pos	Age	ETA	999	999	?	999
 };
 
 // ============================================================
@@ -711,23 +783,53 @@ function parseProspect361(rawText) {
     return out;
 }
 
-// RotoProspects: tab-separated — Rank, Name, Pos, Team, B/T, Grades, Level, Age, ETA, Last
+// RotoChamp: Rank\tName\tTeam\tPos\tAge\tETA\t999\t999\t?\t999 — tab-separated, age/ETA can be empty
+function parseRotoChamp(rawText) {
+    const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out = [];
+    const POS_ALIAS = { "DH":"1B", "INF":"SS" };
+    const NAME_ALIAS = { "Leodalis De Vries":"Leo De Vries", "George Lombard Jr.":"George Lombard" };
+    for (const line of lines) {
+        const cols = line.split('\t');
+        if (cols.length < 4) continue;
+        const rankNum = parseInt(cols[0], 10);
+        if (isNaN(rankNum) || rankNum < 1) continue;
+        let name = cols[1].trim();
+        if (NAME_ALIAS[name]) name = NAME_ALIAS[name];
+        if (!name) continue;
+        let team = (cols[2] || '').trim().toUpperCase();
+        if (ROTOCHAMP_TEAM_ALIAS[team]) team = ROTOCHAMP_TEAM_ALIAS[team];
+        let pos = (cols[3] || '').trim();
+        if (pos && pos.includes('/')) pos = pos.split('/')[0].trim();
+        pos = POS_ALIAS[pos] || pos || null;
+        const ageRaw = (cols[4] || '').trim();
+        const age = ageRaw && !/^999$/.test(ageRaw) ? parseInt(ageRaw, 10) : null;
+        const etaRaw = (cols[5] || '').trim();
+        const eta = etaRaw && /20\d{2}/.test(etaRaw) ? etaRaw.replace(/\D/g, '').slice(0, 4) : null;
+        out.push({ rank: rankNum, name, pos, team: team || null, age: (age >= 16 && age <= 50) ? age : null, eta });
+    }
+    return out;
+}
+
+// RotoProspects: Rank, Name, Pos, Team, B/T, Grades, Level, Age, ETA, Last
 function parseRotoProspects(rawText) {
     const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
     const out = [];
     for (const line of lines) {
-        const cols = line.split('\t');
+        let cols = line.split('\t');
+        if (cols.length < 8) cols = line.split(/\s{2,}/);
         if (cols.length < 4) continue;
         const rankNum = parseInt(cols[0], 10);
         if (isNaN(rankNum) || rankNum < 1) continue;
         const name = cols[1].trim();
         if (!name) continue;
         let pos = (cols[2] || '').trim();
-        if (pos && pos.includes('/')) pos = pos.split('/')[0].trim(); // "2B/SS" -> "2B"
+        if (pos && pos.includes('/')) pos = pos.split('/')[0].trim();
         let team = (cols[3] || '').trim().toUpperCase();
         if (ROTOPROSPECTS_TEAM_ALIAS[team]) team = ROTOPROSPECTS_TEAM_ALIAS[team];
         const age = cols.length > 7 ? parseInt(cols[7], 10) : null;
-        const eta = cols.length > 8 ? cols[8].trim() : null;
+        const etaRaw = cols.length > 8 ? (cols[8] || '').trim() : null;
+        const eta = etaRaw && /20\d{2}/.test(etaRaw) ? etaRaw.replace(/\D/g, '').slice(0, 4) : null;
         out.push({ rank: rankNum, name, pos: pos || null, team: team || null, age, eta });
     }
     return out;
@@ -761,6 +863,7 @@ function runParser() {
     if (fmt === 'pipeline')      return parsePipeline(text);
     if (fmt === 'rotoprospects') return parseRotoProspects(text);
     if (fmt === 'prospect361')   return parseProspect361(text);
+    if (fmt === 'rotochamp')     return parseRotoChamp(text);
     if (fmt === 'numbered')      return parseNumbered(text);
     return parseNamesOnly(text);
 }
@@ -819,6 +922,173 @@ function previewParse() {
 }
 
 // ============================================================
+// FETCH AGES FROM MLB API — automated lookup
+// ============================================================
+let _draftAgesCache = null;
+async function getDraftAgesMap() {
+    if (_draftAgesCache) return _draftAgesCache;
+    const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const map = {};
+    for (const year of [2024, 2023]) {
+        try {
+            let r;
+            try { r = await fetch(`https://statsapi.mlb.com/api/v1/draft/${year}`); } catch (e) { r = await fetch(proxy(`https://statsapi.mlb.com/api/v1/draft/${year}`)); }
+            const data = await r.json();
+            const picks = data.drafts?.rounds || [];
+            picks.forEach(round => {
+                (round.picks || []).forEach(pick => {
+                    const person = pick.person;
+                    if (person?.fullName && person?.id && person.currentAge >= 16 && person.currentAge <= 50) {
+                        map[person.fullName] = { age: person.currentAge, id: person.id };
+                    }
+                });
+            });
+        } catch (e) {}
+    }
+    _draftAgesCache = map;
+    return map;
+}
+
+async function fetchAgesFromMLB() { await doFetchAges(null); }
+async function fetchRemainingAges() { await doFetchAges(19); }
+async function assignIds() {
+    const needId = prospects.map((p,i) => [i,p]).filter(([i,p]) => !p.mlbId);
+    if (needId.length === 0) {
+        document.getElementById('ageResult').innerHTML = '<span style="color:var(--green);">✓ All prospects already have MLB IDs</span>';
+        return;
+    }
+    await doFetchAges(null, needId);
+}
+
+async function doFetchAges(onlyIfAge) {
+    const btn = document.getElementById('fetchAgesBtn');
+    const remBtn = document.getElementById('fetchRemainingBtn');
+    const resultEl = document.getElementById('ageResult');
+    btn.disabled = true;
+    if (remBtn) remBtn.disabled = true;
+    const toFetch = onlyIfAge !== null ? prospects.map((p,i) => [i,p]).filter(([i,p]) => p.age === onlyIfAge) : prospects.map((p,i) => [i,p]);
+    resultEl.innerHTML = `<span style="color:var(--text-mid);">Fetching… 0/${toFetch.length}</span>`;
+    const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const personUrl = (id) => `https://statsapi.mlb.com/api/v1/people/${id}`;
+    const search = (name) => `https://statsapi.mlb.com/api/v1/people/search?names=${encodeURIComponent(name)}`;
+    const tryNames = (name) => {
+        const n = name.trim();
+        const out = [n];
+        if (n.endsWith(' Jr.')) out.push(n.replace(/ Jr\.?$/i, ''));
+        if (n.endsWith(' Jr')) out.push(n.replace(/ Jr$/i, ''));
+        if (n.includes(',')) out.push(n.split(',')[0].trim() + ' ' + (n.split(',')[1] || '').trim());
+        const parts = n.split(/\s+/);
+        if (parts.length >= 2) out.push(parts[parts.length-1] + ' ' + parts.slice(0,-1).join(' '));
+        return [...new Set(out)];
+    };
+    let updated = 0, failed = 0, idsAssigned = 0;
+    for (let j = 0; j < toFetch.length; j++) {
+        const [i, p] = toFetch[j];
+        resultEl.innerHTML = `<span style="color:var(--text-mid);">Fetching… ${j + 1}/${toFetch.length}</span>`;
+        let found = false;
+        if (p.mlbId) {
+            try {
+                let r;
+                try { r = await fetch(personUrl(p.mlbId)); } catch (e) { r = await fetch(proxy(personUrl(p.mlbId))); }
+                const data = await r.json();
+                const person = data.people?.[0];
+                if (person && person.currentAge >= 16 && person.currentAge <= 50) {
+                    prospects[i].age = person.currentAge;
+                    updated++;
+                    found = true;
+                }
+            } catch (e) {}
+            await new Promise(r => setTimeout(r, 60));
+        }
+        if (!found) {
+            for (const qName of tryNames(p.name)) {
+                try {
+                    let r;
+                    try { r = await fetch(search(qName)); } catch (e) { r = await fetch(proxy(search(qName))); }
+                    const data = await r.json();
+                    const person = data.people?.[0];
+                    if (person && person.currentAge >= 16 && person.currentAge <= 50) {
+                        prospects[i].age = person.currentAge;
+                        prospects[i].mlbId = person.id;
+                        updated++;
+                        idsAssigned++;
+                        found = true;
+                        break;
+                    }
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, 80));
+            }
+        }
+        if (!found) {
+            try {
+                const draftMap = await getDraftAgesMap();
+                const entry = draftMap[p.name] || draftMap[p.name.replace(/\s+Jr\.?$/i,'')];
+                if (entry && entry.age) {
+                    prospects[i].age = entry.age;
+                    if (entry.id) { prospects[i].mlbId = entry.id; idsAssigned++; }
+                    updated++;
+                    found = true;
+                }
+            } catch (e) {}
+        }
+        if (!found) failed++;
+        await new Promise(r => setTimeout(r, 120));
+    }
+    saveToStorage();
+    renderProspects();
+    renderExport();
+    if (indexFileHandle) await writeToIndex().then(ok => { if (ok) saveToStorage(); });
+    const stillMissing = prospects.filter(p => p.age === 19);
+    const withId = prospects.filter(p => p.mlbId).length;
+    let msg = `<span style="color:var(--green);">✓ Updated ${updated} ages</span>`;
+    if (idsAssigned) msg += ` · <span style="color:var(--accent-hi);">${idsAssigned} IDs assigned</span>`;
+    msg += ` <span style="color:var(--text-lo); font-size:.8rem;">(${withId} with mlbId)</span>`;
+    if (failed) msg += ` <span style="color:var(--gold);">(${failed} not found)</span>`;
+    if (stillMissing.length > 0) {
+        msg += `<br><span style="color:var(--text-lo); font-size:.72rem;">${stillMissing.length} still at 19 — names listed in box above. Add ages (tab or comma after each name) and click Update Ages.</span>`;
+        document.getElementById('agePasteInput').value = stillMissing.map(p => p.name + '\t').join('\n');
+    }
+    resultEl.innerHTML = msg;
+    btn.disabled = false;
+    if (remBtn) remBtn.disabled = false;
+    if (assignBtn) assignBtn.disabled = false;
+}
+
+// ============================================================
+// BULK UPDATE AGES & ETA — paste "Name	Age" or "Name	Age	ETA" per line
+// ============================================================
+function bulkUpdateAges() {
+    const text = (document.getElementById('agePasteInput')?.value || '').trim();
+    const lines = text.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    let agesUpdated = 0, etasUpdated = 0;
+    lines.forEach(line => {
+        const parts = line.split(/\t|,\s*/).map(p => p.trim());
+        if (parts.length < 2) return;
+        const name = parts[0];
+        const age = parseInt(parts[1], 10);
+        const eta = parts.length >= 3 ? parts[2].replace(/[^0-9]/g, '').slice(0, 4) : null;
+        const idx = fuzzyMatch(name, prospects);
+        if (idx === null) return;
+        if (!isNaN(age) && age >= 16 && age <= 50) { prospects[idx].age = age; agesUpdated++; }
+        if (eta && eta.length === 4 && parseInt(eta) >= 2024 && parseInt(eta) <= 2030) {
+            const current = prospects[idx].eta || '';
+            const currentYear = parseInt(String(current).replace(/\D/g, '').slice(0, 4), 10);
+            const newYear = parseInt(eta, 10);
+            if (isNaN(currentYear) || newYear <= currentYear) {
+                prospects[idx].eta = eta;
+                etasUpdated++;
+            }
+        }
+    });
+    saveToStorage();
+    renderProspects();
+    renderExport();
+    if (indexFileHandle) writeToIndex().then(ok => { if (ok) saveToStorage(); });
+    const msg = [agesUpdated && `✓ ${agesUpdated} ages`, etasUpdated && `✓ ${etasUpdated} ETAs`].filter(Boolean).join(' · ') || 'No updates';
+    document.getElementById('ageResult').innerHTML = `<span style="color:var(--green);">${msg}</span>`;
+}
+
+// ============================================================
 // IMPORT — run parser, match/add, update state
 // ============================================================
 function importPasted() {
@@ -837,15 +1107,22 @@ function importPasted() {
     parsed.forEach(p => {
         const idx = fuzzyMatch(p.name, prospects);
         if (idx !== null) {
-            // Existing prospect — update rank
             prospects[idx].ranks[source] = p.rank;
             matched++;
-            // Also update team/pos if parser found them and they look valid
             if (p.team)  prospects[idx].team = p.team;
             if (p.pos)   prospects[idx].pos  = p.pos;
+            if (p.age != null && !isNaN(p.age) && p.age >= 16 && p.age <= 50) prospects[idx].age = p.age;
+            if (p.eta) {
+                const newYear = parseInt(String(p.eta).replace(/\D/g, '').slice(0, 4), 10);
+                const curYear = parseInt(String(prospects[idx].eta || '').replace(/\D/g, '').slice(0, 4), 10);
+                if (!isNaN(newYear) && newYear >= 2024 && newYear <= 2030 && (isNaN(curYear) || newYear <= curYear)) {
+                    prospects[idx].eta = String(newYear);
+                }
+            }
         } else {
-            // New prospect
-            const blank = { name: p.name, pos: p.pos || "SS", team: p.team || "ATH", age: 19, eta: "2027", ranks: {} };
+            const ageVal = (p.age != null && !isNaN(p.age) && p.age >= 16 && p.age <= 50) ? p.age : 19;
+            const etaVal = (p.eta && /20\d{2}/.test(String(p.eta))) ? String(p.eta).replace(/\D/g, '').slice(0, 4) : "2027";
+            const blank = { name: p.name, pos: p.pos || "SS", team: p.team || "ATH", age: ageVal, eta: etaVal, ranks: {} };
             Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
             blank.ranks[source] = p.rank;
             prospects.push(blank);
@@ -853,9 +1130,11 @@ function importPasted() {
         }
     });
 
+    lastUpdated[source] = new Date().toISOString();
     document.getElementById('previewWrap').style.display = 'none';
     renderProspects();
     renderExport();
+    if (document.getElementById('panel-status').classList.contains('active')) renderStatus();
 
     // Auto-save to index.html if linked
     if (indexFileHandle) {
@@ -902,7 +1181,8 @@ function generateExportCode() {
             return `${s}:${v !== null ? v : 'null'}`;
         });
         const namePad = ' '.repeat(Math.max(1, 22 - p.name.length));
-        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${p.age}, eta:"${p.eta}", ranks:{ ${rankParts.join(', ')} } }${comma}`);
+        const mlbPart = p.mlbId ? ` mlbId:${p.mlbId},` : '';
+        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${p.age}, eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
     });
     lines.push('];');
 
@@ -953,15 +1233,18 @@ function downloadExport() {
 // ============================================================
 async function saveToIndexHTML() {
     const statusEl = document.getElementById('saveResult');
-
-    // Check browser support
     if (!window.showOpenFilePicker) {
-        statusEl.innerHTML = '<span style="color:var(--red);">Your browser doesn\'t support direct file saving. Use Copy to Clipboard instead. (Chrome/Edge work — Firefox/Safari don\'t yet.)</span>';
+        statusEl.innerHTML = '<span style="color:var(--red);">Your browser doesn\'t support direct file saving. Use Copy to Clipboard instead.</span>';
         return;
     }
-
+    if (indexFileHandle) {
+        const ok = await writeToIndex();
+        if (ok) { saveToStorage(); statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>'; }
+        else { statusEl.innerHTML = '<span style="color:var(--red);">Save failed. Try linking again (header).</span>'; }
+        setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
+        return;
+    }
     try {
-        // 1. Open file picker, pre-set to .html files
         const [fileHandle] = await window.showOpenFilePicker({
             types: [{ description: 'HTML Files', accept: { 'text/html': ['.html'] } }],
             suggestedName: 'index.html'
@@ -999,13 +1282,10 @@ async function saveToIndexHTML() {
         await writable.write(newContent);
         await writable.close();
 
-        statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>';
-
-        // Auto-clear after 4s
+        statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! Link index.html in the header for one-click save next time.</span>';
         setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
-
     } catch (err) {
-        if (err.name === 'AbortError') return; // user cancelled picker
+        if (err.name === 'AbortError') return;
         statusEl.innerHTML = '<span style="color:var(--red);">Error: ' + err.message + '</span>';
     }
 }
@@ -1031,9 +1311,15 @@ function showToast(msg, icon) {
 // ============================================================
 const STORAGE_KEY = 'rankle-admin-data';
 
+// lastUpdated: { pipeline: "2026-02-03T14:30:00Z", ... }
+let lastUpdated = {};
+let lastPasteSource = null;
+
 function saveToStorage() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ SOURCES, prospects }));
+        const sel = document.getElementById('pasteSourceSelect');
+        const src = sel ? sel.value : lastPasteSource;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ SOURCES, prospects, lastUpdated, lastPasteSource: src }));
     } catch(e) { /* silent */ }
 }
 
@@ -1042,15 +1328,15 @@ function loadFromStorage() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return false;
         const data = JSON.parse(raw);
+        if (data.lastUpdated) lastUpdated = data.lastUpdated;
+        if (data.lastPasteSource) lastPasteSource = data.lastPasteSource;
         if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
             prospects = data.prospects;
-            // Backfill any new source keys (e.g. rotoprospects) so existing prospects have null for them
             prospects.forEach(p => {
                 Object.keys(SOURCES).forEach(s => {
                     if (!(s in p.ranks)) p.ranks[s] = null;
                 });
             });
-            // Restore list lengths from saved SOURCES
             if (data.SOURCES) {
                 Object.keys(data.SOURCES).forEach(k => {
                     if (SOURCES[k] && data.SOURCES[k].listLength) {
@@ -1065,15 +1351,52 @@ function loadFromStorage() {
 }
 
 // ============================================================
+// RENDER STATUS TAB — last updated timestamps per source
+// ============================================================
+function renderStatus() {
+    const el = document.getElementById('statusList');
+    const now = new Date();
+    const formatTs = (ts) => {
+        if (!ts) return { text: 'Never', stale: true };
+        const d = new Date(ts);
+        const days = (now - d) / (24*60*60*1000);
+        let text = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (days >= 14) text += ' (2+ weeks ago)';
+        else if (days >= 7) text += ' (1+ week ago)';
+        return { text, stale: days > 7 };
+    };
+    el.innerHTML = Object.entries(SOURCES).map(([key, src]) => {
+        const { text, stale } = formatTs(lastUpdated[key]);
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:.6rem .8rem; background:var(--bg-input); border:1px solid var(--border); border-radius:8px;';
+        row.innerHTML = `
+            <span style="font-weight:600;">${src.label}</span>
+            <span style="font-size:.85rem; color:${stale ? 'var(--gold)' : 'var(--text-mid)'};">${text}</span>
+        `;
+        return row.outerHTML;
+    }).join('');
+}
+
+// ============================================================
 // INIT
 // ============================================================
-// Load persisted data if available
 const loaded = loadFromStorage();
 renderProspects();
 renderExport();
-if (loaded) {
-    showToast('Loaded ' + prospects.length + ' prospects from last session', '📂');
+
+// Restore linked file handle from IndexedDB (skip re-linking)
+restoreFileHandle().then(() => {
+    const btn = document.getElementById('importBtn');
+    if (btn) btn.textContent = indexFileHandle ? 'Import & Save' : 'Import Rankings';
+});
+
+// Restore last paste source
+if (lastPasteSource && document.getElementById('pasteSourceSelect')) {
+    document.getElementById('pasteSourceSelect').value = lastPasteSource;
+    document.getElementById('pasteListLength').value = SOURCES[lastPasteSource]?.listLength || 100;
 }
+
+if (loaded) showToast('Loaded ' + prospects.length + ' prospects from last session', '📂');
 </script>
 
 <!-- TOAST -->
