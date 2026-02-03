@@ -415,7 +415,16 @@ function computeProspect(meta, sourceRankings) {
         volatility = sd < 0.3 ? "Low" : sd < 0.7 ? "Moderate" : "High";
     }
 
-    return { ...meta, sourceCount: n, rankleScore: Math.round(rankleScore * 10) / 10, median, sd, volatility };
+    // Bayesian shrinkage: single-source players get pulled toward the mean (50).
+    // More sources = more evidence = trust the score fully.
+    // Formula: adjusted = (n * rawScore + k * 50) / (n + k), applied only when n === 1.
+    // k=2 means a single-source score is weighted 1:2 against the prior mean.
+    const K = 2;
+    const penalizedScore = n === 1
+        ? (rankleScore + K * 50) / (1 + K)
+        : rankleScore;
+
+    return { ...meta, sourceCount: n, rankleScore: Math.round(penalizedScore * 10) / 10, median, sd, volatility };
 }
 
 // ============================================================
