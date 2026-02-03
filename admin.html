@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProspectRank – Admin Data Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-deep:    #0a0e1a;
+    --bg-card:    #111827;
+    --bg-input:   #1a2234;
+    --border:     #1e2a40;
+    --border-hi:  #2e3f5c;
+    --text-hi:    #f1f5f9;
+    --text-mid:   #94a3b8;
+    --text-lo:    #4c5a72;
+    --accent:     #3b82f6;
+    --accent-hi:  #60a5fa;
+    --green:      #34d399;
+    --green-dim:  rgba(52,211,153,.12);
+    --red:        #f87171;
+    --red-dim:    rgba(248,113,113,.12);
+    --gold:       #f59e0b;
+    --gold-dim:   rgba(245,158,11,.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg-deep); color:var(--text-hi);
+    min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+
+/* ── HEADER ── */
+header {
+    background:rgba(10,14,26,0.9); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:0 2rem; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:.6rem; }
+.logo-icon {
+    width:34px; height:34px;
+    background:linear-gradient(135deg,#7c3aed,#6366f1);
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue'; font-size:1.1rem; color:#fff;
+}
+.logo-title { font-family:'Bebas Neue'; font-size:1.4rem; letter-spacing:2px; }
+.logo-badge {
+    background:var(--gold-dim); color:var(--gold);
+    font-size:.65rem; font-weight:700; letter-spacing:1px;
+    padding:.15rem .45rem; border-radius:4px; text-transform:uppercase;
+}
+
+/* ── LAYOUT ── */
+.wrap { max-width:1000px; margin:0 auto; padding:1.8rem 1.5rem; }
+
+/* ── SECTION TITLES ── */
+.section-title {
+    font-family:'Bebas Neue'; font-size:1.2rem; letter-spacing:2px;
+    color:#fff; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem;
+}
+.section-title .ico { font-size:1.1rem; }
+
+/* ── CARDS ── */
+.card {
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;
+}
+
+/* ── SOURCE SELECTOR ── */
+.source-row {
+    display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:1rem;
+}
+.field { display:flex; flex-direction:column; gap:.25rem; }
+.field label { font-size:.68rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-lo); }
+.field select, .field input {
+    background:var(--bg-input); border:1px solid var(--border);
+    border-radius:6px; padding:.45rem .6rem;
+    color:var(--text-hi); font-size:.85rem; font-family:inherit;
+    outline:none; transition:border-color .2s;
+    min-width:140px;
+}
+.field select:focus, .field input:focus { border-color:var(--accent); }
+.field input::placeholder { color:var(--text-lo); }
+.field input[type="number"] { width:80px; min-width:80px; text-align:center; }
+
+/* ── BUTTONS ── */
+.btn {
+    border:none; border-radius:6px; padding:.45rem 1rem;
+    font-size:.82rem; font-weight:600; font-family:inherit;
+    cursor:pointer; transition:transform .12s, box-shadow .15s;
+    display:inline-flex; align-items:center; gap:.35rem;
+}
+.btn:hover { transform:translateY(-1px); }
+.btn-primary   { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; box-shadow:0 2px 10px rgba(37,99,235,.35); }
+.btn-primary:hover { box-shadow:0 4px 16px rgba(37,99,235,.45); }
+.btn-success   { background:linear-gradient(135deg,#059669,#047857); color:#fff; box-shadow:0 2px 10px rgba(5,150,105,.35); }
+.btn-success:hover { box-shadow:0 4px 16px rgba(5,150,105,.45); }
+.btn-ghost     { background:transparent; color:var(--text-mid); border:1px solid var(--border); }
+.btn-ghost:hover { border-color:var(--border-hi); color:var(--text-hi); }
+.btn-danger    { background:transparent; color:var(--red); border:1px solid rgba(248,113,113,.25); }
+.btn-danger:hover { background:var(--red-dim); }
+.btn-sm { padding:.28rem .6rem; font-size:.75rem; }
+
+/* ── PROSPECT LIST ── */
+.prospect-list { display:flex; flex-direction:column; gap:.5rem; }
+.prospect-item {
+    background:var(--bg-input); border:1px solid var(--border);
+    border-radius:8px; padding:.7rem 1rem;
+    display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+    transition:border-color .2s;
+}
+.prospect-item:hover { border-color:var(--border-hi); }
+
+.p-name-input {
+    flex:1; min-width:160px;
+    background:transparent; border:none; border-bottom:1px solid var(--border);
+    color:var(--text-hi); font-size:.88rem; font-weight:600;
+    padding:.2rem 0; outline:none; font-family:inherit;
+    transition:border-color .2s;
+}
+.p-name-input:focus { border-color:var(--accent); }
+.p-name-input::placeholder { color:var(--text-lo); font-weight:400; }
+
+.p-meta { display:flex; gap:.5rem; }
+.p-meta select {
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:5px; padding:.22rem .45rem;
+    color:var(--text-mid); font-size:.78rem; font-family:inherit; outline:none;
+}
+.p-meta select:focus { border-color:var(--accent); }
+
+.p-rank-input {
+    width:50px; text-align:center;
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:5px; padding:.22rem .3rem;
+    color:var(--accent-hi); font-size:.85rem; font-weight:700;
+    font-family:inherit; outline:none;
+    transition:border-color .2s;
+}
+.p-rank-input:focus { border-color:var(--accent); }
+.p-rank-input::placeholder { color:var(--text-lo); font-weight:400; }
+
+.rank-label { font-size:.65rem; color:var(--text-lo); text-transform:uppercase; letter-spacing:.8px; text-align:center; margin-bottom:.1rem; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+    text-align:center; padding:2.5rem 1rem;
+    color:var(--text-lo); font-size:.85rem;
+}
+.empty-state .ico { font-size:2rem; display:block; margin-bottom:.4rem; }
+
+/* ── PASTE ZONE ── */
+.paste-zone {
+    border:2px dashed var(--border); border-radius:10px;
+    padding:1.2rem; margin-bottom:1rem;
+    transition:border-color .2s, background .2s;
+}
+.paste-zone:focus-within { border-color:var(--accent); background:rgba(59,130,246,.04); }
+.paste-zone textarea {
+    width:100%; background:transparent; border:none; outline:none; resize:none;
+    color:var(--text-mid); font-size:.82rem; font-family:'DM Sans',monospace;
+    line-height:1.7; min-height:100px;
+}
+.paste-zone textarea::placeholder { color:var(--text-lo); }
+.paste-hint { font-size:.7rem; color:var(--text-lo); margin-top:.4rem; }
+
+/* ── OUTPUT BOX ── */
+.output-wrap { position:relative; }
+.output-box {
+    background:#0d1117; border:1px solid var(--border);
+    border-radius:8px; padding:1rem 1.2rem;
+    font-family:'SF Mono','Consolas',monospace;
+    font-size:.75rem; color:#7dd3fc; line-height:1.7;
+    white-space:pre; overflow-x:auto; max-height:320px; overflow-y:auto;
+}
+.copy-btn {
+    position:absolute; top:.6rem; right:.6rem;
+    background:rgba(17,24,39,.85); border:1px solid var(--border);
+    color:var(--text-mid); border-radius:5px;
+    padding:.25rem .55rem; font-size:.72rem; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:background .15s;
+}
+.copy-btn:hover { background:rgba(30,42,64,.9); color:var(--text-hi); }
+.copy-btn.copied { color:var(--green); border-color:rgba(52,211,153,.3); }
+
+/* ── TABS ── */
+.tabs { display:flex; gap:.25rem; margin-bottom:1.2rem; }
+.tab {
+    background:transparent; border:1px solid var(--border);
+    border-radius:6px; padding:.4rem .85rem;
+    color:var(--text-lo); font-size:.8rem; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:all .15s;
+}
+.tab:hover { border-color:var(--border-hi); color:var(--text-mid); }
+.tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* ── TAB PANELS ── */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ── STATUS ── */
+.status-bar {
+    display:flex; gap:1.2rem; flex-wrap:wrap;
+    padding:.8rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;
+}
+.status-item { display:flex; align-items:center; gap:.35rem; font-size:.78rem; }
+.status-dot { width:7px; height:7px; border-radius:50%; }
+.status-dot.green { background:var(--green); box-shadow:0 0 5px rgba(52,211,153,.4); }
+.status-dot.gold  { background:var(--gold);  box-shadow:0 0 5px rgba(245,158,11,.4); }
+.status-dot.grey  { background:var(--text-lo); }
+.status-label { color:var(--text-mid); }
+
+/* ── DIVIDER ── */
+.divider { border:none; border-top:1px solid var(--border); margin:1.2rem 0; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+    .wrap { padding:1.2rem 1rem; }
+    .prospect-item { gap:.5rem; }
+    .p-name-input { min-width:120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="logo">
+        <div class="logo-icon">PR</div>
+        <span class="logo-title">ProspectRank</span>
+        <span class="logo-badge">Admin</span>
+    </div>
+</header>
+
+<div class="wrap">
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('enter')">📝 Enter Rankings</button>
+        <button class="tab" onclick="switchTab('paste')">📋 Paste Rankings</button>
+        <button class="tab" onclick="switchTab('export')">💾 Export Code</button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- TAB: ENTER RANKINGS                                      -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-enter">
+
+        <div class="card">
+            <div class="section-title"><span class="ico">🎯</span> Source & List Length</div>
+            <div class="source-row">
+                <div class="field">
+                    <label>Source</label>
+                    <select id="sourceSelect" onchange="renderProspects()">
+                        <option value="pipeline">MLB Pipeline</option>
+                        <option value="ba">Baseball America</option>
+                        <option value="fangraphs">FanGraphs</option>
+                        <option value="br">Bleacher Report</option>
+                        <option value="espn">ESPN</option>
+                        <option value="justbaseball">Just Baseball</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>List Length</label>
+                    <input type="number" id="listLengthInput" value="100" min="10" max="1000" onchange="updateListLength()">
+                </div>
+            </div>
+
+            <!-- Status bar: how many prospects have a rank for this source -->
+            <div class="status-bar" id="statusBar"></div>
+
+            <!-- Prospect rows -->
+            <div class="prospect-list" id="prospectList"></div>
+
+            <!-- Add new prospect -->
+            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+                <button class="btn btn-ghost btn-sm" onclick="addProspect()">+ Add Prospect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- TAB: PASTE RANKINGS                                      -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-paste">
+        <div class="card">
+            <div class="section-title"><span class="ico">📋</span> Paste a Ranking List</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
+                Copy a ranked list from a source and paste it below. One name per line, in order from #1 down. The tool will match names to existing prospects and fill in their ranks automatically.
+            </p>
+
+            <div class="source-row" style="margin-bottom:.75rem;">
+                <div class="field">
+                    <label>Source</label>
+                    <select id="pasteSourceSelect">
+                        <option value="pipeline">MLB Pipeline</option>
+                        <option value="ba">Baseball America</option>
+                        <option value="fangraphs">FanGraphs</option>
+                        <option value="br">Bleacher Report</option>
+                        <option value="espn">ESPN</option>
+                        <option value="justbaseball">Just Baseball</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>List Length</label>
+                    <input type="number" id="pasteListLength" value="100" min="10" max="1000">
+                </div>
+            </div>
+
+            <div class="paste-zone">
+                <textarea id="pasteInput" placeholder="Paste names here, one per line, in ranked order from #1 down…"></textarea>
+            </div>
+            <div class="paste-hint">Names are fuzzy-matched — minor spelling differences will still match.</div>
+
+            <div style="margin-top:1rem; display:flex; gap:.6rem; align-items:center;">
+                <button class="btn btn-primary btn-sm" onclick="importPasted()">Import Rankings</button>
+                <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- TAB: EXPORT                                              -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-export">
+        <div class="card">
+            <div class="section-title"><span class="ico">💾</span> Export Code</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
+                Copy the block below and paste it directly into <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">index.html</code> — replace everything from <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">const SOURCES</code> through the end of <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">RAW_DATA</code>.
+            </p>
+
+            <div style="display:flex; gap:.6rem; margin-bottom:1rem;">
+                <button class="btn btn-success btn-sm" onclick="copyExport()">📋 Copy to Clipboard</button>
+                <button class="btn btn-ghost btn-sm" onclick="downloadExport()">⬇ Download as .js</button>
+            </div>
+
+            <div class="output-wrap">
+                <div class="output-box" id="exportBox"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ============================================================
+// STATE — mirrors the structure in index.html exactly
+// ============================================================
+const SOURCES = {
+    pipeline:     { label:"MLB Pipeline",     listLength:100 },
+    ba:           { label:"Baseball America", listLength:100 },
+    fangraphs:    { label:"FanGraphs",        listLength:100 },
+    br:           { label:"Bleacher Report",  listLength:100 },
+    espn:         { label:"ESPN",             listLength:100 },
+    justbaseball: { label:"Just Baseball",    listLength:100 }
+};
+
+// Each prospect: { name, pos, team, age, eta, ranks: { source: rank|null } }
+let prospects = [
+    { name:"Kevin McGonigle",    pos:"SS",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:7,  ba:3,  fangraphs:5,  br:1,  espn:4,  justbaseball:6  } },
+    { name:"Konnor Griffin",     pos:"SS",  team:"PIT", age:18, eta:"2028", ranks:{ pipeline:13, ba:1,  fangraphs:8,  br:2,  espn:null, justbaseball:1 } },
+    { name:"Jesús Made",         pos:"SS",  team:"MIL", age:18, eta:"2027", ranks:{ pipeline:8,  ba:5,  fangraphs:6,  br:3,  espn:7,  justbaseball:2  } },
+    { name:"Bubba Chandler",     pos:"RHP", team:"PIT", age:22, eta:"2026", ranks:{ pipeline:15, ba:4,  fangraphs:9,  br:4,  espn:5,  justbaseball:4  } },
+    { name:"Walker Jenkins",     pos:"OF",  team:"MIN", age:19, eta:"2027", ranks:{ pipeline:3,  ba:8,  fangraphs:7,  br:21, espn:6,  justbaseball:5  } },
+    { name:"Leo De Vries",       pos:"SS",  team:"ATH", age:20, eta:"2026", ranks:{ pipeline:18, ba:2,  fangraphs:4,  br:6,  espn:3,  justbaseball:null} },
+    { name:"Max Clark",          pos:"OF",  team:"DET", age:20, eta:"2027", ranks:{ pipeline:6,  ba:9,  fangraphs:null,br:17, espn:8,  justbaseball:3  } },
+    { name:"JJ Wetherholt",      pos:"SS",  team:"STL", age:21, eta:"2026", ranks:{ pipeline:23, ba:6,  fangraphs:10, br:7,  espn:9,  justbaseball:7  } },
+    { name:"Samuel Basallo",     pos:"C",   team:"BAL", age:20, eta:"2026", ranks:{ pipeline:11, ba:7,  fangraphs:12, br:8,  espn:11, justbaseball:null} },
+    { name:"Andrew Painter",     pos:"RHP", team:"PHI", age:22, eta:"2026", ranks:{ pipeline:8,  ba:10, fangraphs:11, br:14, espn:10, justbaseball:null} },
+    { name:"Nolan McLean",       pos:"RHP", team:"NYM", age:23, eta:"2025", ranks:{ pipeline:null,ba:11, fangraphs:14, br:9,  espn:12, justbaseball:8  } },
+    { name:"Sebastian Walcott",  pos:"SS",  team:"TEX", age:19, eta:"2027", ranks:{ pipeline:4,  ba:null,fangraphs:null,br:5, espn:null, justbaseball:null} },
+    { name:"Trey Yesavage",      pos:"RHP", team:"TOR", age:23, eta:"2025", ranks:{ pipeline:null,ba:null,fangraphs:15,br:10, espn:14, justbaseball:9  } },
+    { name:"Bryce Eldridge",     pos:"1B",  team:"SF",  age:20, eta:"2027", ranks:{ pipeline:24, ba:12, fangraphs:null,br:11, espn:15, justbaseball:null} },
+    { name:"Colt Emerson",       pos:"SS",  team:"SEA", age:20, eta:"2027", ranks:{ pipeline:20, ba:14, fangraphs:16, br:12, espn:null, justbaseball:null} },
+    { name:"Thomas White",       pos:"LHP", team:"MIA", age:21, eta:"2026", ranks:{ pipeline:41, ba:13, fangraphs:null,br:13, espn:16, justbaseball:null} },
+    { name:"Josue De Paula",     pos:"OF",  team:"LAD", age:19, eta:"2028", ranks:{ pipeline:40, ba:15, fangraphs:18, br:15, espn:null, justbaseball:null} },
+    { name:"Ethan Holliday",     pos:"SS",  team:"COL", age:18, eta:"2028", ranks:{ pipeline:null,ba:16, fangraphs:null,br:16, espn:null, justbaseball:null} },
+    { name:"Travis Bazzana",     pos:"2B",  team:"CLE", age:22, eta:"2026", ranks:{ pipeline:10, ba:18, fangraphs:19, br:25, espn:13, justbaseball:null} },
+    { name:"Eli Willits",        pos:"SS",  team:"WAS", age:18, eta:"2028", ranks:{ pipeline:null,ba:20, fangraphs:null,br:24, espn:null, justbaseball:null} },
+    { name:"Luis Peña",          pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null,ba:17, fangraphs:null,br:19, espn:null, justbaseball:null} },
+    { name:"Kade Anderson",      pos:"LHP", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:null,ba:19, fangraphs:null,br:20, espn:null, justbaseball:null} },
+    { name:"Noah Schultz",       pos:"LHP", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:null,ba:22, fangraphs:20, br:28, espn:null, justbaseball:null} },
+    { name:"Carson Benge",       pos:"OF",  team:"NYM", age:21, eta:"2026", ranks:{ pipeline:null,ba:21, fangraphs:null,br:29, espn:18, justbaseball:null} },
+    { name:"Moises Ballesteros", pos:"C",   team:"CHC", age:21, eta:"2026", ranks:{ pipeline:null,ba:23, fangraphs:null,br:30, espn:19, justbaseball:null} },
+];
+
+const POSITIONS = ["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP"];
+const TEAMS = ["ATH","ATL","ARI","BAL","BOS","CHC","CWS","CIN","CLE","COL","DET","HOU","KC","LAD","LAA","MIA","MIL","MIN","NYM","NYY","OAK","PHI","PIT","SD","SEA","SF","STL","TB","TEX","TOR","WAS"];
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['enter','paste','export'][i] === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+    if (name === 'export') renderExport();
+}
+
+// ============================================================
+// ENTER TAB — RENDER PROSPECT LIST
+// ============================================================
+function renderProspects() {
+    const source = document.getElementById('sourceSelect').value;
+    const list   = document.getElementById('prospectList');
+    list.innerHTML = '';
+
+    // Status bar
+    const ranked   = prospects.filter(p => p.ranks[source] !== null).length;
+    const total    = prospects.length;
+    document.getElementById('statusBar').innerHTML = `
+        <div class="status-item"><div class="status-dot green"></div><span class="status-label">${ranked} ranked</span></div>
+        <div class="status-item"><div class="status-dot gold"></div><span class="status-label">${total - ranked} unranked</span></div>
+        <div class="status-item"><div class="status-dot grey"></div><span class="status-label">${total} total prospects</span></div>
+        <div class="status-item" style="margin-left:auto;"><span class="status-label" style="color:var(--text-lo); font-size:.72rem;">List length: ${SOURCES[source].listLength}</span></div>
+    `;
+
+    // Sort: ranked first (by rank asc), then unranked
+    const sorted = [...prospects].sort((a,b) => {
+        const ar = a.ranks[source], br2 = b.ranks[source];
+        if (ar !== null && br2 !== null) return ar - br2;
+        if (ar !== null) return -1;
+        if (br2 !== null) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    sorted.forEach((p, i) => {
+        const idx = prospects.indexOf(p);
+        const rank = p.ranks[source];
+
+        // Position options
+        const posOpts = POSITIONS.map(v => `<option value="${v}" ${p.pos===v?'selected':''}>${v}</option>`).join('');
+        // Team options
+        const teamOpts = TEAMS.map(v => `<option value="${v}" ${p.team===v?'selected':''}>${v}</option>`).join('');
+
+        list.innerHTML += `
+            <div class="prospect-item" data-idx="${idx}">
+                <input class="p-name-input" value="${p.name}" placeholder="Player name…"
+                    onchange="updateName(${idx}, this.value)">
+                <div class="p-meta">
+                    <select onchange="updateMeta(${idx},'pos',this.value)">${posOpts}</select>
+                    <select onchange="updateMeta(${idx},'team',this.value)">${teamOpts}</select>
+                    <input type="number" placeholder="Age" value="${p.age}" style="width:50px; min-width:50px;"
+                        onchange="updateMeta(${idx},'age',parseInt(this.value))">
+                    <input type="text" placeholder="ETA" value="${p.eta}" style="width:50px; min-width:50px;"
+                        onchange="updateMeta(${idx},'eta',this.value)">
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <div class="rank-label">${SOURCES[source].label.split(' ')[0]}</div>
+                    <input type="number" class="p-rank-input" placeholder="#"
+                        value="${rank !== null ? rank : ''}"
+                        onchange="updateRank(${idx}, '${source}', this.value)">
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="removeProspect(${idx})">✕</button>
+            </div>
+        `;
+    });
+}
+
+function updateListLength() {
+    const source = document.getElementById('sourceSelect').value;
+    SOURCES[source].listLength = parseInt(document.getElementById('listLengthInput').value) || 100;
+    renderProspects();
+}
+
+function updateName(idx, val) {
+    prospects[idx].name = val.trim();
+}
+function updateMeta(idx, key, val) {
+    prospects[idx][key] = val;
+}
+function updateRank(idx, source, val) {
+    prospects[idx].ranks[source] = val === '' ? null : parseInt(val);
+    renderExport(); // keep export live
+}
+function addProspect() {
+    const blank = { name:"", pos:"SS", team:"ATH", age:18, eta:"2027", ranks:{} };
+    Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
+    prospects.push(blank);
+    renderProspects();
+    // focus the new name input
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('.p-name-input');
+        if (inputs.length) inputs[inputs.length-1].focus();
+    }, 50);
+}
+function removeProspect(idx) {
+    if (confirm(`Remove ${prospects[idx].name || 'this prospect'}?`)) {
+        prospects.splice(idx, 1);
+        renderProspects();
+        renderExport();
+    }
+}
+
+// ============================================================
+// PASTE TAB — fuzzy import
+// ============================================================
+function fuzzyMatch(input, candidates) {
+    // Normalize: lowercase, strip accents, collapse whitespace
+    const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
+    const ni = norm(input);
+    if (!ni) return null;
+
+    let best = null, bestScore = 0;
+    candidates.forEach((c, i) => {
+        const nc = norm(c.name);
+        if (nc === ni)                          { best = i; bestScore = 999; return; } // exact
+        if (nc.includes(ni) || ni.includes(nc)) { if (bestScore < 90) { best = i; bestScore = 90; } return; }
+        // last-name match
+        const parts = nc.split(' ');
+        if (parts[parts.length-1] === ni.split(' ').pop() && bestScore < 70) { best = i; bestScore = 70; }
+    });
+    return bestScore >= 70 ? best : null;
+}
+
+function importPasted() {
+    const source  = document.getElementById('pasteSourceSelect').value;
+    const listLen = parseInt(document.getElementById('pasteListLength').value) || 100;
+    const lines   = document.getElementById('pasteInput').value
+        .split('\n')
+        .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()) // strip leading "1. " or "1) "
+        .filter(l => l.length > 0);
+
+    SOURCES[source].listLength = listLen;
+
+    let matched = 0, added = 0;
+    lines.forEach((line, i) => {
+        const rank = i + 1;
+        const idx  = fuzzyMatch(line, prospects);
+        if (idx !== null) {
+            prospects[idx].ranks[source] = rank;
+            matched++;
+        } else {
+            // Add as new prospect
+            const blank = { name: line, pos:"SS", team:"ATH", age:19, eta:"2027", ranks:{} };
+            Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
+            blank.ranks[source] = rank;
+            prospects.push(blank);
+            added++;
+        }
+    });
+
+    document.getElementById('pasteResult').innerHTML =
+        `<span style="color:var(--green);">✓ ${matched} matched</span>` +
+        (added ? ` · <span style="color:var(--gold);">${added} new prospects added</span>` : '') +
+        ` · <span style="color:var(--text-lo);">${lines.length} total lines</span>`;
+
+    renderProspects();
+    renderExport();
+}
+
+// ============================================================
+// EXPORT TAB — generate the code block
+// ============================================================
+function renderExport() {
+    const lines = [];
+
+    // SOURCES block
+    lines.push('const SOURCES = {');
+    Object.entries(SOURCES).forEach(([k,v], i) => {
+        const comma = i < Object.keys(SOURCES).length - 1 ? ',' : '';
+        const pad   = ' '.repeat(Math.max(1, 14 - k.length));
+        lines.push(`    ${k}:${pad}{ label: "${v.label}",${' '.repeat(Math.max(1,18-v.label.length))}listLength: ${v.listLength} }${comma}`);
+    });
+    lines.push('};');
+    lines.push('');
+
+    // RAW_DATA block
+    lines.push('const RAW_DATA = [');
+    prospects.forEach((p, i) => {
+        const comma = i < prospects.length - 1 ? ',' : '';
+        const rankParts = Object.keys(SOURCES).map(s => {
+            const v = p.ranks[s];
+            return `${s}:${v !== null ? v : 'null'}`;
+        });
+        const namePad = ' '.repeat(Math.max(1, 22 - p.name.length));
+        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${p.age}, eta:"${p.eta}", ranks:{ ${rankParts.join(', ')} } }${comma}`);
+    });
+    lines.push('];');
+
+    document.getElementById('exportBox').textContent = lines.join('\n');
+}
+
+function copyExport() {
+    const text = document.getElementById('exportBox').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        // We use the button inside export — trigger from the success btn instead
+    });
+    // Use the success button's click
+    const el = document.getElementById('exportBox');
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+
+    // Visual feedback on the success button
+    const btn = document.querySelector('.btn-success');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.style.background = 'linear-gradient(135deg,#047857,#065f46)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 1500);
+}
+
+function downloadExport() {
+    const text = document.getElementById('exportBox').textContent;
+    const blob = new Blob([text], { type:'text/javascript' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'prospectrank-data.js';
+    a.click();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderProspects();
+renderExport();
+</script>
+</body>
+</html>
