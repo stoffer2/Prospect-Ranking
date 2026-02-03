@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProspectRank – Admin Data Entry</title>
+<title>Rankle – Admin Data Entry</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -221,6 +221,19 @@ header {
     .prospect-item { gap:.5rem; }
     .p-name-input { min-width:120px; }
 }
+
+/* ── TOAST ── */
+.toast {
+    position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(120px);
+    background:#1e293b; border:1px solid var(--green); border-radius:10px;
+    padding:.85rem 1.6rem; display:flex; align-items:center; gap:.7rem;
+    color:var(--text-hi); font-size:.85rem; font-weight:600;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+    z-index:999; pointer-events:none; opacity:0;
+}
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.toast .toast-icon { font-size:1.3rem; }
 </style>
 </head>
 <body>
@@ -229,8 +242,12 @@ header {
 <header>
     <div class="logo">
         <div class="logo-icon">PR</div>
-        <span class="logo-title">ProspectRank</span>
+        <span class="logo-title">Rankle</span>
         <span class="logo-badge">Admin</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:.75rem;">
+        <span id="linkStatus" style="font-size:.75rem; color:var(--text-lo); display:none;">✓ linked to index.html</span>
+        <button id="linkBtn" class="btn btn-ghost btn-sm" onclick="linkIndexHTML()">🔗 Link index.html</button>
     </div>
 </header>
 
@@ -288,7 +305,7 @@ header {
         <div class="card">
             <div class="section-title"><span class="ico">📋</span> Paste a Ranking List</div>
             <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
-                Copy a ranked list from a source and paste it below. One name per line, in order from #1 down. The tool will match names to existing prospects and fill in their ranks automatically.
+                Copy the full text from a source's ranking page and paste it below. The parser will automatically extract names, ranks, teams, and positions — and ignore everything else.
             </p>
 
             <div class="source-row" style="margin-bottom:.75rem;">
@@ -310,13 +327,33 @@ header {
             </div>
 
             <div class="paste-zone">
-                <textarea id="pasteInput" placeholder="Paste names here, one per line, in ranked order from #1 down…"></textarea>
+                <textarea id="pasteInput" placeholder="Paste the full text from the ranking page here…"></textarea>
             </div>
-            <div class="paste-hint">Names are fuzzy-matched — minor spelling differences will still match.</div>
+            <div class="paste-hint">Junk lines (ads, headers, image captions) are filtered out automatically. Names are fuzzy-matched.</div>
 
-            <div style="margin-top:1rem; display:flex; gap:.6rem; align-items:center;">
+            <div style="margin-top:1rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" onclick="importPasted()">Import Rankings</button>
+                <button class="btn btn-ghost btn-sm" onclick="previewParse()">👁 Preview</button>
                 <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
+            </div>
+
+            <!-- Preview table -->
+            <div id="previewWrap" style="display:none; margin-top:1rem;">
+                <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); margin-bottom:.4rem;">Parsed Preview — first 15 entries</div>
+                <div style="background:var(--bg-input); border:1px solid var(--border); border-radius:7px; overflow:hidden;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border);">
+                                <th style="text-align:left; padding:.45rem .6rem; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); font-weight:600;">#</th>
+                                <th style="text-align:left; padding:.45rem .6rem; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); font-weight:600;">Name</th>
+                                <th style="text-align:left; padding:.45rem .6rem; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); font-weight:600;">Team</th>
+                                <th style="text-align:left; padding:.45rem .6rem; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); font-weight:600;">Pos</th>
+                                <th style="text-align:left; padding:.45rem .6rem; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-lo); font-weight:600;">Match</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -328,13 +365,15 @@ header {
         <div class="card">
             <div class="section-title"><span class="ico">💾</span> Export Code</div>
             <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
-                Copy the block below and paste it directly into <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">index.html</code> — replace everything from <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">const SOURCES</code> through the end of <code style="color:var(--accent-hi); background:rgba(59,130,246,.1); padding:.1rem .3rem; border-radius:3px;">RAW_DATA</code>.
+                Hit <strong style="color:#fff;">Save to index.html</strong> to write directly into your file — no copy/paste needed. Keep admin.html and index.html in the same folder.
             </p>
 
-            <div style="display:flex; gap:.6rem; margin-bottom:1rem;">
-                <button class="btn btn-success btn-sm" onclick="copyExport()">📋 Copy to Clipboard</button>
+            <div style="display:flex; gap:.6rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <button class="btn btn-success btn-sm" onclick="saveToIndexHTML()">💾 Save to index.html</button>
+                <button class="btn btn-ghost btn-sm" onclick="copyExport()">📋 Copy to Clipboard</button>
                 <button class="btn btn-ghost btn-sm" onclick="downloadExport()">⬇ Download as .js</button>
             </div>
+            <span id="saveResult" style="font-size:.78rem; color:var(--text-lo); display:block; margin-bottom:.5rem;"></span>
 
             <div class="output-wrap">
                 <div class="output-box" id="exportBox"></div>
@@ -357,34 +396,66 @@ const SOURCES = {
     justbaseball: { label:"Just Baseball",    listLength:100 }
 };
 
+// Holds a reference to index.html once the user links it.
+// Persists for the entire browser session — only need to link once.
+let indexFileHandle = null;
+
+// ============================================================
+// LINK index.html — grab a file handle once, reuse forever
+// ============================================================
+async function linkIndexHTML() {
+    if (!window.showOpenFilePicker) {
+        alert("This feature requires Chrome or Edge.");
+        return;
+    }
+    try {
+        const [handle] = await window.showOpenFilePicker({
+            types: [{ description:'HTML Files', accept:{'text/html':['.html']} }],
+            suggestedName: 'index.html'
+        });
+        // Verify it's actually our file
+        const file    = await handle.getFile();
+        const content = await file.text();
+        if (!content.includes('const SOURCES =') || !content.includes('const RAW_DATA =')) {
+            alert("That doesn't look like a Rankle index.html — no SOURCES or RAW_DATA found.");
+            return;
+        }
+        indexFileHandle = handle;
+        document.getElementById('linkStatus').style.display = 'inline';
+        document.getElementById('linkBtn').style.display    = 'none';
+    } catch (e) {
+        if (e.name !== 'AbortError') alert("Error: " + e.message);
+    }
+}
+
+// ============================================================
+// WRITE TO index.html — surgical replace using the linked handle
+// ============================================================
+async function writeToIndex() {
+    if (!indexFileHandle) return false;
+    try {
+        const file      = await indexFileHandle.getFile();
+        const content   = await file.text();
+        const newData   = generateExportCode(); // shared function, returns the string
+        const startIdx  = content.indexOf('const SOURCES =');
+        const afterStart = content.slice(startIdx);
+        const endMatch  = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];/);
+        if (startIdx === -1 || !endMatch) return false;
+        const endIdx     = startIdx + endMatch.index + endMatch[0].length;
+        const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
+        const writable   = await indexFileHandle.createWritable();
+        await writable.write(newContent);
+        await writable.close();
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 // Each prospect: { name, pos, team, age, eta, ranks: { source: rank|null } }
-let prospects = [
-    { name:"Kevin McGonigle",    pos:"SS",  team:"DET", age:19, eta:"2027", ranks:{ pipeline:7,  ba:3,  fangraphs:5,  br:1,  espn:4,  justbaseball:6  } },
-    { name:"Konnor Griffin",     pos:"SS",  team:"PIT", age:18, eta:"2028", ranks:{ pipeline:13, ba:1,  fangraphs:8,  br:2,  espn:null, justbaseball:1 } },
-    { name:"Jesús Made",         pos:"SS",  team:"MIL", age:18, eta:"2027", ranks:{ pipeline:8,  ba:5,  fangraphs:6,  br:3,  espn:7,  justbaseball:2  } },
-    { name:"Bubba Chandler",     pos:"RHP", team:"PIT", age:22, eta:"2026", ranks:{ pipeline:15, ba:4,  fangraphs:9,  br:4,  espn:5,  justbaseball:4  } },
-    { name:"Walker Jenkins",     pos:"OF",  team:"MIN", age:19, eta:"2027", ranks:{ pipeline:3,  ba:8,  fangraphs:7,  br:21, espn:6,  justbaseball:5  } },
-    { name:"Leo De Vries",       pos:"SS",  team:"ATH", age:20, eta:"2026", ranks:{ pipeline:18, ba:2,  fangraphs:4,  br:6,  espn:3,  justbaseball:null} },
-    { name:"Max Clark",          pos:"OF",  team:"DET", age:20, eta:"2027", ranks:{ pipeline:6,  ba:9,  fangraphs:null,br:17, espn:8,  justbaseball:3  } },
-    { name:"JJ Wetherholt",      pos:"SS",  team:"STL", age:21, eta:"2026", ranks:{ pipeline:23, ba:6,  fangraphs:10, br:7,  espn:9,  justbaseball:7  } },
-    { name:"Samuel Basallo",     pos:"C",   team:"BAL", age:20, eta:"2026", ranks:{ pipeline:11, ba:7,  fangraphs:12, br:8,  espn:11, justbaseball:null} },
-    { name:"Andrew Painter",     pos:"RHP", team:"PHI", age:22, eta:"2026", ranks:{ pipeline:8,  ba:10, fangraphs:11, br:14, espn:10, justbaseball:null} },
-    { name:"Nolan McLean",       pos:"RHP", team:"NYM", age:23, eta:"2025", ranks:{ pipeline:null,ba:11, fangraphs:14, br:9,  espn:12, justbaseball:8  } },
-    { name:"Sebastian Walcott",  pos:"SS",  team:"TEX", age:19, eta:"2027", ranks:{ pipeline:4,  ba:null,fangraphs:null,br:5, espn:null, justbaseball:null} },
-    { name:"Trey Yesavage",      pos:"RHP", team:"TOR", age:23, eta:"2025", ranks:{ pipeline:null,ba:null,fangraphs:15,br:10, espn:14, justbaseball:9  } },
-    { name:"Bryce Eldridge",     pos:"1B",  team:"SF",  age:20, eta:"2027", ranks:{ pipeline:24, ba:12, fangraphs:null,br:11, espn:15, justbaseball:null} },
-    { name:"Colt Emerson",       pos:"SS",  team:"SEA", age:20, eta:"2027", ranks:{ pipeline:20, ba:14, fangraphs:16, br:12, espn:null, justbaseball:null} },
-    { name:"Thomas White",       pos:"LHP", team:"MIA", age:21, eta:"2026", ranks:{ pipeline:41, ba:13, fangraphs:null,br:13, espn:16, justbaseball:null} },
-    { name:"Josue De Paula",     pos:"OF",  team:"LAD", age:19, eta:"2028", ranks:{ pipeline:40, ba:15, fangraphs:18, br:15, espn:null, justbaseball:null} },
-    { name:"Ethan Holliday",     pos:"SS",  team:"COL", age:18, eta:"2028", ranks:{ pipeline:null,ba:16, fangraphs:null,br:16, espn:null, justbaseball:null} },
-    { name:"Travis Bazzana",     pos:"2B",  team:"CLE", age:22, eta:"2026", ranks:{ pipeline:10, ba:18, fangraphs:19, br:25, espn:13, justbaseball:null} },
-    { name:"Eli Willits",        pos:"SS",  team:"WAS", age:18, eta:"2028", ranks:{ pipeline:null,ba:20, fangraphs:null,br:24, espn:null, justbaseball:null} },
-    { name:"Luis Peña",          pos:"SS",  team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null,ba:17, fangraphs:null,br:19, espn:null, justbaseball:null} },
-    { name:"Kade Anderson",      pos:"LHP", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:null,ba:19, fangraphs:null,br:20, espn:null, justbaseball:null} },
-    { name:"Noah Schultz",       pos:"LHP", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:null,ba:22, fangraphs:20, br:28, espn:null, justbaseball:null} },
-    { name:"Carson Benge",       pos:"OF",  team:"NYM", age:21, eta:"2026", ranks:{ pipeline:null,ba:21, fangraphs:null,br:29, espn:18, justbaseball:null} },
-    { name:"Moises Ballesteros", pos:"C",   team:"CHC", age:21, eta:"2026", ranks:{ pipeline:null,ba:23, fangraphs:null,br:30, espn:19, justbaseball:null} },
-];
+// These are fallback defaults only — all ranks null until you import a source.
+// localStorage will override this with your real data after first import.
+let prospects = [];
 
 const POSITIONS = ["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP"];
 const TEAMS = ["ATH","ATL","ARI","BAL","BOS","CHC","CWS","CIN","CLE","COL","DET","HOU","KC","LAD","LAA","MIA","MIL","MIN","NYM","NYY","OAK","PHI","PIT","SD","SEA","SF","STL","TB","TEX","TOR","WAS"];
@@ -467,18 +538,22 @@ function updateListLength() {
 
 function updateName(idx, val) {
     prospects[idx].name = val.trim();
+    saveToStorage();
 }
 function updateMeta(idx, key, val) {
     prospects[idx][key] = val;
+    saveToStorage();
 }
 function updateRank(idx, source, val) {
     prospects[idx].ranks[source] = val === '' ? null : parseInt(val);
-    renderExport(); // keep export live
+    renderExport();
+    saveToStorage();
 }
 function addProspect() {
     const blank = { name:"", pos:"SS", team:"ATH", age:18, eta:"2027", ranks:{} };
     Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
     prospects.push(blank);
+    saveToStorage();
     renderProspects();
     // focus the new name input
     setTimeout(() => {
@@ -489,16 +564,103 @@ function addProspect() {
 function removeProspect(idx) {
     if (confirm(`Remove ${prospects[idx].name || 'this prospect'}?`)) {
         prospects.splice(idx, 1);
+        saveToStorage();
         renderProspects();
         renderExport();
     }
 }
 
 // ============================================================
-// PASTE TAB — fuzzy import
+// TEAM NAME → ABBREVIATION MAP
+// ============================================================
+const TEAM_MAP = {
+    "arizona diamondbacks":"ARI","atlanta braves":"ATL","baltimore orioles":"BAL",
+    "boston red sox":"BOS","chicago cubs":"CHC","chicago white sox":"CWS",
+    "cincinnati reds":"CIN","cleveland guardians":"CLE","colorado rockies":"COL",
+    "detroit tigers":"DET","houston astros":"HOU","kansas city royals":"KC",
+    "los angeles angels":"LAA","los angeles dodgers":"LAD","miami marlins":"MIA",
+    "milwaukee brewers":"MIL","minnesota twins":"MIN","new york mets":"NYM",
+    "new york yankees":"NYY","oakland athletics":"OAK","athletics":"ATH",
+    "philadelphia phillies":"PHI","pittsburgh pirates":"PIT","san diego padres":"SD",
+    "seattle mariners":"SEA","san francisco giants":"SF","st. louis cardinals":"STL",
+    "tampa bay rays":"TB","texas rangers":"TEX","toronto blue jays":"TOR",
+    "washington nationals":"WAS"
+};
+
+// ============================================================
+// SOURCE → PARSER MAP
+// Add new sources here. Each source maps to its parser function.
+// If a source doesn't have a dedicated parser yet, it falls back
+// to "numbered" (1. Name) automatically.
+// ============================================================
+const SOURCE_PARSER = {
+    pipeline:     'numbered',    // placeholder — update when you see their format
+    ba:           'ba',          // Baseball America: 4-line block
+    fangraphs:    'numbered',   // placeholder
+    br:           'numbered',   // placeholder
+    espn:         'numbered',   // placeholder
+    justbaseball: 'numbered'    // placeholder
+};
+
+// ============================================================
+// PARSERS — one per format
+// ============================================================
+
+// Baseball America: 4-line repeating block
+//   1. Name
+//   Team Name
+//   Position
+//   Headshot of …  (junk)
+function parseBA(rawText) {
+    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const out   = [];
+    for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^(\d+)\.\s+(.+)$/);
+        if (!m) continue;
+        const rank = parseInt(m[1]);
+        const name = m[2].trim();
+        const teamRaw = (lines[i+1] || '').trim().toLowerCase();
+        const team    = TEAM_MAP[teamRaw] || null;
+        const posRaw  = (lines[i+2] || '').trim();
+        const pos     = /^[A-Z\/\s\d]+$/.test(posRaw) ? posRaw.split(/\s*[\/\|]\s*/)[0].trim() : null;
+        out.push({ rank, name, team, pos });
+    }
+    return out;
+}
+
+// Numbered list: "1. Name" or "1) Name", one per line
+function parseNumbered(rawText) {
+    return rawText.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0)
+        .map(l => {
+            const m = l.match(/^(\d+)[\.\)]\s+(.+)$/);
+            return m ? { rank: parseInt(m[1]), name: m[2].trim(), team: null, pos: null } : null;
+        })
+        .filter(Boolean);
+}
+
+// Names only: one name per line, rank = line order
+function parseNamesOnly(rawText) {
+    return rawText.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0)
+        .map((name, i) => ({ rank: i + 1, name, team: null, pos: null }));
+}
+
+function runParser() {
+    const source = document.getElementById('pasteSourceSelect').value;
+    const fmt    = SOURCE_PARSER[source] || 'numbered';
+    const text   = document.getElementById('pasteInput').value;
+    if (fmt === 'ba')        return parseBA(text);
+    if (fmt === 'numbered')  return parseNumbered(text);
+    return parseNamesOnly(text);
+}
+
+// ============================================================
+// FUZZY MATCH — name → existing prospect index
 // ============================================================
 function fuzzyMatch(input, candidates) {
-    // Normalize: lowercase, strip accents, collapse whitespace
     const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim();
     const ni = norm(input);
     if (!ni) return null;
@@ -506,58 +668,115 @@ function fuzzyMatch(input, candidates) {
     let best = null, bestScore = 0;
     candidates.forEach((c, i) => {
         const nc = norm(c.name);
-        if (nc === ni)                          { best = i; bestScore = 999; return; } // exact
+        if (nc === ni)                          { best = i; bestScore = 999; return; }
         if (nc.includes(ni) || ni.includes(nc)) { if (bestScore < 90) { best = i; bestScore = 90; } return; }
-        // last-name match
         const parts = nc.split(' ');
         if (parts[parts.length-1] === ni.split(' ').pop() && bestScore < 70) { best = i; bestScore = 70; }
     });
     return bestScore >= 70 ? best : null;
 }
 
+// ============================================================
+// PREVIEW — show what will be imported before committing
+// ============================================================
+function previewParse() {
+    const parsed = runParser();
+    if (!parsed.length) {
+        document.getElementById('pasteResult').innerHTML = '<span style="color:var(--red);">Nothing parsed — check the format selector.</span>';
+        return;
+    }
+
+    const tbody = document.getElementById('previewBody');
+    tbody.innerHTML = '';
+    const show = parsed.slice(0, 15);
+
+    show.forEach(p => {
+        const idx   = fuzzyMatch(p.name, prospects);
+        const match = idx !== null ? prospects[idx].name : null;
+        const color = match ? 'var(--green)' : 'var(--gold)';
+        const label = match ? `✓ ${match}` : '+ new';
+
+        tbody.innerHTML += `
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:.4rem .6rem; color:var(--text-lo); font-size:.8rem;">${p.rank}</td>
+                <td style="padding:.4rem .6rem; font-size:.82rem; font-weight:600;">${p.name}</td>
+                <td style="padding:.4rem .6rem; font-size:.8rem; color:var(--text-mid);">${p.team || '—'}</td>
+                <td style="padding:.4rem .6rem; font-size:.8rem; color:var(--text-mid);">${p.pos || '—'}</td>
+                <td style="padding:.4rem .6rem; font-size:.75rem; color:${color}; font-weight:600;">${label}</td>
+            </tr>`;
+    });
+
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('pasteResult').innerHTML = `<span style="color:var(--text-mid);">Parsed ${parsed.length} prospects — preview showing first 15</span>`;
+}
+
+// ============================================================
+// IMPORT — run parser, match/add, update state
+// ============================================================
 function importPasted() {
     const source  = document.getElementById('pasteSourceSelect').value;
     const listLen = parseInt(document.getElementById('pasteListLength').value) || 100;
-    const lines   = document.getElementById('pasteInput').value
-        .split('\n')
-        .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()) // strip leading "1. " or "1) "
-        .filter(l => l.length > 0);
-
     SOURCES[source].listLength = listLen;
 
-    let matched = 0, added = 0;
-    lines.forEach((line, i) => {
-        const rank = i + 1;
-        const idx  = fuzzyMatch(line, prospects);
+    const parsed = runParser();
+    if (!parsed.length) {
+        document.getElementById('pasteResult').innerHTML = '<span style="color:var(--red);">Nothing parsed — check the format selector.</span>';
+        return;
+    }
+
+    let matched = 0, added = 0, updated = 0;
+
+    parsed.forEach(p => {
+        const idx = fuzzyMatch(p.name, prospects);
         if (idx !== null) {
-            prospects[idx].ranks[source] = rank;
+            // Existing prospect — update rank
+            prospects[idx].ranks[source] = p.rank;
             matched++;
+            // Also update team/pos if parser found them and they look valid
+            if (p.team)  prospects[idx].team = p.team;
+            if (p.pos)   prospects[idx].pos  = p.pos;
         } else {
-            // Add as new prospect
-            const blank = { name: line, pos:"SS", team:"ATH", age:19, eta:"2027", ranks:{} };
+            // New prospect
+            const blank = { name: p.name, pos: p.pos || "SS", team: p.team || "ATH", age: 19, eta: "2027", ranks: {} };
             Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
-            blank.ranks[source] = rank;
+            blank.ranks[source] = p.rank;
             prospects.push(blank);
             added++;
         }
     });
 
-    document.getElementById('pasteResult').innerHTML =
-        `<span style="color:var(--green);">✓ ${matched} matched</span>` +
-        (added ? ` · <span style="color:var(--gold);">${added} new prospects added</span>` : '') +
-        ` · <span style="color:var(--text-lo);">${lines.length} total lines</span>`;
-
+    document.getElementById('previewWrap').style.display = 'none';
     renderProspects();
     renderExport();
+
+    // Auto-save to index.html if linked
+    if (indexFileHandle) {
+        writeToIndex().then(ok => {
+            saveToStorage();
+            if (ok) showToast('Saved ' + prospects.length + ' prospects to index.html', '💾');
+            document.getElementById('pasteResult').innerHTML =
+                `<span style="color:var(--green);">✓ ${matched} matched</span>` +
+                (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
+                ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
+                (ok ? ` · <span style="color:var(--green); font-weight:600;">💾 saved to index.html</span>`
+                     : ` · <span style="color:var(--red);">save failed</span>`);
+        });
+    } else {
+        document.getElementById('pasteResult').innerHTML =
+            `<span style="color:var(--green);">✓ ${matched} matched</span>` +
+            (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
+            ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
+            ` <span style="color:var(--accent-hi); font-weight:600; margin-left:.6rem;">→ Hit 🔗 Link index.html in the header to auto-save</span>`;
+    }
 }
 
 // ============================================================
 // EXPORT TAB — generate the code block
 // ============================================================
-function renderExport() {
+// Shared: generates the SOURCES + RAW_DATA code string
+function generateExportCode() {
     const lines = [];
 
-    // SOURCES block
     lines.push('const SOURCES = {');
     Object.entries(SOURCES).forEach(([k,v], i) => {
         const comma = i < Object.keys(SOURCES).length - 1 ? ',' : '';
@@ -567,7 +786,6 @@ function renderExport() {
     lines.push('};');
     lines.push('');
 
-    // RAW_DATA block
     lines.push('const RAW_DATA = [');
     prospects.forEach((p, i) => {
         const comma = i < prospects.length - 1 ? ',' : '';
@@ -580,7 +798,12 @@ function renderExport() {
     });
     lines.push('];');
 
-    document.getElementById('exportBox').textContent = lines.join('\n');
+    return lines.join('\n');
+}
+
+// Renders the export box on the Export tab
+function renderExport() {
+    document.getElementById('exportBox').textContent = generateExportCode();
 }
 
 function copyExport() {
@@ -611,15 +834,138 @@ function downloadExport() {
     const blob = new Blob([text], { type:'text/javascript' });
     const a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
-    a.download = 'prospectrank-data.js';
+    a.download = 'rankle-data.js';
     a.click();
+}
+
+// ============================================================
+// SAVE DIRECTLY TO index.html (File System Access API)
+// Opens a file picker, reads the file, surgically replaces
+// the SOURCES + RAW_DATA block, writes it back. Zero copy/paste.
+// ============================================================
+async function saveToIndexHTML() {
+    const statusEl = document.getElementById('saveResult');
+
+    // Check browser support
+    if (!window.showOpenFilePicker) {
+        statusEl.innerHTML = '<span style="color:var(--red);">Your browser doesn\'t support direct file saving. Use Copy to Clipboard instead. (Chrome/Edge work — Firefox/Safari don\'t yet.)</span>';
+        return;
+    }
+
+    try {
+        // 1. Open file picker, pre-set to .html files
+        const [fileHandle] = await window.showOpenFilePicker({
+            types: [{ description: 'HTML Files', accept: { 'text/html': ['.html'] } }],
+            suggestedName: 'index.html'
+        });
+
+        // 2. Read current contents
+        const file    = await fileHandle.getFile();
+        const content = await file.text();
+
+        // 3. Verify this is actually our index.html (has the markers)
+        if (!content.includes('const SOURCES =') || !content.includes('const RAW_DATA =')) {
+            statusEl.innerHTML = '<span style="color:var(--red);">That doesn\'t look like a Rankle index.html — no SOURCES or RAW_DATA found.</span>';
+            return;
+        }
+
+        // 4. Surgical replace: everything from "const SOURCES =" up to and including the "];" that closes RAW_DATA
+        const newData  = document.getElementById('exportBox').textContent;
+        const startMarker = 'const SOURCES =';
+        const endMarker   = /const RAW_DATA = \[[\s\S]*?\];/;
+
+        const startIdx = content.indexOf(startMarker);
+        const afterStart = content.slice(startIdx);
+        const endMatch  = afterStart.match(endMarker);
+
+        if (startIdx === -1 || !endMatch) {
+            statusEl.innerHTML = '<span style="color:var(--red);">Couldn\'t find the data block to replace. File may have been edited.</span>';
+            return;
+        }
+
+        const endIdx     = startIdx + endMatch.index + endMatch[0].length;
+        const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
+
+        // 5. Write back
+        const writable = await fileHandle.createWritable();
+        await writable.write(newContent);
+        await writable.close();
+
+        statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>';
+
+        // Auto-clear after 4s
+        setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
+
+    } catch (err) {
+        if (err.name === 'AbortError') return; // user cancelled picker
+        statusEl.innerHTML = '<span style="color:var(--red);">Error: ' + err.message + '</span>';
+    }
+}
+
+
+// ============================================================
+// TOAST NOTIFICATION
+// ============================================================
+let toastTimer = null;
+function showToast(msg, icon) {
+    const toast  = document.getElementById('toast');
+    const msgEl  = document.getElementById('toastMsg');
+    const iconEl = toast.querySelector('.toast-icon');
+    if (icon) iconEl.textContent = icon;
+    msgEl.textContent = msg;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// PERSISTENCE — localStorage save/load
+// ============================================================
+const STORAGE_KEY = 'rankle-admin-data';
+
+function saveToStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ SOURCES, prospects }));
+    } catch(e) { /* silent */ }
+}
+
+function loadFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
+            prospects = data.prospects;
+            // Restore list lengths from saved SOURCES
+            if (data.SOURCES) {
+                Object.keys(data.SOURCES).forEach(k => {
+                    if (SOURCES[k] && data.SOURCES[k].listLength) {
+                        SOURCES[k].listLength = data.SOURCES[k].listLength;
+                    }
+                });
+            }
+            return true;
+        }
+    } catch(e) { /* silent */ }
+    return false;
 }
 
 // ============================================================
 // INIT
 // ============================================================
+// Load persisted data if available
+const loaded = loadFromStorage();
 renderProspects();
 renderExport();
+if (loaded) {
+    showToast('Loaded ' + prospects.length + ' prospects from last session', '📂');
+}
 </script>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <span class="toast-icon">💾</span>
+    <span id="toastMsg">Saved!</span>
+</div>
 </body>
 </html>
