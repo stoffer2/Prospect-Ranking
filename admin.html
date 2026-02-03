@@ -594,7 +594,7 @@ const TEAM_MAP = {
 // to "numbered" (1. Name) automatically.
 // ============================================================
 const SOURCE_PARSER = {
-    pipeline:     'numbered',    // placeholder — update when you see their format
+    pipeline:     'pipeline',    // MLB Pipeline: 5-line block with junk stats line
     ba:           'ba',          // Baseball America: 4-line block
     fangraphs:    'numbered',   // placeholder
     br:           'numbered',   // placeholder
@@ -628,6 +628,55 @@ function parseBA(rawText) {
     return out;
 }
 
+// MLB Pipeline: repeating blocks anchored on bare rank numbers.
+// Between each rank we expect: "Photo headshot…", Name, Position, "… Logo", Team, Level, Stats.
+// Parser anchors on rank lines and grabs name/pos/team by skipping known junk patterns.
+function parsePipeline(rawText) {
+    // Split on both newlines AND tabs to handle browser textarea quirks
+    const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out   = [];
+    const POS_MAP = { "INF":"SS", "DH":"1B" };
+
+    // First pass: find all rank-line indices (bare number followed by "Photo headshot…")
+    const rankIndices = [];
+    for (let i = 0; i < lines.length - 1; i++) {
+        if (/^\d+$/.test(lines[i]) && lines[i+1].startsWith('Photo headshot')) {
+            rankIndices.push(i);
+        }
+    }
+
+    for (let r = 0; r < rankIndices.length; r++) {
+        const rank      = parseInt(lines[rankIndices[r]]);
+        const start     = rankIndices[r] + 1;
+        const end       = r + 1 < rankIndices.length ? rankIndices[r + 1] : lines.length;
+        const block     = lines.slice(start, end);
+
+        // Filter out junk lines: "Photo headshot…", "… Logo", level codes, stats
+        const clean = block.filter(l => {
+            if (l.startsWith('Photo headshot')) return false;
+            if (l.endsWith('Logo'))             return false;
+            if (/^(MLB|AAA|AA|A\+|A|ROK)$/.test(l)) return false;
+            if (/^\d{4}/.test(l))               return false; // stats line starts with year
+            if (/^\d+$/.test(l))                return false; // bare numbers (age, etc from tab-split)
+            if (/^[LRS]$/.test(l))              return false; // throws/bats single letters
+            if (/^\d+'\s*\d*"?/.test(l))        return false; // height like 6' 4"
+            if (/^\d+\s*lbs/.test(l))           return false; // weight like 225 lbs
+            if (/^\d+"\s*\//.test(l))           return false; // fragment like 4" / 225 lbs
+            return true;
+        });
+
+        // clean[0] = name, clean[1] = position, clean[2] = team
+        if (clean.length < 3) continue;
+        const name    = clean[0];
+        const posRaw  = clean[1].split('/')[0].trim();
+        const pos     = POS_MAP[posRaw] || posRaw;
+        const team    = TEAM_MAP[clean[2].toLowerCase()] || null;
+
+        out.push({ rank, name, pos, team });
+    }
+    return out;
+}
+
 // Numbered list: "1. Name" or "1) Name", one per line
 function parseNumbered(rawText) {
     return rawText.split('\n')
@@ -653,6 +702,7 @@ function runParser() {
     const fmt    = SOURCE_PARSER[source] || 'numbered';
     const text   = document.getElementById('pasteInput').value;
     if (fmt === 'ba')        return parseBA(text);
+    if (fmt === 'pipeline')  return parsePipeline(text);
     if (fmt === 'numbered')  return parseNumbered(text);
     return parseNamesOnly(text);
 }
