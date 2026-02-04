@@ -44,7 +44,16 @@ header {
     height: 64px;
     display: flex; align-items: center; justify-content: space-between;
 }
-.logo-title { font-family:'Bebas Neue',cursive; font-size:1.7rem; letter-spacing:2px; color:#fff; }
+.logo-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fef3c7 0%, #f59e0b 40%, #d97706 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(245,158,11,0.35));
+}
 .header-stats {
     display: flex; gap: 1.5rem; font-size: 0.75rem; color: var(--text-lo);
     letter-spacing: 0.5px;
@@ -124,18 +133,8 @@ header {
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
-    min-width: 220px;
+    min-width: 240px;
     position: relative;
-}
-.hero-preview::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 80px; height: 80px;
-    transform: translate(-50%, -50%) rotate(45deg);
-    border: 1px solid rgba(59,130,246,0.15);
-    border-radius: 4px;
-    pointer-events: none;
 }
 .hero-preview-title {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
@@ -158,6 +157,23 @@ header {
 .hero-preview-rank.silver { background: linear-gradient(135deg,#cbd5e1,#94a3b8); color:#1a1a1a; }
 .hero-preview-rank.bronze { background: linear-gradient(135deg,#f97316,#ea580c); color:#fff; }
 .hero-preview-rank.steel { background: var(--bg-card); color: var(--text-mid); border: 1px solid var(--border); }
+
+.hero-legend { display: flex; flex-direction: column; gap: 0.75rem; }
+.hero-legend-item {
+    font-size: 0.7rem;
+    color: var(--text-mid);
+    line-height: 1.4;
+}
+.hero-legend-item strong { color: var(--text-hi); font-weight: 600; }
+.hero-legend-item .cons-dots { display: inline-flex; gap: 0.2rem; margin-left: 0.25rem; vertical-align: middle; }
+.hero-legend-item .cons-dot { width: 6px; height: 6px; }
+.hero-legend-note {
+    display: block;
+    font-size: 0.62rem;
+    color: var(--text-lo);
+    margin-top: 0.2rem;
+}
+.hero-legend-vols { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.2rem; }
 
 @media (max-width: 900px) {
     .hero-inner { grid-template-columns: 1fr; text-align: center; }
@@ -198,6 +214,10 @@ header {
 table { width:100%; border-collapse:collapse; }
 
 thead th {
+    position: sticky;
+    top: 64px;
+    z-index: 10;
+    background: var(--bg-deep);
     text-align:left;
     font-size:.68rem; text-transform:uppercase; letter-spacing:1.3px;
     color:var(--text-lo); font-weight:600;
@@ -326,8 +346,9 @@ footer {
 /* Tablet and below */
 @media (max-width: 768px) {
     header { padding: 0 1rem; height: 56px; }
+    thead th { top: 56px; }
     .header-stats { display: none; }
-    .logo-title { font-size: 1.45rem; }
+    .logo-title { font-size: 1.8rem; }
     .btn-pro { padding: 0.4rem 0.85rem; font-size: 0.75rem; }
     .hero { padding: 2rem 1rem 2rem; }
     .hero h1 { font-size: 2rem; }
@@ -354,7 +375,8 @@ footer {
 /* Mobile (small phones) */
 @media (max-width: 480px) {
     header { padding: 0 0.75rem; height: 52px; }
-    .logo-title { font-size: 1.3rem; letter-spacing: 1px; }
+    thead th { top: 52px; }
+    .logo-title { font-size: 1.55rem; letter-spacing: 1px; }
     .hero { padding: 1.5rem 0.75rem 1.5rem; }
     .hero h1 { font-size: 1.65rem; }
     .hero-desc { font-size: 0.85rem; }
@@ -406,8 +428,26 @@ footer {
             </div>
         </div>
         <div class="hero-preview">
-            <div class="hero-preview-title">Top 5</div>
-            <div class="hero-preview-list" id="heroPreviewList"></div>
+            <div class="hero-preview-title">How to read the table</div>
+            <div class="hero-legend">
+                <div class="hero-legend-item">
+                    <strong>Score</strong> — 0–100, higher = better consensus rank
+                </div>
+                <div class="hero-legend-item">
+                    <strong>Consensus</strong> <div class="cons-dots"><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot"></div><div class="cons-dot"></div><div class="cons-dot"></div></div>
+                    <span class="hero-legend-note">Lit dots = sources that agreed on position</span>
+                </div>
+                <div class="hero-legend-item">
+                    <strong>Volatility</strong>
+                    <div class="hero-legend-vols">
+                        <span class="vol-badge vol-low">Low</span>
+                        <span class="vol-badge vol-mod">Mod</span>
+                        <span class="vol-badge vol-high">High</span>
+                        <span class="vol-badge vol-extreme">Ext</span>
+                    </div>
+                    <span class="hero-legend-note">Lower = sources agree; higher = more disagreement</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -508,7 +548,7 @@ function sourceStats(listLength) {
 // return the full computed prospect object.
 function computeProspect(meta, sourceRankings) {
     const n = sourceRankings.length;
-    if (n === 0) return { ...meta, sourceCount: 0, rankleScore: 0, median: null, sd: null, volatility: "N/A" };
+    if (n === 0) return { ...meta, sourceCount: 0, consensusAgreement: 0, rankleScore: 0, median: null, sd: null, volatility: "N/A" };
 
     // Convert each ranking to a Z-score
     const zScores  = sourceRankings.map(s => {
@@ -540,6 +580,20 @@ function computeProspect(meta, sourceRankings) {
         volatility = sd < 0.3 ? "Low" : sd < 0.7 ? "Moderate" : sd < 0.85 ? "High" : "Extreme";
     }
 
+    // Consensus (percentile band): count sources within ±10% of median percentile
+    const CONSENSUS_BAND = 10;
+    const percentiles = sourceRankings.map(s =>
+        100 * (1 - (s.rank - 1) / (s.listLength - 1))
+    );
+    const sortedP = [...percentiles].sort((a, b) => a - b);
+    const midP = Math.floor(sortedP.length / 2);
+    const medianPercentile = sortedP.length % 2 !== 0
+        ? sortedP[midP]
+        : (sortedP[midP - 1] + sortedP[midP]) / 2;
+    const consensusAgreement = percentiles.filter(p =>
+        Math.abs(p - medianPercentile) <= CONSENSUS_BAND
+    ).length;
+
     // Bayesian shrinkage: single-source players get pulled toward the mean (50).
     // More sources = more evidence = trust the score fully.
     // Formula: adjusted = (n * rawScore + k * 50) / (n + k), applied only when n === 1.
@@ -549,7 +603,7 @@ function computeProspect(meta, sourceRankings) {
         ? (rankleScore + K * 50) / (1 + K)
         : rankleScore;
 
-    return { ...meta, sourceCount: n, rankleScore: Math.round(penalizedScore * 10) / 10, median, sd, volatility };
+    return { ...meta, sourceCount: n, consensusAgreement, rankleScore: Math.round(penalizedScore * 10) / 10, median, sd, volatility };
 }
 
 // ============================================================
@@ -736,22 +790,6 @@ const ALL_PROSPECTS = buildProspects();
 const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
-// POPULATE HERO PREVIEW (top 5)
-// ============================================================
-(function populateHeroPreview() {
-    const top5 = ALL_PROSPECTS.slice(0, 5);
-    const list = document.getElementById('heroPreviewList');
-    if (!list) return;
-    const rankClass = r => r <= 3 ? 'gold' : r <= 6 ? 'silver' : r <= 10 ? 'bronze' : 'steel';
-    list.innerHTML = top5.map(p => `
-        <div class="hero-preview-item">
-            <span class="hero-preview-rank ${rankClass}">#${p.displayRank}</span>
-            <span>${p.name}</span>
-        </div>
-    `).join('');
-})();
-
-// ============================================================
 // POPULATE FILTER DROPDOWNS
 // ============================================================
 (function populateFilters() {
@@ -836,9 +874,9 @@ function render() {
         const tr = document.createElement('tr');
         if (!isFree) tr.className = 'locked-ghost';
 
-        // 6 consensus dots
+        // 6 consensus dots (sources that agreed on position within ±10% percentile)
         const dotsHtml = [1,2,3,4,5,6].map(i =>
-            `<div class="cons-dot ${i <= p.sourceCount ? 'on' : ''}"></div>`
+            `<div class="cons-dot ${i <= p.consensusAgreement ? 'on' : ''}"></div>`
         ).join('');
 
         // Single-source warning
