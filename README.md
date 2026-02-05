@@ -29,3 +29,15 @@ Data-driven MLB prospect rankings that aggregate expert lists from 9+ sources in
 ## Running locally
 
 Open `index.html` in any browser. No build step required.
+
+### Roster upload
+
+Use **Upload your league's roster** in the header to import a fantasy league CSV (e.g. Fantrax export). The parser accepts Player + Owner/Status columns and supports both comma- and tab-delimited files.
+
+### FA prospects list
+
+```bash
+node fa-prospects.js [path-to-roster.csv]
+```
+
+Outputs prospects who are free agents in your league. Defaults to `roster.csv` in the project root.

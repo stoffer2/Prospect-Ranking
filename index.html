@@ -436,11 +436,6 @@ footer {
     background: linear-gradient(90deg, var(--accent), var(--accent-hi));
     transition: width 0.12s ease-out;
 }
-.fantasy-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-.btn-apply { background: var(--accent); color: #fff; border: none; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; cursor: pointer; }
-.btn-apply:hover { background: var(--accent-hi); }
-.btn-clear { background: transparent; color: var(--text-mid); border: 1px solid var(--border); padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; cursor: pointer; }
-.btn-clear:hover { border-color: var(--text-lo); color: var(--text-hi); }
 .draft-col { font-size: 0.8rem; color: var(--text-mid); }
 
 /* ── TOAST ── */
@@ -936,7 +931,7 @@ const ALL_PROSPECTS = buildProspects();
 const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
-// FANTASY LEAGUE OWNERSHIP (temporary, sessionStorage)
+// ROSTER UPLOAD (sessionStorage)
 // ============================================================
 const FANTASY_STORAGE = 'rankle-fantasy-csv';
 
@@ -1070,32 +1065,6 @@ function parseFantasyCsv(text) {
 
 function normalizeName(s) {
     return s.replace(/\s+/g, ' ').trim().toLowerCase();
-}
-
-function lastNameFromParts(parts) {
-    if (!parts.length) return '';
-    const last = parts[parts.length - 1]?.toLowerCase() || '';
-    const suffix = /^(jr\.?|iii?|iv|ii|sr\.?)$/i.test(last);
-    return suffix && parts.length >= 2 ? parts[parts.length - 2]?.toLowerCase() || '' : last;
-}
-
-function fuzzyMatchProspect(prospectName, ownershipMap) {
-    const n = normalizeName(prospectName);
-    if (ownershipMap[n]) return ownershipMap[n];
-    const prospectParts = prospectName.trim().split(/\s+/);
-    const prospectFirst = prospectParts[0]?.toLowerCase() || '';
-    const prospectLast = lastNameFromParts(prospectParts);
-    const prospectInitial = prospectFirst.charAt(0);
-    for (const [k, v] of Object.entries(ownershipMap)) {
-        const csvParts = k.trim().split(/\s+/);
-        const csvLast = lastNameFromParts(csvParts);
-        const csvFirst = csvParts[0]?.toLowerCase() || '';
-        if (csvLast !== prospectLast) continue;
-        const csvInitial = csvFirst.charAt(0);
-        if (prospectInitial && csvInitial && prospectInitial !== csvInitial) continue;
-        return v;
-    }
-    return null;
 }
 
 let ownershipMap = {};
@@ -1341,9 +1310,6 @@ function render() {
 
         const tr = document.createElement('tr');
         if (!isFree) tr.className = 'locked-ghost';
-        const owner = Object.keys(ownershipMap).length ? fuzzyMatchProspect(p.name, ownershipMap) : null;
-        const isUnowned = Object.keys(ownershipMap).length && !owner;
-        if (isUnowned) tr.classList.add('row-unowned');
 
         // 6 consensus dots (sources that agreed on position within ±10% percentile)
         const dotsHtml = [1,2,3,4,5,6].map(i =>

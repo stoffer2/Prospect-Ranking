@@ -1,7 +1,15 @@
 // List prospects that are FREE AGENTS (unowned) — uses same logic as index.html
+// Usage: node fa-prospects.js [path-to-roster.csv]
 const fs = require('fs');
-const html = fs.readFileSync('index.html', 'utf8');
-const csv = fs.readFileSync('Fantrax-Players- Mike Zunino Memorial League (3).csv', 'utf8');
+const path = require('path');
+const csvPath = process.argv[2] || path.join(__dirname, 'roster.csv');
+if (!fs.existsSync(csvPath)) {
+  console.error('Usage: node fa-prospects.js <path-to-roster.csv>');
+  console.error('Example: node fa-prospects.js "Fantrax-Players-MyLeague.csv"');
+  process.exit(1);
+}
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const csv = fs.readFileSync(csvPath, 'utf8');
 
 const rawMatch = html.match(/const RAW_DATA = \[([\s\S]*?)\];/);
 const RAW_DATA = eval('[' + rawMatch[1] + ']');
@@ -165,4 +173,4 @@ const unowned = prospectNames.filter(name => !fuzzyMatchProspect(name, ownership
 unowned.sort((a, b) => a.localeCompare(b));
 
 unowned.forEach(n => console.log(n));
-console.log('\nTotal: ' + unowned.length + ' prospects are free agents (highlighted on site)');
+console.log('\nTotal: ' + unowned.length + ' prospects are free agents');
