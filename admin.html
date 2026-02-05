@@ -259,6 +259,7 @@ header {
         <button class="tab" onclick="switchTab('paste')">📋 Paste Rankings</button>
         <button class="tab" onclick="switchTab('export')">💾 Export Code</button>
         <button class="tab" onclick="switchTab('status')">📅 Last Updated</button>
+        <button class="tab" onclick="switchTab('news')">📰 News Buzz</button>
     </div>
 
     <!-- ════════════════════════════════════════════════════════ -->
@@ -405,6 +406,32 @@ header {
     </div>
 
     <!-- ════════════════════════════════════════════════════════ -->
+    <!-- TAB: NEWS BUZZ (GNews scraper)                           -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-news">
+        <div class="card">
+            <div class="section-title"><span class="ico">📰</span> News Scraper (GNews)</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
+                Fetches news articles for each prospect and calculates a Buzz Score from sentiment and recency. Uses prospects from index.html when linked, otherwise from your current list. <strong>Requires a GNews API key</strong> — get one free at <a href="https://gnews.io/register" target="_blank" rel="noopener" style="color:var(--accent-hi);">gnews.io/register</a>.
+            </p>
+            <div style="display:flex; gap:.6rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:1rem;">
+                <div class="field" style="min-width:200px;">
+                    <label>GNews API Key</label>
+                    <input type="password" id="gnewsApiKey" placeholder="Enter your GNews API key" style="width:100%;">
+                </div>
+                <div class="field" style="min-width:80px;">
+                    <label>Limit</label>
+                    <input type="number" id="newsLimitInput" placeholder="All" min="1" max="500" style="width:80px; text-align:center;">
+                </div>
+                <button class="btn btn-primary" id="scrapeNewsBtn" onclick="scrapeNewsForAllProspects()">📰 Scrape News</button>
+                <button class="btn btn-ghost" id="scrapeNewsCancelBtn" onclick="cancelNewsScrape()" style="display:none; color:var(--red);">Cancel</button>
+            </div>
+            <div id="newsResult" style="font-size:.82rem; color:var(--text-mid); margin-bottom:1rem;"></div>
+            <div id="newsResultsTable" style="overflow-x:auto; max-height:400px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
     <!-- TAB: LAST UPDATED                                       -->
     <!-- ════════════════════════════════════════════════════════ -->
     <div class="tab-panel" id="panel-status">
@@ -537,13 +564,17 @@ const TEAMS = ["ATH","ATL","ARI","BAL","BOS","CHC","CWS","CIN","CLE","COL","DET"
 // ============================================================
 // TAB SWITCHING
 // ============================================================
-const TAB_ORDER = ['enter','paste','export','status'];
+const TAB_ORDER = ['enter','paste','export','status','news'];
 function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', TAB_ORDER[i] === name));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-'+name).classList.add('active');
     if (name === 'export') renderExport();
     if (name === 'status') renderStatus();
+    if (name === 'news' && document.getElementById('gnewsApiKey') && !document.getElementById('gnewsApiKey').value) {
+        const k = sessionStorage.getItem('rankle-gnews-key');
+        if (k) document.getElementById('gnewsApiKey').value = k;
+    }
 }
 
 // ============================================================
@@ -1052,6 +1083,191 @@ async function doFetchAges(onlyIfAge) {
     btn.disabled = false;
     if (remBtn) remBtn.disabled = false;
     if (assignBtn) assignBtn.disabled = false;
+}
+
+// ============================================================
+// NEWS SCRAPER (GNews only — no Reddit)
+// ============================================================
+const POSITIVE_KEYWORDS = ["breakout","sleeper","stash","must-add","must add","call-up","callup","promoted","raking","mashing","filthy","ace","stud","league winner","add now","get him","fire","elite","dominant","nasty","underrated"];
+const NEGATIVE_KEYWORDS = ["injured","injury","IL","surgery","torn","struggling","demoted","bust","avoid","drop","overrated","overhyped","disappointing","setback","shut down","out for","DL"];
+const BASEBALL_KEYWORDS = ["prospect","mlb","minor league","baseball","draft","rookie","call-up","callup","triple-a","double-a","single-a","affiliate","organizational","farm system","spring training","debut","call up"];
+const IRRELEVANT_KEYWORDS = ["dating","girlfriend","boyfriend","relationship status","who is.*dating","married","wedding"];
+const NEWS_SENTIMENT = { positive: 1.2, negative: -1.0, neutral: 0.3 };
+const NEWS_BASE = 8;
+const DECAY_LAMBDA = 0.1;
+const GNEWS_DELAY_MS = 600;
+
+function isBaseballRelevant(text) {
+    if (!text) return false;
+    const t = text.toLowerCase();
+    return BASEBALL_KEYWORDS.some(kw => t.includes(kw));
+}
+
+function isIrrelevantContent(text) {
+    if (!text) return false;
+    const t = text.toLowerCase();
+    return /dating|girlfriend|boyfriend|relationship status|married|wedding/i.test(t);
+}
+
+function analyzeSentiment(text) {
+    if (!text) return "neutral";
+    const t = text.toLowerCase();
+    const pos = POSITIVE_KEYWORDS.filter(kw => t.includes(kw)).length;
+    const neg = NEGATIVE_KEYWORDS.filter(kw => t.includes(kw)).length;
+    return neg > pos ? "negative" : pos > neg ? "positive" : "neutral";
+}
+
+function newsContribution(articles) {
+    const now = Date.now() / 1000;
+    const cutoff30 = now - 30 * 86400;
+    let total = 0;
+    articles.forEach(a => {
+        const ts = a.published_ts || 0;
+        if (ts < cutoff30) return;
+        const daysOld = (now - ts) / 86400;
+        const decay = Math.exp(-DECAY_LAMBDA * daysOld);
+        const mod = NEWS_SENTIMENT[a.sentiment] || NEWS_SENTIMENT.neutral;
+        total += NEWS_BASE * decay * mod;
+    });
+    return total;
+}
+
+function normalizeScores(rawScores) {
+    if (!rawScores.length) return [];
+    const sorted = [...rawScores].sort((a,b)=>a-b);
+    const p5 = sorted[Math.max(0, Math.floor(sorted.length * 0.05))];
+    const p95 = sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95))];
+    const range = p95 - p5 || 1;
+    return rawScores.map(r => Math.min(100, Math.max(0, ((r - p5) / range) * 100)));
+}
+
+async function getProspectNamesFromIndex() {
+    if (!indexFileHandle) return null;
+    try {
+        const file = await indexFileHandle.getFile();
+        const text = await file.text();
+        const matches = text.matchAll(/name:"([^"]+)"/g);
+        return [...matches].map(m => m[1]);
+    } catch (e) { return null; }
+}
+
+let scrapeNewsAborted = false;
+
+function cancelNewsScrape() {
+    scrapeNewsAborted = true;
+}
+
+async function scrapeNewsForAllProspects() {
+    scrapeNewsAborted = false;
+    const keyInput = document.getElementById('gnewsApiKey');
+    const resultEl = document.getElementById('newsResult');
+    const tableEl = document.getElementById('newsResultsTable');
+    const btn = document.getElementById('scrapeNewsBtn');
+    const cancelBtn = document.getElementById('scrapeNewsCancelBtn');
+    const limitInput = document.getElementById('newsLimitInput');
+    const apiKey = (keyInput?.value || '').trim();
+    if (apiKey) sessionStorage.setItem('rankle-gnews-key', apiKey);
+    if (!apiKey) {
+        resultEl.innerHTML = '<span style="color:var(--red);">Enter your GNews API key.</span>';
+        return;
+    }
+
+    let names = [];
+    const fromIndex = await getProspectNamesFromIndex();
+    if (fromIndex && fromIndex.length > 0) {
+        names = fromIndex;
+    } else if (prospects.length > 0) {
+        names = prospects.map(p => p.name);
+    } else {
+        resultEl.innerHTML = '<span style="color:var(--red);">No prospects. Link index.html and save, or import a list first.</span>';
+        return;
+    }
+
+    const limitNum = parseInt(limitInput?.value || '0', 10);
+    if (limitNum > 0) names = names.slice(0, limitNum);
+    resultEl.innerHTML = `<span style="color:var(--text-mid);">Scraping ${names.length} prospects…</span>`;
+
+    btn.disabled = true;
+    cancelBtn.style.display = 'inline-flex';
+    const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const results = [];
+    const rawScores = [];
+
+    for (let i = 0; i < names.length; i++) {
+        if (scrapeNewsAborted) break;
+        resultEl.innerHTML = `<span style="color:var(--text-mid);">Scraping ${i + 1}/${names.length}: ${names[i]}…</span>`;
+        const fullName = names[i];
+        const lastName = fullName.split(/\s+/).pop() || fullName;
+        const primaryQuery = `"${fullName}" prospect baseball`;
+        const fallbackQuery = `${lastName} prospect MLB`;
+        const seenUrls = new Set();
+        const articles = [];
+
+        const runQuery = async (q) => {
+            const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&token=${apiKey}&lang=en&max=10`;
+            let data = { articles: [] };
+            try {
+                const r = await fetch(proxy(url));
+                data = await r.json();
+            } catch (e) {}
+            const fullNameLc = fullName.toLowerCase();
+            const lastNameLc = lastName.toLowerCase();
+            (data.articles || []).forEach(item => {
+                const title = (item.title || '').trim();
+                if (!title) return;
+                if (seenUrls.has(item.url)) return;
+                seenUrls.add(item.url);
+                const desc = (item.description || item.content || '').slice(0, 300);
+                const content = (desc + ' ' + title).toLowerCase();
+                const textForRelevance = title + ' ' + desc;
+                if (!content.includes(fullNameLc) && !content.includes(lastNameLc)) return;
+                if (!isBaseballRelevant(textForRelevance)) return;
+                if (isIrrelevantContent(title)) return;
+                const rawAt = item.publishedAt || '';
+                let published_ts = 0;
+                let published_at = '';
+                if (rawAt.length >= 10) {
+                    try {
+                        const dt = new Date(rawAt.replace('Z',''));
+                        published_ts = Math.floor(dt.getTime() / 1000);
+                        published_at = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } catch (_) { published_at = rawAt.slice(0, 10); }
+                }
+                const sentiment = analyzeSentiment(title + ' ' + desc);
+                articles.push({ title, url: item.url || '', source: (item.source || {}).name || 'Unknown', published_at, published_ts, sentiment });
+            });
+        };
+
+        await runQuery(primaryQuery);
+        await new Promise(r => setTimeout(r, GNEWS_DELAY_MS));
+        if (articles.length < 3 && !scrapeNewsAborted) {
+            await runQuery(fallbackQuery);
+            await new Promise(r => setTimeout(r, GNEWS_DELAY_MS));
+        }
+
+        const raw = newsContribution(articles);
+        rawScores.push(raw);
+        results.push({ name: names[i], articles, raw });
+    }
+
+    const normed = normalizeScores(rawScores);
+    results.forEach((r, i) => { r.score = Math.round(normed[i] * 10) / 10; });
+
+    results.sort((a, b) => b.score - a.score);
+
+    let html = '<table style="width:100%; border-collapse:collapse; font-size:.8rem;"><thead><tr><th style="text-align:left; padding:.5rem; border-bottom:1px solid var(--border);">Prospect</th><th style="text-align:center; padding:.5rem; border-bottom:1px solid var(--border);">Score</th><th style="text-align:center; padding:.5rem; border-bottom:1px solid var(--border);">Articles</th><th style="text-align:left; padding:.5rem; border-bottom:1px solid var(--border);">Top headlines</th></tr></thead><tbody>';
+    results.forEach(r => {
+        const top2 = r.articles.slice(0, 2).map(a => `<span style="color:var(--text-mid); font-size:.75rem;">${a.title.slice(0, 60)}…</span> (${a.sentiment})`).join('<br>') || '—';
+        html += `<tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">${r.name}</td><td style="padding:.5rem; text-align:center; font-weight:600; color:var(--accent-hi);">${r.score}</td><td style="padding:.5rem; text-align:center;">${r.articles.length}</td><td style="padding:.5rem;">${top2}</td></tr>`;
+    });
+    html += '</tbody></table>';
+
+    tableEl.innerHTML = html;
+    resultEl.innerHTML = scrapeNewsAborted
+        ? `<span style="color:var(--gold);">Cancelled. Scraped ${results.length} prospects.</span>`
+        : `<span style="color:var(--green);">✓ Done. Scraped news for ${results.length} prospects.</span>`;
+    btn.disabled = false;
+    cancelBtn.style.display = 'none';
 }
 
 // ============================================================

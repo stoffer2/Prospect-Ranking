@@ -1,0 +1,38 @@
+[
+  {
+    "id": "jackson-holliday",
+    "first_name": "Jackson",
+    "last_name": "Holliday",
+    "team": "BAL",
+    "position": "SS"
+  },
+  {
+    "id": "paul-skenes",
+    "first_name": "Paul",
+    "last_name": "Skenes",
+    "team": "PIT",
+    "position": "SP"
+  },
+  {
+    "id": "wyatt-langford",
+    "first_name": "Wyatt",
+    "last_name": "Langford",
+    "team": "TEX",
+    "position": "OF"
+  },
+  {
+    "id": "colton-cowser",
+    "first_name": "Colton",
+    "last_name": "Cowser",
+    "team": "BAL",
+    "position": "OF"
+  },
+  {
+    "id": "ceddanne-rafaela",
+    "first_name": "Ceddanne",
+    "last_name": "Rafaela",
+    "team": "BOS",
+    "position": "SS",
+    "aliases": []
+  }
+]

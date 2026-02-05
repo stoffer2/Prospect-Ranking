@@ -342,6 +342,129 @@ footer {
     margin-top:1rem;
 }
 
+/* ── ROSTER UPLOAD ── */
+.btn-upload-roster {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: transform .15s, box-shadow .15s;
+}
+.btn-upload-roster:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(251,191,36,.45); }
+.btn-upload-roster.loaded { background: var(--green); color: #0a0e1a; }
+.btn-upload-roster.loaded:hover { box-shadow: 0 4px 14px rgba(52,211,153,.4); }
+.fantasy-section {
+    display: none;
+    padding: 1rem 2rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+.fantasy-section.open { display: block; }
+.fantasy-desc { color: var(--text-mid); font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.5; }
+.fantasy-drop-zone {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    transition: border-color .2s, background .2s;
+}
+.fantasy-drop-zone.drag-over { border-color: var(--gold); background: rgba(245,158,11,.08); }
+.fantasy-drop-zone.success { border-color: var(--green); background: rgba(52,211,153,.06); }
+.fantasy-drop-content {
+    padding: 2rem 1rem;
+    text-align: center;
+    position: relative;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.fantasy-drop-placeholder {
+    color: var(--text-mid);
+    font-size: 0.9rem;
+}
+.fantasy-drop-processing,
+.fantasy-drop-success { display: none; }
+.fantasy-drop-zone.processing .fantasy-drop-placeholder { display: none; }
+.fantasy-drop-zone.processing .fantasy-drop-processing { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.fantasy-drop-zone.processing .fantasy-drop-success { display: none; }
+.fantasy-drop-zone.success .fantasy-drop-placeholder,
+.fantasy-drop-zone.success .fantasy-drop-processing { display: none; }
+.fantasy-drop-zone.success .fantasy-drop-success { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.fantasy-drop-processing span { color: var(--text-mid); font-size: 0.9rem; }
+.fantasy-checkmark {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(52,211,153,.2);
+    color: var(--green);
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: checkmark-pop 0.35s ease-out;
+}
+@keyframes checkmark-pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.fantasy-drop-success span:last-child { color: var(--green); font-weight: 600; font-size: 0.95rem; }
+.fantasy-progress-wrap {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--border);
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+}
+.fantasy-drop-zone.processing .fantasy-progress-wrap { display: block; }
+.fantasy-drop-zone.success .fantasy-progress-wrap { display: none; }
+.fantasy-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+    transition: width 0.12s ease-out;
+}
+.fantasy-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.btn-apply { background: var(--accent); color: #fff; border: none; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; cursor: pointer; }
+.btn-apply:hover { background: var(--accent-hi); }
+.btn-clear { background: transparent; color: var(--text-mid); border: 1px solid var(--border); padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; cursor: pointer; }
+.btn-clear:hover { border-color: var(--text-lo); color: var(--text-hi); }
+.draft-col { font-size: 0.8rem; color: var(--text-mid); }
+
+/* ── TOAST ── */
+.fantasy-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    z-index: 9999;
+    opacity: 0;
+    transition: transform .3s, opacity .3s;
+    max-width: 90%;
+}
+.fantasy-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+.fantasy-toast strong { color: var(--green); }
+
 /* ── RESPONSIVE ── */
 /* Tablet and below */
 @media (max-width: 768px) {
@@ -410,9 +533,29 @@ footer {
         <span><strong>100+</strong> prospects</span>
     </div>
     <div class="header-right">
+        <button type="button" class="btn-upload-roster" id="btnUploadRoster" onclick="document.getElementById('fantasySection').classList.toggle('open')">Upload your league's roster</button>
         <button class="btn-pro">⭐ Upgrade to Pro</button>
     </div>
 </header>
+
+<div class="fantasy-section" id="fantasySection">
+    <p class="fantasy-desc">Drop your roster CSV or paste (Ctrl+V).</p>
+    <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
+        <div class="fantasy-drop-content">
+            <div class="fantasy-drop-placeholder">Drop CSV file or paste (Ctrl+V)</div>
+            <div class="fantasy-drop-processing">
+                <span>Processing…</span>
+            </div>
+            <div class="fantasy-drop-success">
+                <div class="fantasy-checkmark">✓</div>
+                <span>Roster imported!</span>
+            </div>
+        </div>
+        <div class="fantasy-progress-wrap">
+            <div class="fantasy-progress-bar" id="fantasyProgressBar"></div>
+        </div>
+    </div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -492,6 +635,8 @@ footer {
                 <th>Score</th>
                 <th>Volatility</th>
                 <th>Consensus</th>
+                <th>Draft</th>
+            </tr>
         </thead>
         <tbody id="tbody"></tbody>
     </table>
@@ -517,6 +662,8 @@ footer {
         </div>
     </div>
 </div>
+
+<div class="fantasy-toast" id="fantasyToast"></div>
 
 <!-- FOOTER -->
 <footer>
@@ -742,10 +889,9 @@ const RAW_DATA = [
     { name:"Andrew Fischer",        pos:"3B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:73, prospect361:null, rotochamp:null } },
     { name:"Brice Matthews",        pos:"SS", team:"HOU", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:77, prospect361:null, rotochamp:null } },
     { name:"Jacob Reimer",          pos:"3B", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:92, prospect361:null, rotochamp:null } },
-    { name:"Kazuma Okamoto",        pos:"1B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:null, rotochamp:null } },
+    { name:"Kazuma Okamoto",        pos:"1B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:47, rotochamp:null } },
     { name:"Zach Cole",             pos:"OF", team:"HOU", age:25, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:99, prospect361:null, rotochamp:null } },
     { name:"Felnin Celesten",       pos:"SS", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:36, rotochamp:null } },
-    { name:"Kazuma Okamota",        pos:"3B", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:47, rotochamp:null } },
     { name:"Jeferson Quero",        pos:"C", team:"MIL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:53, rotochamp:null } },
     { name:"Ike Irish",             pos:"C", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:54, rotochamp:null } },
     { name:"Elmer Rodriguez-Cruz",  pos:"SP", team:"NYY", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:52, prospect361:62, rotochamp:82 } },
@@ -788,6 +934,328 @@ function buildProspects() {
 
 const ALL_PROSPECTS = buildProspects();
 const FREE_LIMIT    = 999;  // ← no paywall during development
+
+// ============================================================
+// FANTASY LEAGUE OWNERSHIP (temporary, sessionStorage)
+// ============================================================
+const FANTASY_STORAGE = 'rankle-fantasy-csv';
+
+function looksLikeMlbTeam(s) {
+    const v = (s || '').trim();
+    if (!v || v.length > 6) return false;
+    return /^[A-Z]{2,3}$/i.test(v) || /^(tb|sd|sf|la|nyy|nym|chw|chc|kc|stl|ari|atl|bal|bos|cle|col|det|hou|mil|min|oak|sea|tex|tor|was|wsh|mia|phi|cws|cin)$/i.test(v);
+}
+
+function looksLikeId(s) {
+    const v = (s || '').trim();
+    if (!v || v.length < 8) return false;
+    return /^[0-9a-f]{8,}$/i.test(v) || (/^[a-z0-9]{10,}$/i.test(v) && !/[aeiou]/i.test(v));
+}
+
+function looksLikePercentOrStat(s) {
+    const v = (s || '').trim();
+    if (!v) return false;
+    if (/%$/.test(v)) return true;
+    const n = parseFloat(v.replace(/%/g, ''));
+    return !isNaN(n) && v.replace(/[\d.\s%]/g, '').length === 0;
+}
+
+function parseCsvLine(line, sep) {
+    if (sep === '\t') return line.split(sep).map(c => c.replace(/^"|"$/g, '').trim());
+    const out = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') inQuote = !inQuote;
+        else if (ch === ',' && !inQuote) {
+            out.push(cur.replace(/^"|"$/g, '').trim());
+            cur = '';
+        } else cur += ch;
+    }
+    out.push(cur.replace(/^"|"$/g, '').trim());
+    return out;
+}
+
+function parseFantasyCsv(text) {
+    const lines = text.trim().split(/[\r\n]+/).filter(l => l.trim());
+    if (lines.length < 2) return {};
+    const sep = lines[0].includes('\t') ? '\t' : ',';
+    const cols = parseCsvLine(lines[0], sep).map(c => c.toLowerCase());
+    const parseRow = i => parseCsvLine(lines[i], sep);
+
+    let playerIdx = cols.findIndex(c => /^player$|^name$|^hitter$|^pitcher$/.test(c));
+    if (playerIdx === -1) playerIdx = cols.findIndex(c => c.includes('player') || c.includes('name'));
+    if (playerIdx === -1) playerIdx = 0;
+
+    const statHeaders = /^(pos|position|slot|elig|ab|hr|rbi|avg|ip|k|whip|era|sv|id|player.?id|owned|owned.?%|own.?%|ownership|%|pct)$/i;
+    const ownerHeaders = /^owner$|^fantasy|^fantasy.?team$|^team.?owner$|^manager$|^owned.?by$|^drafted.?by$|^franchise$|^gm$/;
+
+    let ownerIdx = -1;
+    const statusIdx = cols.findIndex(c => /^status$/i.test(c));
+    if (statusIdx >= 0) {
+        const statusVals = [];
+        for (let r = 1; r < Math.min(lines.length, 51); r++) {
+            const v = (parseRow(r)[statusIdx] || '').trim();
+            if (v) statusVals.push(v);
+        }
+        const hasFa = statusVals.some(v => /^fa$/i.test(v));
+        const valid = statusVals.filter(v => !looksLikePercentOrStat(v)).length;
+        if (hasFa || valid >= statusVals.length * 0.8) ownerIdx = statusIdx;
+    }
+    let bestScore = -1;
+
+    for (let c = 0; c < cols.length && ownerIdx === -1; c++) {
+        if (c === playerIdx || statHeaders.test(cols[c])) continue;
+        const vals = [];
+        for (let r = 1; r < Math.min(lines.length, 101); r++) {
+            const v = (parseRow(r)[c] || '').trim();
+            if (v) vals.push(v);
+        }
+        if (vals.length < 3) continue;
+
+        const mlbLike = vals.filter(v => looksLikeMlbTeam(v)).length;
+        const idLike = vals.filter(v => looksLikeId(v)).length;
+        const percentLike = vals.filter(v => looksLikePercentOrStat(v)).length;
+        const validVals = vals.filter(v => !looksLikeMlbTeam(v) && !looksLikeId(v) && !looksLikePercentOrStat(v));
+        const unique = new Set(validVals).size;
+
+        if (mlbLike >= vals.length * 0.6) continue;
+        if (idLike >= vals.length * 0.4) continue;
+        if (percentLike >= vals.length * 0.5) continue;
+        if (unique < 2 || unique > vals.length * 0.95) continue;
+
+        const leagueSized = unique >= 3 && unique <= 24;
+        const headerMatch = ownerHeaders.test(cols[c]);
+        const teamHeaderOk = /^team$/.test(cols[c]) && mlbLike < vals.length * 0.3;
+
+        let score = validVals.length * 2 + unique;
+        if (headerMatch) score += 500;
+        else if (teamHeaderOk) score += 50;
+        if (leagueSized) score += 100;
+
+        if (score > bestScore) {
+            bestScore = score;
+            ownerIdx = c;
+        }
+    }
+
+    if (ownerIdx === -1) {
+        const explicit = cols.findIndex(c => ownerHeaders.test(c) && !statHeaders.test(c));
+        if (explicit >= 0) {
+            const exVals = [];
+            for (let r = 1; r < Math.min(lines.length, 21); r++) {
+                const v = (parseRow(r)[explicit] || '').trim();
+                if (v) exVals.push(v);
+            }
+            if (exVals.filter(v => looksLikePercentOrStat(v)).length < exVals.length * 0.5) ownerIdx = explicit;
+        }
+        if (ownerIdx === -1) ownerIdx = cols.length > 2 ? cols.length - 1 : 1;
+    }
+
+    const map = {};
+    for (let i = 1; i < lines.length; i++) {
+        const cells = parseRow(i);
+        const name = (cells[playerIdx] || '').trim();
+        const owner = (cells[ownerIdx] || '').trim();
+        if (!name) continue;
+        const ownerUpper = owner.toUpperCase();
+        if (ownerUpper === 'FA' || /^fa$/i.test(owner)) continue;
+        if (ownerIdx !== statusIdx && (looksLikeMlbTeam(owner) || looksLikePercentOrStat(owner))) continue;
+        if (!owner || owner.length < 1) continue;
+        const n = normalizeName(name);
+        map[n] = owner;
+    }
+    return map;
+}
+
+function normalizeName(s) {
+    return s.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function lastNameFromParts(parts) {
+    if (!parts.length) return '';
+    const last = parts[parts.length - 1]?.toLowerCase() || '';
+    const suffix = /^(jr\.?|iii?|iv|ii|sr\.?)$/i.test(last);
+    return suffix && parts.length >= 2 ? parts[parts.length - 2]?.toLowerCase() || '' : last;
+}
+
+function fuzzyMatchProspect(prospectName, ownershipMap) {
+    const n = normalizeName(prospectName);
+    if (ownershipMap[n]) return ownershipMap[n];
+    const prospectParts = prospectName.trim().split(/\s+/);
+    const prospectFirst = prospectParts[0]?.toLowerCase() || '';
+    const prospectLast = lastNameFromParts(prospectParts);
+    const prospectInitial = prospectFirst.charAt(0);
+    for (const [k, v] of Object.entries(ownershipMap)) {
+        const csvParts = k.trim().split(/\s+/);
+        const csvLast = lastNameFromParts(csvParts);
+        const csvFirst = csvParts[0]?.toLowerCase() || '';
+        if (csvLast !== prospectLast) continue;
+        const csvInitial = csvFirst.charAt(0);
+        if (prospectInitial && csvInitial && prospectInitial !== csvInitial) continue;
+        return v;
+    }
+    return null;
+}
+
+let ownershipMap = {};
+
+function applyFantasyCsv(text, opts) {
+    text = (text || '').trim();
+    if (!text) return;
+    ownershipMap = parseFantasyCsv(text);
+    sessionStorage.setItem(FANTASY_STORAGE, text);
+    const btn = document.getElementById('btnUploadRoster');
+    if (btn) { btn.textContent = 'Roster loaded ✓'; btn.classList.add('loaded'); }
+    render();
+
+    if (opts?.skipClose !== true) {
+        document.getElementById('fantasySection').classList.remove('open');
+    }
+
+    const toast = document.getElementById('fantasyToast');
+    toast.innerHTML = 'Roster imported successfully.';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function processAndApplyCsv(text) {
+    const zone = document.getElementById('fantasyDropZone');
+    const bar = document.getElementById('fantasyProgressBar');
+
+    zone.classList.remove('success');
+    zone.classList.add('processing');
+    bar.style.width = '0%';
+
+    // Animate loading bar 0 -> 100% over ~500ms
+    const duration = 500;
+    const start = performance.now();
+    function tick(now) {
+        const elapsed = now - start;
+        const pct = Math.min((elapsed / duration) * 100, 100);
+        bar.style.width = pct + '%';
+
+        if (pct < 100) {
+            requestAnimationFrame(tick);
+            return;
+        }
+
+        // Bar complete: apply data and show success
+        applyFantasyCsv(text, { skipClose: true });
+
+        zone.classList.remove('processing');
+        zone.classList.add('success');
+
+        // Close section and reset after showing checkmark
+        setTimeout(() => {
+            document.getElementById('fantasySection').classList.remove('open');
+            zone.classList.remove('success');
+            bar.style.width = '0%';
+        }, 1400);
+    }
+    requestAnimationFrame(tick);
+}
+
+(function loadFantasyFromStorage() {
+    const saved = sessionStorage.getItem(FANTASY_STORAGE);
+    if (saved) {
+        ownershipMap = parseFantasyCsv(saved);
+        const btn = document.getElementById('btnUploadRoster');
+        if (btn) { btn.textContent = 'Roster loaded ✓'; btn.classList.add('loaded'); }
+    }
+})();
+
+// ============================================================
+// MLB DRAFT / SIGNING YEAR (from MLB Stats API)
+// ============================================================
+const DRAFT_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+let draftMap = new Map(); // normalized name -> draft year
+
+// Temporary static IFA signing years (Spotrac/BA; remove when done)
+const IFA_SIGNINGS = { "jesus made":2024,"leo de vries":2024,"leodalis de vries":2024,"emil morales":2024,"jhonny level":2024,"luis pena":2024,"edward florentino":2024,"samuel basallo":2022,"josue de paula":2022,"eduardo quintero":2023,"sebastian walcott":2023,"ethan salas":2023,"moises ballesteros":2019,"josuar gonzalez":2023,"alfredo duno":2023,"ralphy velazquez":2023,"felnin celesten":2023,"lazaro montes":2021,"jarlin susana":2022,"kendry chourio":2023,"michael arroyo":2022,"jeferson quero":2019,"leonardo bernal":2021,"joshua baez":2021,"franklin arias":2023,"cooper pratt":2023,"angel genao":2022,"josue briceno":2022 };
+
+function normalizeDraftName(s) {
+    if (!s || typeof s !== 'string') return '';
+    return s.toLowerCase()
+        .replace(/\./g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/\s*(jr\.?|iii?|iv|ii)\s*$/i, '')
+        .trim();
+}
+
+function getDraftYear(prospectName) {
+    const n = normalizeDraftName(prospectName);
+    if (draftMap.has(n)) return draftMap.get(n);
+    const yr = IFA_SIGNINGS[n];
+    if (yr) return "IFA '" + String(yr).slice(-2);
+    const parts = prospectName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+        const lastFirst = (parts[parts.length - 1] + ' ' + parts[0]).toLowerCase().replace(/\./g, '');
+        if (draftMap.has(lastFirst)) return draftMap.get(lastFirst);
+        const firstLast = (parts[0] + ' ' + parts[parts.length - 1]).toLowerCase().replace(/\./g, '');
+        if (draftMap.has(firstLast)) return draftMap.get(firstLast);
+        if (IFA_SIGNINGS[lastFirst]) return "IFA '" + String(IFA_SIGNINGS[lastFirst]).slice(-2);
+        if (IFA_SIGNINGS[firstLast]) return "IFA '" + String(IFA_SIGNINGS[firstLast]).slice(-2);
+    }
+    return null;
+}
+
+async function loadDraftMap() {
+    const yearData = await Promise.all(
+        DRAFT_YEARS.map(async (year) => {
+            try {
+                const res = await fetch(`https://statsapi.mlb.com/api/v1/draft/prospects/${year}`);
+                const data = await res.json();
+                return { year, prospects: data.prospects || [] };
+            } catch (e) {
+                console.warn('MLB draft fetch failed for', year, e);
+                return { year, prospects: [] };
+            }
+        })
+    );
+    for (const { year, prospects } of yearData) {
+        for (const p of prospects) {
+            if (!p.isDrafted || !p.person?.fullName) continue;
+            const yr = p.year ?? p.person.draftYear ?? year;
+            const name = p.person.fullName;
+            const n = normalizeDraftName(name);
+            const existing = draftMap.get(n);
+            if (existing == null || yr > existing) draftMap.set(n, yr);
+            const first = (p.person.firstName || '').replace(/\./g, '');
+            const last = (p.person.lastName || '').replace(/\./g, '');
+            if (first && last) {
+                const fl = (first + ' ' + last).toLowerCase().replace(/\s+/g, ' ');
+                const lf = (last + ' ' + first).toLowerCase().replace(/\s+/g, ' ');
+                if (draftMap.get(fl) == null || yr > draftMap.get(fl)) draftMap.set(fl, yr);
+                if (draftMap.get(lf) == null || yr > draftMap.get(lf)) draftMap.set(lf, yr);
+            }
+        }
+    }
+    if (typeof render === 'function') render();
+}
+
+(function setupFantasyDropZone() {
+    const zone = document.getElementById('fantasyDropZone');
+    ['dragenter', 'dragover'].forEach(ev => {
+        zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+        zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', e => {
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        if (!/\.(csv|txt)$/i.test(file.name) && !file.type.match(/text\/|csv/)) return;
+        const reader = new FileReader();
+        reader.onload = () => processAndApplyCsv(reader.result);
+        reader.readAsText(file);
+    });
+    zone.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = e.clipboardData?.getData('text/plain') || '';
+        if (text.trim()) processAndApplyCsv(text);
+    });
+})();
 
 // ============================================================
 // POPULATE FILTER DROPDOWNS
@@ -859,7 +1327,7 @@ function render() {
             const lockRow = document.createElement('tr');
             lockRow.className = 'lock-row';
             lockRow.innerHTML = `
-                <td colspan="9">
+                <td colspan="10">
                     <div class="lock-box">
                         <div class="lock-icon">🔒</div>
                         <div class="lock-title">Unlock Full Rankings</div>
@@ -873,6 +1341,9 @@ function render() {
 
         const tr = document.createElement('tr');
         if (!isFree) tr.className = 'locked-ghost';
+        const owner = Object.keys(ownershipMap).length ? fuzzyMatchProspect(p.name, ownershipMap) : null;
+        const isUnowned = Object.keys(ownershipMap).length && !owner;
+        if (isUnowned) tr.classList.add('row-unowned');
 
         // 6 consensus dots (sources that agreed on position within ±10% percentile)
         const dotsHtml = [1,2,3,4,5,6].map(i =>
@@ -884,6 +1355,8 @@ function render() {
             ? `<span class="warn-badge">⚠ 1 source</span>`
             : '';
 
+        const draftYear = getDraftYear(p.name);
+        const draftCell = `<td class="draft-col">${draftYear ?? '—'}</td>`;
         tr.innerHTML = `
             <td><div class="rank-pill ${rankClass(p.displayRank)}">#${p.displayRank}</div></td>
             <td><div class="p-name">${p.name} ${warnHtml}</div></td>
@@ -896,6 +1369,7 @@ function render() {
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>
             </td>
             <td><div class="cons-dots">${dotsHtml}</div></td>
+            ${draftCell}
         `;
         tbody.appendChild(tr);
     });
@@ -906,7 +1380,7 @@ function render() {
         const lockRow = document.createElement('tr');
         lockRow.className = 'lock-row';
         lockRow.innerHTML = `
-            <td colspan="9">
+            <td colspan="10">
                 <div class="lock-box">
                     <div class="lock-icon">🔒</div>
                     <div class="lock-title">Unlock Full Rankings</div>
@@ -926,6 +1400,9 @@ document.getElementById('posFilter').addEventListener('change',  render);
 document.getElementById('teamFilter').addEventListener('change', render);
 document.getElementById('volFilter').addEventListener('change',  render);
 render();
+
+// Load MLB draft data in background; re-renders when done
+loadDraftMap();
 </script>
 </body>
 </html>
