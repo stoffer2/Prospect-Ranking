@@ -49,10 +49,13 @@ header {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 0.75rem;
 }
 .logo-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     font-family: 'Bebas Neue', cursive;
     font-size: 2.2rem;
     letter-spacing: 2px;
@@ -62,11 +65,6 @@ header {
     color: transparent;
     filter: drop-shadow(0 2px 4px rgba(245,158,11,0.35));
 }
-.header-stats {
-    display: flex; gap: 1.5rem; font-size: 0.75rem; color: var(--text-lo);
-    letter-spacing: 0.5px;
-}
-.header-stats strong { color: var(--accent-hi); }
 .header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .btn-pro {
     background: linear-gradient(135deg,#2563eb,#1d4ed8);
@@ -223,6 +221,7 @@ table { width:100%; border-collapse:collapse; }
 
 thead th {
     position: sticky;
+    position: -webkit-sticky;
     top: 64px;
     z-index: 10;
     background: var(--bg-deep);
@@ -252,20 +251,55 @@ td:first-child { padding-left:1rem; }
     width:38px; height:38px; border-radius:8px;
     font-weight:700; font-size:.88rem;
 }
+.rank-tier0 { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#1a1a1a; box-shadow:0 2px 10px rgba(253,224,71,.5); }
 .rank-gold   { background:linear-gradient(135deg,#f59e0b,#d97706); color:#1a1a1a; box-shadow:0 2px 8px rgba(245,158,11,.35); }
 .rank-silver { background:linear-gradient(135deg,#cbd5e1,#94a3b8); color:#1a1a1a; box-shadow:0 2px 6px rgba(148,163,175,.3); }
 .rank-bronze { background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;    box-shadow:0 2px 6px rgba(249,115,22,.35); }
-.rank-steel  { background:var(--bg-card); color:var(--text-mid); border:1px solid var(--border); }
+.rank-tier4 { background:rgba(148,163,184,.25); color:#cbd5e1; }
+.rank-steel { background:var(--bg-card); color:var(--text-mid); border:1px solid var(--border); }
+
+.tier-breaker { background: transparent !important; }
+.tier-breaker td { padding: 0.35rem 0; border: none; vertical-align: middle; min-height: 1.5rem; }
+.tier-breaker-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0;
+}
+.tier-breaker-line::before,
+.tier-breaker-line::after {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border) 15%, var(--border) 85%, transparent);
+}
+.tier-breaker-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-lo);
+    white-space: nowrap;
+}
 
 /* name col */
 .p-name { font-weight:600; font-size:.9rem; color:var(--text-hi); }
 
-/* pos badge */
+/* pos badge — color by position */
 .pos-badge {
     display:inline-block; padding:.2rem .55rem;
     border-radius:20px; font-size:.72rem; font-weight:600;
     background:rgba(59,130,246,.15); color:#7dd3fc;
 }
+.pos-sp { background:rgba(59,130,246,.2); color:#7dd3fc; }
+.pos-c  { background:rgba(167,139,250,.2); color:#c4b5fd; }
+.pos-1b { background:rgba(52,211,153,.2); color:#6ee7b7; }
+.pos-2b { background:rgba(34,211,238,.2); color:#67e8f9; }
+.pos-3b { background:rgba(251,146,60,.2); color:#fdba74; }
+.pos-ss { background:rgba(251,191,36,.2); color:#fde047; }
+.pos-of { background:rgba(244,114,182,.2); color:#f9a8d4; }
+.pos-if { background:rgba(148,163,184,.2); color:#cbd5e1; }
 
 .team-col { font-weight:600; font-size:.85rem; color:var(--text-mid); }
 .num-col  { font-size:.85rem; color:var(--text-mid); }
@@ -444,7 +478,6 @@ footer {
     background: linear-gradient(90deg, var(--accent), var(--accent-hi));
     transition: width 0.12s ease-out;
 }
-.draft-col { font-size: 0.8rem; color: var(--text-mid); }
 
 /* ── TOAST ── */
 .fantasy-toast {
@@ -473,7 +506,6 @@ footer {
 @media (max-width: 768px) {
     header { padding: 0.75rem 1rem; min-height: auto; }
     thead th { position: static; }
-    .header-stats { display: none; }
     .logo-title { font-size: 1.8rem; flex-shrink: 0; }
     .header-right { flex-wrap: wrap; }
     .btn-upload-roster { padding: 0.4rem 0.75rem; font-size: 0.72rem; white-space: nowrap; }
@@ -486,9 +518,10 @@ footer {
     .filter-bar { margin: 1rem auto 0.75rem; padding: 0 1rem; gap: 0.6rem; }
     .filter-group { min-width: 0; flex: 1 1 45%; }
     .filter-group[style*="flex:2"] { flex: 1 1 100%; }
-    .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
     .table-wrap::after { content: ''; display: block; height: 1px; }
     table { min-width: 680px; }
+    thead th { position: sticky; top: 64px; z-index: 10; background: var(--bg-deep); }
     thead th, td { padding: 0.6rem 0.5rem; font-size: 0.8rem; }
     thead th:first-child, td:first-child { padding-left: 0.75rem; }
     .rank-pill { width: 34px; height: 34px; font-size: 0.8rem; }
@@ -520,7 +553,7 @@ footer {
         padding: 0.5rem 0.6rem;
         font-size: 0.7rem;
     }
-    thead th { position: static; }
+    thead th { position: sticky; position: -webkit-sticky; top: 100px; z-index: 10; background: var(--bg-deep); }
     .logo-title { font-size: 1.55rem; letter-spacing: 1px; }
     .hero { padding: 1.5rem 0.75rem 1.5rem; }
     .hero h1 { font-size: 1.65rem; }
@@ -530,7 +563,7 @@ footer {
     .filter-bar { padding: 0 0.75rem; flex-direction: column; }
     .filter-group { flex: 1 1 auto !important; width: 100%; }
     .filter-group input, .filter-group select { padding: 0.55rem 0.75rem; min-height: 44px; font-size: 1rem; }
-    .table-wrap { padding: 0 0.5rem; margin-left: -0.25rem; margin-right: -0.25rem; }
+    .table-wrap { padding: 0 0.5rem; margin-left: -0.25rem; margin-right: -0.25rem; overflow-x: auto; overflow-y: visible; }
     table { min-width: 640px; font-size: 0.78rem; }
     thead th, td { padding: 0.5rem 0.4rem; font-size: 0.75rem; }
     thead th:first-child, td:first-child { padding-left: 0.5rem; }
@@ -538,6 +571,8 @@ footer {
     .pos-badge { padding: 0.15rem 0.4rem; font-size: 0.65rem; }
     .vol-badge { font-size: 0.6rem; padding: 0.12rem 0.35rem; }
     .cons-dot { width: 6px; height: 6px; }
+    .tier-breaker td { padding: 0.4rem 0.5rem; }
+    .tier-breaker-label { font-size: 0.62rem; }
     .method-card { padding: 1.25rem; }
     .method-card h3 { font-size: 1.15rem; }
     .method-item h4 { font-size: 0.75rem; }
@@ -550,10 +585,6 @@ footer {
 <!-- HEADER -->
 <header>
     <span class="logo-title">Rankle</span>
-    <div class="header-stats">
-        <span><strong>9</strong> sources</span>
-        <span><strong>100+</strong> prospects</span>
-    </div>
     <div class="header-right">
         <button type="button" class="btn-upload-roster" id="btnUploadRoster" onclick="document.getElementById('fantasySection').classList.toggle('open')">Upload your league's roster</button>
         <button class="btn-pro">⭐ Upgrade to Pro</button>
@@ -648,7 +679,7 @@ footer {
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th></th>
                 <th>Player</th>
                 <th>Pos</th>
                 <th>Team</th>
@@ -657,7 +688,6 @@ footer {
                 <th>Score</th>
                 <th>Volatility</th>
                 <th>Consensus</th>
-                <th>Draft</th>
             </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -681,16 +711,15 @@ footer {
                 <h4>Volatility (Standard Deviation)</h4>
                 <p>Sample standard deviation of <strong style="color:var(--accent-hi);">Z-scores</strong> across sources. <strong style="color:var(--green);">Low (&lt;0.3)</strong> = sources agree. <strong style="color:#fbbf24;">Moderate (0.3–0.7)</strong> = some disagreement. <strong style="color:var(--red);">High (0.7–0.85)</strong> = significant divergence. <strong style="color:#a78bfa;">Extreme (≥0.85)</strong> = major outlier, single source or stark disagreement. Requires 2+ sources; single-source prospects are flagged.</p>
             </div>
+            <div class="method-item">
+                <h4>Tiers (Slope-Change Detection)</h4>
+                <p>Tiers are computed using a talent-cliff algorithm: we calculate score deltas between consecutive players, establish a moving baseline from the surrounding 10 players, and trigger a tier break whenever a gap exceeds 2.5× that local mean. If #1 is far ahead of #2 relative to the top-20 average, they receive Tier 0.</p>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="fantasy-toast" id="fantasyToast"></div>
-
-<!-- FOOTER -->
-<footer>
-    © 2026 Rankle. Rankings are transformative works aggregated from publicly available sources. We analyze data from MLB Pipeline, Baseball America, FanGraphs, Bleacher Report, ESPN, Just Baseball, RotoProspects, and Prospect361.
-</footer>
 
 <script>
 // ============================================================
@@ -954,7 +983,54 @@ function buildProspects() {
     .map((p, i) => ({ ...p, displayRank: i + 1 }));   // assign final display rank
 }
 
-const ALL_PROSPECTS = buildProspects();
+// ============================================================
+// SLOPE-CHANGE DETECTION — talent cliffs / tier boundaries
+// ============================================================
+function calculateTalentCliffs(prospects) {
+    const n = prospects.length;
+    if (n === 0) return [];
+    if (n === 1) return [{ ...prospects[0], tier: 1 }];
+
+    const gaps = [];
+    for (let i = 0; i < n - 1; i++) {
+        gaps.push(prospects[i].rankleScore - prospects[i + 1].rankleScore);
+    }
+
+    const breakIndices = [];
+    const halfWindow = 5;
+    for (let i = 0; i < gaps.length; i++) {
+        const start = Math.max(0, i - halfWindow);
+        const end = Math.min(gaps.length - 1, i + halfWindow);
+        const window = gaps.slice(start, end + 1);
+        const localMean = window.reduce((a, b) => a + b, 0) / window.length;
+        if (localMean > 0 && gaps[i] > 2.5 * localMean) {
+            breakIndices.push(i);
+        }
+    }
+
+    let tier0 = false;
+    if (gaps.length >= 19) {
+        const avgTop20 = gaps.slice(0, 19).reduce((a, b) => a + b, 0) / 19;
+        if (gaps[0] > 2 * avgTop20) tier0 = true;
+    }
+
+    return prospects.map((p, i) => {
+        if (tier0 && i === 0) return { ...p, tier: 0 };
+        let tier = 1;
+        for (const b of breakIndices) {
+            if (i <= b) break;
+            tier++;
+        }
+        return { ...p, tier };
+    });
+}
+
+const ALL_PROSPECTS = (() => {
+    const built = buildProspects();
+    const multiSource = built.filter(p => p.sourceCount > 1);
+    const withDisplayRank = multiSource.map((p, i) => ({ ...p, displayRank: i + 1 }));
+    return calculateTalentCliffs(withDisplayRank);
+})();
 const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
@@ -1280,10 +1356,12 @@ async function loadDraftMap() {
 // ============================================================
 // RENDER TABLE
 // ============================================================
-function rankClass(r) {
-    if (r <= 3)  return 'rank-gold';
-    if (r <= 6)  return 'rank-silver';
-    if (r <= 10) return 'rank-bronze';
+function tierClass(tier) {
+    if (tier === 0) return 'rank-tier0';
+    if (tier === 1) return 'rank-gold';
+    if (tier === 2) return 'rank-silver';
+    if (tier === 3) return 'rank-bronze';
+    if (tier === 4) return 'rank-tier4';
     return 'rank-steel';
 }
 
@@ -1293,6 +1371,19 @@ function volClass(v) {
     if (v === 'High')     return 'vol-high';
     if (v === 'Extreme')  return 'vol-extreme';
     return 'vol-na';
+}
+
+function posClass(pos) {
+    const p = (pos || '').toLowerCase();
+    if (/^sp$|^rhp$|^lhp$|^p$/.test(p)) return 'pos-sp';
+    if (p === 'c') return 'pos-c';
+    if (p === '1b') return 'pos-1b';
+    if (p === '2b') return 'pos-2b';
+    if (p === '3b') return 'pos-3b';
+    if (p === 'ss') return 'pos-ss';
+    if (p === 'of') return 'pos-of';
+    if (p === 'if') return 'pos-if';
+    return '';
 }
 
 function render() {
@@ -1313,9 +1404,19 @@ function render() {
     tbody.innerHTML = '';
 
     let lockInserted = false;
+    let prevTier = null;
 
     filtered.forEach(p => {
         const isFree = p.displayRank <= FREE_LIMIT;
+
+        const isFirstInTier = prevTier === null || p.tier !== prevTier;
+        if (isFirstInTier) {
+            const breakerRow = document.createElement('tr');
+            breakerRow.className = 'tier-breaker';
+            breakerRow.innerHTML = `<td colspan="9"><div class="tier-breaker-line"><span class="tier-breaker-label">Tier ${p.tier}</span></div></td>`;
+            tbody.appendChild(breakerRow);
+        }
+        prevTier = p.tier;
 
         // Insert lock wall once, right before the first locked prospect
         if (!isFree && !lockInserted) {
@@ -1323,7 +1424,7 @@ function render() {
             const lockRow = document.createElement('tr');
             lockRow.className = 'lock-row';
             lockRow.innerHTML = `
-                <td colspan="10">
+                <td colspan="11">
                     <div class="lock-box">
                         <div class="lock-icon">🔒</div>
                         <div class="lock-title">Unlock Full Rankings</div>
@@ -1348,12 +1449,10 @@ function render() {
             ? `<span class="warn-badge">⚠ 1 source</span>`
             : '';
 
-        const draftYear = getDraftYear(p.name);
-        const draftCell = `<td class="draft-col">${draftYear ?? '—'}</td>`;
         tr.innerHTML = `
-            <td><div class="rank-pill ${rankClass(p.displayRank)}">#${p.displayRank}</div></td>
+            <td><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${p.tier}">#${p.displayRank}</div></td>
             <td><div class="p-name">${p.name} ${warnHtml}</div></td>
-            <td><span class="pos-badge">${p.pos}</span></td>
+            <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
             <td class="team-col">${p.team}</td>
             <td class="num-col">${p.age}</td>
             <td class="num-col">${p.eta}</td>
@@ -1362,7 +1461,6 @@ function render() {
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>
             </td>
             <td><div class="cons-dots">${dotsHtml}</div></td>
-            ${draftCell}
         `;
         tbody.appendChild(tr);
     });
@@ -1373,7 +1471,7 @@ function render() {
         const lockRow = document.createElement('tr');
         lockRow.className = 'lock-row';
         lockRow.innerHTML = `
-            <td colspan="10">
+            <td colspan="11">
                 <div class="lock-box">
                     <div class="lock-icon">🔒</div>
                     <div class="lock-title">Unlock Full Rankings</div>
@@ -1384,7 +1482,6 @@ function render() {
         `;
         tbody.appendChild(lockRow);
     }
-
 }
 
 // ── Wire up filters & initial render ──
@@ -1394,8 +1491,6 @@ document.getElementById('teamFilter').addEventListener('change', render);
 document.getElementById('volFilter').addEventListener('change',  render);
 render();
 
-// Load MLB draft data in background; re-renders when done
-loadDraftMap();
 </script>
 </body>
 </html>
