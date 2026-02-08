@@ -281,6 +281,7 @@ header {
                         <option value="justbaseball">Just Baseball</option>
                         <option value="rotoprospects">RotoProspects</option>
                         <option value="prospect361">Prospect361</option>
+                        <option value="rotochamp">RotoChamp</option>
                     </select>
                 </div>
                 <div class="field">
@@ -991,13 +992,22 @@ async function assignIds() {
     await doFetchAges(null, needId);
 }
 
-async function doFetchAges(onlyIfAge) {
+async function doFetchAges(onlyIfAge, indicesToFetch) {
     const btn = document.getElementById('fetchAgesBtn');
     const remBtn = document.getElementById('fetchRemainingBtn');
+    const assignBtn = document.getElementById('assignIdsBtn');
     const resultEl = document.getElementById('ageResult');
     btn.disabled = true;
     if (remBtn) remBtn.disabled = true;
-    const toFetch = onlyIfAge !== null ? prospects.map((p,i) => [i,p]).filter(([i,p]) => p.age === onlyIfAge) : prospects.map((p,i) => [i,p]);
+    if (assignBtn) assignBtn.disabled = true;
+    let toFetch;
+    if (indicesToFetch && indicesToFetch.length > 0) {
+        toFetch = indicesToFetch;
+    } else if (onlyIfAge !== null) {
+        toFetch = prospects.map((p,i) => [i,p]).filter(([i,p]) => p.age === onlyIfAge);
+    } else {
+        toFetch = prospects.map((p,i) => [i,p]);
+    }
     resultEl.innerHTML = `<span style="color:var(--text-mid);">Fetching… 0/${toFetch.length}</span>`;
     const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const personUrl = (id) => `https://statsapi.mlb.com/api/v1/people/${id}`;
@@ -1091,7 +1101,6 @@ async function doFetchAges(onlyIfAge) {
 const POSITIVE_KEYWORDS = ["breakout","sleeper","stash","must-add","must add","call-up","callup","promoted","raking","mashing","filthy","ace","stud","league winner","add now","get him","fire","elite","dominant","nasty","underrated"];
 const NEGATIVE_KEYWORDS = ["injured","injury","IL","surgery","torn","struggling","demoted","bust","avoid","drop","overrated","overhyped","disappointing","setback","shut down","out for","DL"];
 const BASEBALL_KEYWORDS = ["prospect","mlb","minor league","baseball","draft","rookie","call-up","callup","triple-a","double-a","single-a","affiliate","organizational","farm system","spring training","debut","call up"];
-const IRRELEVANT_KEYWORDS = ["dating","girlfriend","boyfriend","relationship status","who is.*dating","married","wedding"];
 const NEWS_SENTIMENT = { positive: 1.2, negative: -1.0, neutral: 0.3 };
 const NEWS_BASE = 8;
 const DECAY_LAMBDA = 0.1;
