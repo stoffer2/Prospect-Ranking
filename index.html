@@ -25,6 +25,7 @@
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
+html { overflow-x: hidden; }
 body {
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
@@ -33,6 +34,7 @@ body {
     color: var(--text-hi);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 /* ── HEADER ── */
@@ -527,7 +529,7 @@ footer {
     .filter-bar { margin: 1rem auto 0.75rem; padding: 0 1rem; gap: 0.6rem; }
     .filter-group { min-width: 0; flex: 1 1 45%; }
     .filter-group[style*="flex:2"] { flex: 1 1 100%; }
-    .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+    .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
     .table-wrap::after { content: ''; display: block; height: 1px; }
     table { min-width: 680px; }
     thead th { position: sticky; top: 64px; z-index: 10; background: var(--bg-deep); }
@@ -580,7 +582,7 @@ footer {
     .filter-bar { padding: 0 0.75rem; flex-direction: column; }
     .filter-group { flex: 1 1 auto !important; width: 100%; }
     .filter-group input, .filter-group select { padding: 0.55rem 0.75rem; min-height: 44px; font-size: 1rem; }
-    .table-wrap { padding: 0 0.5rem; margin-left: -0.25rem; margin-right: -0.25rem; overflow-x: auto; overflow-y: visible; }
+    .table-wrap { padding: 0 0.75rem; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
     table { min-width: 640px; font-size: 0.78rem; }
     thead th, td { padding: 0.5rem 0.4rem; font-size: 0.75rem; }
     thead th:first-child, td:first-child { padding-left: 0.5rem; }
@@ -726,7 +728,7 @@ footer {
             </div>
             <div class="method-item">
                 <h4>Volatility (Standard Deviation)</h4>
-                <p>Sample standard deviation of <strong style="color:var(--accent-hi);">Z-scores</strong> across sources. <strong style="color:var(--green);">Low (&lt;0.3)</strong> = sources agree. <strong style="color:#fbbf24;">Moderate (0.3–0.7)</strong> = some disagreement. <strong style="color:var(--red);">High (0.7–0.85)</strong> = significant divergence. <strong style="color:#a78bfa;">Extreme (≥0.85)</strong> = major outlier, single source or stark disagreement. Requires 2+ sources; single-source prospects are flagged.</p>
+                <p>Sample standard deviation of <strong style="color:var(--accent-hi);">Z-scores</strong> across sources. <strong style="color:var(--green);">Low (&lt;0.3)</strong> = sources agree. <strong style="color:#fbbf24;">Moderate (0.3–0.7)</strong> = some disagreement. <strong style="color:var(--red);">High (0.7–0.85)</strong> = significant divergence. <strong style="color:#a78bfa;">Extreme (≥0.85)</strong> = major outlier or stark disagreement. Requires 2+ sources.</p>
             </div>
             <div class="method-item">
                 <h4>Tiers (Percentile-Based Cliffs)</h4>
