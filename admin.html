@@ -479,11 +479,14 @@ async function restoreFileHandle() {
         const db = await new Promise((res,rej)=>{ const r = indexedDB.open(IDB_NAME); r.onerror=rej; r.onsuccess=()=>res(r.result); });
         const handle = await new Promise((res,rej)=>{ const t=db.transaction(IDB_STORE,'readonly'); const r=t.objectStore(IDB_STORE).get('index'); r.onsuccess=()=>res(r.result); r.onerror=rej; });
         if (handle) {
-            await handle.getFile(); // verify still valid
+            const file = await handle.getFile(); // verify still valid and read contents
+            const content = await file.text();
             indexFileHandle = handle;
             document.getElementById('linkStatus').style.display = 'inline';
             document.getElementById('linkBtn').style.display = 'none';
             document.getElementById('linkStatus').textContent = '✓ linked to index.html';
+            // Hydrate lastUpdated from any LAST_UPDATED block in index.html
+            updateLastUpdatedFromIndexContent(content);
         }
     } catch(e) { /* handle invalidated */ }
 }
@@ -515,6 +518,8 @@ async function linkIndexHTML() {
         }
         indexFileHandle = handle;
         await persistFileHandle(handle);
+        // Pull in any persisted LAST_UPDATED timestamps from index.html
+        updateLastUpdatedFromIndexContent(content);
         document.getElementById('linkStatus').style.display = 'inline';
         document.getElementById('linkStatus').textContent = '✓ linked to index.html';
         document.getElementById('linkBtn').style.display = 'none';
@@ -534,7 +539,8 @@ async function writeToIndex() {
         const newData = generateExportCode();
         const startIdx = content.indexOf('const SOURCES =');
         const afterStart = content.slice(startIdx);
-        const endMatch = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];/);
+        // Replace SOURCES + RAW_DATA, and optionally an existing LAST_UPDATED block
+        const endMatch = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];(?:\s*const LAST_UPDATED = \{[\s\S]*?\};)?/);
         if (startIdx === -1 || !endMatch) return false;
         const endIdx = startIdx + endMatch.index + endMatch[0].length;
         const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
@@ -1410,6 +1416,18 @@ function generateExportCode() {
         lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${p.age}, eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
     });
     lines.push('];');
+    lines.push('');
+
+    // Persist lastUpdated timestamps so the admin status tab
+    // stays accurate across browsers/devices and after clearing storage.
+    lines.push('const LAST_UPDATED = {');
+    const entries = Object.entries(lastUpdated || {});
+    entries.forEach(([k, v], i) => {
+        if (!v) return;
+        const comma = i < entries.length - 1 ? ',' : '';
+        lines.push(`    ${k}: "${v}"${comma}`);
+    });
+    lines.push('};');
 
     return lines.join('\n');
 }
@@ -1485,10 +1503,11 @@ async function saveToIndexHTML() {
             return;
         }
 
-        // 4. Surgical replace: everything from "const SOURCES =" up to and including the "];" that closes RAW_DATA
+        // 4. Surgical replace: everything from "const SOURCES =" up to and including
+        // the RAW_DATA block and optional LAST_UPDATED block
         const newData  = document.getElementById('exportBox').textContent;
         const startMarker = 'const SOURCES =';
-        const endMarker   = /const RAW_DATA = \[[\s\S]*?\];/;
+        const endMarker   = /const RAW_DATA = \[[\s\S]*?\];(?:\s*const LAST_UPDATED = \{[\s\S]*?\};)?/;
 
         const startIdx = content.indexOf(startMarker);
         const afterStart = content.slice(startIdx);
@@ -1539,6 +1558,32 @@ const STORAGE_KEY = 'rankle-admin-data';
 // lastUpdated: { pipeline: "2026-02-03T14:30:00Z", ... }
 let lastUpdated = {};
 let lastPasteSource = null;
+
+// Merge LAST_UPDATED data from an index.html string (if present) into lastUpdated
+function updateLastUpdatedFromIndexContent(text) {
+    try {
+        const m = text.match(/const LAST_UPDATED = \{([\s\S]*?)\};/);
+        if (!m) return;
+        const body = m[1];
+        const lines = body.split('\n');
+        const parsed = {};
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            const m2 = trimmed.match(/^(\w+)\s*:\s*"([^"]*)"\s*,?$/);
+            if (m2) {
+                parsed[m2[1]] = m2[2];
+            }
+        });
+        Object.keys(parsed).forEach(key => {
+            if (parsed[key]) {
+                lastUpdated[key] = parsed[key];
+            }
+        });
+    } catch(e) {
+        // If parsing fails, ignore and fall back to localStorage-only timestamps
+    }
+}
 
 function saveToStorage() {
     try {
