@@ -337,6 +337,14 @@ tbody tr.tier-breaker:first-child td { padding-top: 2rem; }
 
 
 
+/* rank change arrows (up/down from previous run) */
+.rank-change-wrap { display:inline-flex; align-items:center; gap:.35rem; }
+.rank-arrow {
+    font-size:1rem; font-weight:700; line-height:1;
+}
+.rank-arrow.rank-up { color:var(--green); }
+.rank-arrow.rank-down { color:var(--red); }
+
 /* single-source warning */
 .warn-badge {
     display:inline-flex; align-items:center; gap:.25rem;
@@ -669,6 +677,10 @@ footer {
                     </div>
                     <span class="hero-legend-note">Lower = sources agree; higher = more disagreement</span>
                 </div>
+                <div class="hero-legend-item">
+                    <strong>Rank change</strong> <span class="rank-arrow rank-up">↑</span> <span class="rank-arrow rank-down">↓</span>
+                    <span class="hero-legend-note">vs last time you viewed: ↑ moved up 3+ spots, ↓ moved down 3+</span>
+                </div>
             </div>
         </div>
     </div>
@@ -959,7 +971,7 @@ const RAW_DATA = [
     { name:"Andrew Fischer",        pos:"3B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:73, prospect361:null, rotochamp:null } },
     { name:"Brice Matthews",        pos:"SS", team:"HOU", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:77, prospect361:null, rotochamp:null } },
     { name:"Jacob Reimer",          pos:"3B", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:92, prospect361:null, rotochamp:null } },
-    { name:"Kazuma Okamoto",        pos:"1B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:47, rotochamp:null } },
+    { name:"Kazuma Okamoto",        pos:"3B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:47, rotochamp:null } },
     { name:"Zach Cole",             pos:"OF", team:"HOU", age:25, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:99, prospect361:null, rotochamp:null } },
     { name:"Felnin Celesten",       pos:"SS", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:36, rotochamp:null } },
     { name:"Jeferson Quero",        pos:"C", team:"MIL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:53, rotochamp:null } },
@@ -972,11 +984,11 @@ const RAW_DATA = [
     { name:"Jaden Hamm",            pos:"RHP", team:"DET", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:77, rotochamp:null } },
     { name:"Staryln Caba",          pos:"SS", team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:78, rotochamp:null } },
     { name:"Cole Carrigg",          pos:"OF", team:"COL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:80, rotochamp:null } },
+    { name:"Tommy Troy",            pos:"3B", team:"ARI", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:93, rotochamp:null } },
     { name:"River Ryan",            pos:"RHP", team:"LAD", age:27, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:87, rotochamp:null } },
     { name:"Wehiwa Aloy",           pos:"SS", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:88, rotochamp:null } },
     { name:"Tink Hence",            pos:"RHP", team:"STL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:90, rotochamp:null } },
     { name:"Welbyn Francisca",      pos:"SS", team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:91, rotochamp:null } },
-    { name:"Tommy Troy",            pos:"3B", team:"ARI", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:93, rotochamp:null } },
     { name:"Ricky Tiedemann",       pos:"LHP", team:"TOR", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:94, rotochamp:null } },
     { name:"Marek Houston",         pos:"SS", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:95, rotochamp:null } },
     { name:"Xavier Isaac",          pos:"1B", team:"TB", age:22, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:98, rotochamp:null } }
@@ -1056,12 +1068,25 @@ function calculateTalentCliffs(prospects) {
     });
 }
 
+// Load previous display ranks (from last page view) for change arrows
+let PREV_RANK_MAP = {};
+try { PREV_RANK_MAP = JSON.parse(localStorage.getItem('rankle-prev-display-rank') || '{}'); } catch(e) {}
+
 const ALL_PROSPECTS = (() => {
     const built = buildProspects();
-    const multiSource = built.filter(p => p.sourceCount > 1);
-    const withDisplayRank = multiSource.map((p, i) => ({ ...p, displayRank: i + 1 }));
+    // Include all prospects (single- and multi-source) so every position appears on the master list
+    const withDisplayRank = built.map((p, i) => ({ ...p, displayRank: i + 1 }));
     return calculateTalentCliffs(withDisplayRank);
 })();
+
+// Persist current display ranks for next visit (so we can show up/down arrows)
+try {
+    const nextPrev = {};
+    ALL_PROSPECTS.forEach(p => { nextPrev[p.name] = p.displayRank; });
+    localStorage.setItem('rankle-prev-display-rank', JSON.stringify(nextPrev));
+} catch(e) {}
+
+const RANK_CHANGE_THRESHOLD = 3;  // min spots moved to show arrow
 const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
@@ -1416,8 +1441,18 @@ function render() {
             ? `<span class="warn-badge">⚠ 1 source</span>`
             : '';
 
+        // Rank change arrow (vs previous view): positive change = moved up, negative = moved down
+        const prevRank = PREV_RANK_MAP[p.name];
+        const rankChange = prevRank != null ? prevRank - p.displayRank : null;
+        const showArrow = rankChange != null && Math.abs(rankChange) >= RANK_CHANGE_THRESHOLD;
+        const arrowHtml = showArrow
+            ? (rankChange > 0
+                ? `<span class="rank-arrow rank-up" title="Up ${rankChange} spots">↑</span>`
+                : `<span class="rank-arrow rank-down" title="Down ${-rankChange} spots">↓</span>`)
+            : '';
+
         tr.innerHTML = `
-            <td><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${p.tier}">#${p.displayRank}</div></td>
+            <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${p.tier}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${p.name} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
             <td class="team-col">${p.team}</td>

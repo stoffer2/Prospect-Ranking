@@ -1,0 +1,22 @@
+1	
+Konnor Griffin	Pittsburgh Pirates	19	AA	SS, OF	2026	65
+2	
+Kevin McGonigle	Detroit Tigers	21	AA	SS	2026	65
+3	
+Nolan McLean	New York Mets	24	MLB	RHP	2025	60+
+4	
+Jesus Made	Milwaukee Brewers	18	AA	SS	2027	60
+5	
+Colt Emerson	Seattle Mariners	20	AAA	SS	2026	60
+6	
+Trey Yesavage	Toronto Blue Jays	22	MLB	RHP	2025	60
+7	
+Leo De Vries	Athletics	19	AA	SS	2028	60
+8	
+Samuel Basallo	Baltimore Orioles	21	MLB	C, 1B	2025	60
+9	
+JJ Wetherholt	St. Louis Cardinals	23	AAA	SS	2026	60
+10	
+Max Clark	Detroit Tigers	21	AA	OF	2027	55+
+100	
+Logan Henderson	Milwaukee Brewers	23	MLB	RHP	2025	50
