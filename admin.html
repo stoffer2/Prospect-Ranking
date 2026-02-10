@@ -342,9 +342,11 @@ header {
             <div style="margin-top:1rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" id="importBtn" onclick="importPasted()">Import & Save</button>
                 <button class="btn btn-ghost btn-sm" onclick="previewParse()">👁 Preview</button>
+                <button class="btn btn-ghost btn-sm" onclick="copyPasteDebugToClipboard()" title="Copy exact paste info so we can fix the parser">📋 Copy for debugging</button>
                 <button class="btn btn-ghost btn-sm" onclick="showPasteDebug()" title="See why parser might return 0">🔍 Debug paste</button>
-                <button class="btn btn-ghost btn-sm" onclick="loadJustBaseballSample()" title="Load a small tab-separated sample to test the parser">📋 Load sample</button>
+                <button class="btn btn-ghost btn-sm" onclick="loadJustBaseballSample()" title="Load a small tab-separated sample">📋 Load sample</button>
                 <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
+            <p style="margin-top:.5rem; font-size:.75rem; color:var(--text-lo);">If Just Baseball won’t parse: click <strong>📋 Copy for debugging</strong> (above), then paste the copied block in chat so we can fix it.</p>
             </div>
 
             <!-- Preview table -->
@@ -536,9 +538,10 @@ async function linkIndexHTML() {
 
 // ============================================================
 // WRITE TO index.html — surgical replace using the linked handle
+// Returns { ok: true } or { ok: false, error: string } so UI can show the real failure reason.
 // ============================================================
 async function writeToIndex() {
-    if (!indexFileHandle) return false;
+    if (!indexFileHandle) return { ok: false, error: 'No file linked' };
     try {
         const file = await indexFileHandle.getFile();
         const content = await file.text();
@@ -547,22 +550,29 @@ async function writeToIndex() {
         const afterStart = content.slice(startIdx);
         // Replace SOURCES + RAW_DATA, and optionally an existing LAST_UPDATED block
         const endMatch = afterStart.match(/const RAW_DATA = \[[\s\S]*?\];(?:\s*const LAST_UPDATED = \{[\s\S]*?\};)?/);
-        if (startIdx === -1 || !endMatch) return false;
+        if (startIdx === -1 || !endMatch) {
+            return { ok: false, error: 'Could not find SOURCES/RAW_DATA block in index.html (wrong file or format changed?)' };
+        }
         const endIdx = startIdx + endMatch.index + endMatch[0].length;
         const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
         if (typeof indexFileHandle.queryPermission === 'function' && (await indexFileHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
-            if (typeof indexFileHandle.requestPermission === 'function' && (await indexFileHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') return false;
+            if (typeof indexFileHandle.requestPermission === 'function' && (await indexFileHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+                return { ok: false, error: 'Permission denied — allow read/write when prompted' };
+            }
         }
         const writable = await indexFileHandle.createWritable();
         await writable.write(newContent);
         await writable.close();
-        return true;
+        return { ok: true };
     } catch (e) {
+        const errMsg = (e && (e.message || e.name || String(e))) || 'Unknown error';
         indexFileHandle = null;
         await clearPersistedHandle();
-        document.getElementById('linkStatus').style.display = 'none';
-        document.getElementById('linkBtn').style.display = 'inline-block';
-        return false;
+        const linkStatus = document.getElementById('linkStatus');
+        const linkBtn = document.getElementById('linkBtn');
+        if (linkStatus) linkStatus.style.display = 'none';
+        if (linkBtn) linkBtn.style.display = 'inline-block';
+        return { ok: false, error: errMsg };
     }
 }
 
@@ -1041,6 +1051,37 @@ function showPasteDebug() {
     el.innerHTML = '<span style="color:var(--text-mid); font-size:.8rem;">' + msg + '</span>';
 }
 
+// Copy a debug block to clipboard — paste it in chat so we can see exactly what the parser receives.
+function copyPasteDebugToClipboard() {
+    const raw = (document.getElementById('pasteInput') && document.getElementById('pasteInput').value) || '';
+    const lines = raw.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const firstData = lines.find(l => !/^\d+$/.test(l));
+    const tabCols = firstData ? firstData.split('\t').length : 0;
+    const escape = (s) => (s || '').replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+    const head = raw.slice(0, 500);
+    const block = [
+        '--- Just Baseball paste debug (paste this in chat) ---',
+        'sourceSelect: ' + (document.getElementById('pasteSourceSelect') ? document.getElementById('pasteSourceSelect').value : '?'),
+        'lineCount: ' + lines.length,
+        'firstDataLineTabColumns: ' + tabCols,
+        'firstDataLineHasTab: ' + !!(firstData && firstData.indexOf('\t') >= 0),
+        'first 500 chars (\\t and \\n escaped):',
+        escape(head),
+        '--- end ---'
+    ].join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(block).then(function() {
+            var el = document.getElementById('pasteResult');
+            if (el) el.innerHTML = '<span style="color:var(--green);">Copied. Paste that block in chat so we can fix the parser.</span>';
+        }).catch(function() { fallbackCopy(block); });
+    } else { fallbackCopy(block); }
+    function fallbackCopy(text) {
+        var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        var el = document.getElementById('pasteResult');
+        if (el) el.innerHTML = '<span style="color:var(--green);">Copied. Paste that block in chat.</span>';
+    }
+}
+
 function loadJustBaseballSample() {
     var sample = '1\t\nKonnor Griffin\tPittsburgh Pirates\t19\tAA\tSS, OF\t2026\t65\n2\t\nKevin McGonigle\tDetroit Tigers\t21\tAA\tSS\t2026\t65\n3\t\nNolan McLean\tNew York Mets\t24\tMLB\tRHP\t2025\t60+\n4\t\nJesus Made\tMilwaukee Brewers\t18\tAA\tSS\t2027\t60\n5\t\nColt Emerson\tSeattle Mariners\t20\tAAA\tSS\t2026\t60';
     var el = document.getElementById('pasteInput');
@@ -1285,7 +1326,7 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
     saveToStorage();
     renderProspects();
     renderExport();
-    if (indexFileHandle) await writeToIndex().then(ok => { if (ok) saveToStorage(); });
+    if (indexFileHandle) await writeToIndex().then(r => { if (r.ok) saveToStorage(); });
     const stillMissing = prospects.filter(p => p.age === 19);
     const withId = prospects.filter(p => p.mlbId).length;
     let msg = `<span style="color:var(--green);">✓ Updated ${updated} ages</span>`;
@@ -1515,7 +1556,7 @@ function bulkUpdateAges() {
     saveToStorage();
     renderProspects();
     renderExport();
-    if (indexFileHandle) writeToIndex().then(ok => { if (ok) saveToStorage(); });
+    if (indexFileHandle) writeToIndex().then(r => { if (r.ok) saveToStorage(); });
     const msg = [agesUpdated && `✓ ${agesUpdated} ages`, etasUpdated && `✓ ${etasUpdated} ETAs`].filter(Boolean).join(' · ') || 'No updates';
     document.getElementById('ageResult').innerHTML = `<span style="color:var(--green);">${msg}</span>`;
 }
@@ -1548,7 +1589,10 @@ function importPasted() {
         if (idx !== null) {
             prospects[idx].ranks[source] = p.rank;
             matched++;
-            if (p.team)  prospects[idx].team = p.team;
+            // Update name/team/pos from pasted row so we don't keep stale "POS Name, TEAM" or wrong team
+            const cleanName = (n) => (n || '').trim().replace(/^(C|1B|2B|3B|SS|OF|IF|SP|RP|RHP|LHP|DH|SHP)\s+/i, '').replace(/, [A-Z]{2,3}$/, '').trim() || (n || '').trim();
+            if (p.name) prospects[idx].name = cleanName(p.name);
+            if (p.team) prospects[idx].team = p.team;
             if (p.pos) {
                 if (!prospects[idx].positions) prospects[idx].positions = {};
                 prospects[idx].positions[source] = firstPos;
@@ -1585,16 +1629,17 @@ function importPasted() {
 
     // Auto-save to index.html if linked (timestamp is also written there)
     if (indexFileHandle) {
-        writeToIndex().then(ok => {
+        writeToIndex().then(r => {
             saveToStorage();
-            if (ok) showToast('Saved ' + prospects.length + ' prospects to index.html', '💾');
+            if (r.ok) showToast('Saved ' + prospects.length + ' prospects to index.html', '💾');
+            const failMsg = r.error ? `save failed: ${r.error}` : 'save failed — re-link index.html and try again';
             document.getElementById('pasteResult').innerHTML =
                 `<span style="color:var(--green);">✓ ${matched} matched</span>` +
                 (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
                 ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
                 ` · <span style="color:var(--text-mid);" title="Logged for ${SOURCES[source].label}">📅 ${tsDisplay}</span>` +
-                (ok ? ` · <span style="color:var(--green); font-weight:600;">💾 saved to index.html</span>`
-                     : ` · <span style="color:var(--red);">save failed</span>`);
+                (r.ok ? ` · <span style="color:var(--green); font-weight:600;">💾 saved to index.html</span>`
+                     : ` · <span style="color:var(--red);" title="${failMsg}">${failMsg}</span>`);
         });
     } else {
         document.getElementById('pasteResult').innerHTML =
@@ -1699,9 +1744,9 @@ async function saveToIndexHTML() {
         return;
     }
     if (indexFileHandle) {
-        const ok = await writeToIndex();
-        if (ok) { saveToStorage(); statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>'; }
-        else { statusEl.innerHTML = '<span style="color:var(--red);">Save failed. Try linking again (header).</span>'; }
+        const r = await writeToIndex();
+        if (r.ok) { saveToStorage(); statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>'; }
+        else { statusEl.innerHTML = '<span style="color:var(--red);" title="' + (r.error || '') + '">Save failed: ' + (r.error || 'try linking again') + '</span>'; }
         setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
         return;
     }
