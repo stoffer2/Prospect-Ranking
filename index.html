@@ -50,25 +50,37 @@ header {
     border-top: 3px solid var(--accent);
     box-shadow: 0 2px 12px rgba(0,0,0,.08);
     padding: 0 2rem;
-    min-height: 64px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    min-height: 88px;
+    display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+.header-logo-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.header-logo-wrap img {
+    height: 56px;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+    display: block;
 }
 .logo-title {
-    grid-column: 2;
-    justify-self: center;
     font-family: 'Bebas Neue', cursive;
-    font-size: 2.2rem;
-    letter-spacing: 2px;
+    font-size: 3rem;
+    letter-spacing: 4px;
+    line-height: 1;
     background: linear-gradient(135deg, #fef3c7 0%, #f59e0b 40%, #d97706 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 2px 4px rgba(245,158,11,0.35));
+    filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));
+    flex-shrink: 0;
 }
-.header-right { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .btn-pro {
     background: linear-gradient(135deg,#2563eb,#1d4ed8);
     color:#fff;
@@ -226,7 +238,7 @@ table { width:100%; border-collapse:collapse; }
 thead th {
     position: sticky;
     position: -webkit-sticky;
-    top: 64px;
+    top: 88px;
     z-index: 10;
     background: var(--bg-deep);
     text-align: left;
@@ -246,6 +258,9 @@ tbody tr {
 tbody tr:nth-child(odd)  { background: var(--bg-row); }
 tbody tr:nth-child(even) { background: var(--bg-row-alt); }
 tbody tr:hover           { background: rgba(59,130,246,.07); box-shadow: inset 0 0 0 1px rgba(59,130,246,.08); }
+tbody tr.free-agent      { background: rgba(245,158,11,.12); box-shadow: inset 3px 0 0 var(--gold); }
+tbody tr.free-agent:nth-child(even) { background: rgba(245,158,11,.08); box-shadow: inset 3px 0 0 var(--gold); }
+tbody tr.free-agent:hover { background: rgba(245,158,11,.18); box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(245,158,11,.2); }
 
 td { padding: 0.8rem 0.75rem; vertical-align: middle; }
 td:first-child { padding-left:1rem; }
@@ -256,7 +271,7 @@ td:first-child { padding-left:1rem; }
     width:38px; height:38px; border-radius:8px;
     font-weight:700; font-size:.88rem;
 }
-.rank-tier0 { background: linear-gradient(135deg,#fef3c7,#fde68a); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 10px rgba(253,224,71,.5); }
+.rank-tier1 { background: linear-gradient(135deg,#fef3c7,#fde68a); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 10px rgba(253,224,71,.5); }
 .rank-gold   { background: linear-gradient(135deg,#f59e0b,#d97706); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 8px rgba(245,158,11,.35); }
 .rank-silver { background: linear-gradient(135deg,#cbd5e1,#94a3b8); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 6px rgba(148,163,175,.3); }
 .rank-bronze { background: linear-gradient(135deg,#f97316,#ea580c); color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 6px rgba(249,115,22,.35); }
@@ -521,11 +536,32 @@ footer {
     transition: transform .3s, opacity .3s;
     max-width: 90%;
 }
+.fantasy-toast strong { color: var(--green); }
 .fantasy-toast.show {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
-.fantasy-toast strong { color: var(--green); }
+
+.fa-legend {
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 1100px;
+    margin: 0 auto 0.75rem;
+    padding: 0 1.5rem;
+    font-size: 0.78rem;
+    color: var(--text-mid);
+}
+.fa-legend.show { display: flex; }
+.fa-legend-bar {
+    display: inline-block;
+    width: 12px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), #d97706);
+    flex-shrink: 0;
+}
+.fa-legend-text { font-weight: 500; }
 
 /* ── RESPONSIVE ── */
 /* Tablet and below: allow horizontal scroll on body so table can extend and thead still sticks to viewport */
@@ -533,8 +569,9 @@ footer {
     body { overflow-x: auto; }
 }
 @media (max-width: 768px) {
-    header { padding: 0.75rem 1rem; min-height: auto; }
-    .logo-title { font-size: 1.8rem; flex-shrink: 0; }
+    header { padding: 0.75rem 1rem; min-height: 72px; }
+    .header-logo-wrap img { height: 48px; max-width: 180px; }
+    .logo-title { font-size: 2.25rem; letter-spacing: 3px; }
     .header-right { flex-wrap: wrap; }
     .btn-upload-roster { padding: 0.4rem 0.75rem; font-size: 0.72rem; white-space: nowrap; }
     .btn-pro { padding: 0.4rem 0.75rem; font-size: 0.72rem; }
@@ -549,7 +586,7 @@ footer {
     .table-wrap { padding: 0 1rem; margin-bottom: 1.5rem; width: 100%; max-width: 100%; overflow: visible; }
     .table-wrap::after { content: ''; display: block; height: 1px; }
     table { min-width: 680px; }
-    thead th { position: sticky; position: -webkit-sticky; top: 64px; z-index: 10; background: var(--bg-deep); box-shadow: 0 1px 0 var(--border); }
+    thead th { position: sticky; position: -webkit-sticky; top: 88px; z-index: 10; background: var(--bg-deep); box-shadow: 0 1px 0 var(--border); }
     thead th, td { padding: 0.6rem 0.5rem; font-size: 0.8rem; }
     thead th:first-child, td:first-child { padding-left: 0.75rem; }
     .rank-pill { width: 34px; height: 34px; font-size: 0.8rem; }
@@ -564,24 +601,14 @@ footer {
 /* Mobile (small phones) */
 @media (max-width: 480px) {
     header {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
-        padding: 0.75rem 1rem;
-        gap: 0.5rem;
+        flex-direction: column;
+        padding: 1rem;
+        gap: 0.75rem;
         min-height: auto;
     }
-    header .logo-title {
-        grid-column: 1;
-        grid-row: 1;
-        justify-self: center;
-    }
-    .header-right {
-        grid-column: 1;
-        grid-row: 2;
-        justify-self: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
+    .header-logo-wrap { justify-content: center; }
+    .header-logo-wrap img { height: 44px; max-width: 160px; }
+    .header-right { justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
     .btn-upload-roster, .btn-pro {
         flex: 1;
         min-width: 100px;
@@ -620,7 +647,9 @@ footer {
 
 <!-- HEADER -->
 <header>
-    <span class="logo-title">Rankle</span>
+    <a href="#" class="header-logo-wrap" aria-label="Rankle home">
+        <img src="Prospect-Ranking/my-project-page-1 (3).png" alt="Rankle" />
+    </a>
     <div class="header-right">
         <button type="button" class="btn-upload-roster" id="btnUploadRoster" onclick="document.getElementById('fantasySection').classList.toggle('open')">Upload Roster</button>
         <button class="btn-pro">⭐ Upgrade to Pro</button>
@@ -714,6 +743,11 @@ footer {
     </div>
 </div>
 
+<div class="fa-legend" id="faLegend" aria-hidden="true">
+    <span class="fa-legend-bar"></span>
+    <span class="fa-legend-text">Gold highlight = free agents (not on any roster)</span>
+</div>
+
 <!-- TABLE -->
 <div class="table-wrap">
     <table>
@@ -753,7 +787,7 @@ footer {
             </div>
             <div class="method-item">
                 <h4>Tiers (Percentile-Based Cliffs)</h4>
-                <p>Tiers are computed using a non-parametric approach: we calculate score deltas between consecutive players, then identify tier breaks at gaps in the top 10% (90th percentile). A talent cliff occurs when the drop from one player to the next is among the largest in the list. We enforce a minimum spacing between breaks to avoid tiny clusters. If #1's lead over #2 meets the threshold, they receive Tier 0.</p>
+                <p>Tiers are computed using a non-parametric approach: we calculate score deltas between consecutive players, then identify tier breaks at gaps in the top 10% (90th percentile). A talent cliff occurs when the drop from one player to the next is among the largest in the list. We enforce a minimum spacing between breaks to avoid tiny clusters. If #1's lead over #2 meets the threshold, they receive Tier 1 (top tier).</p>
             </div>
         </div>
     </div>
@@ -1083,11 +1117,11 @@ function calculateTalentCliffs(prospects) {
     }
     breakIndices.sort((a, b) => a - b);
 
-    // Tier 0: #1 is far ahead (gap[0] meets threshold)
-    const tier0 = gaps[0] >= threshold;
+    // Tier 1 = top (when #1 is far ahead); tier 2, 3, ... below
+    const topIsSolo = gaps[0] >= threshold;
 
     return prospects.map((p, i) => {
-        if (tier0 && i === 0) return { ...p, tier: 0 };
+        if (topIsSolo && i === 0) return { ...p, tier: 1 };
         let tier = 1;
         for (const b of breakIndices) {
             if (i <= b) break;
@@ -1255,7 +1289,38 @@ function normalizeName(s) {
     return s.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+function nameForMatch(s) {
+    return normalizeName(s).replace(/[.\-']/g, '').replace(/\s+/g, ' ');
+}
+
+function compressedName(s) {
+    return nameForMatch(s).replace(/\s+/g, '');
+}
+
+function getOwnerForProspect(prospectName) {
+    if (!prospectName || Object.keys(ownershipMap).length === 0) return null;
+    const n = normalizeName(prospectName);
+    const nMatch = nameForMatch(prospectName);
+    const nComp = compressedName(prospectName);
+    if (ownershipMap[n]) return ownershipMap[n];
+    for (const [csvName, owner] of Object.entries(ownershipMap)) {
+        const cn = nameForMatch(csvName);
+        const cnComp = compressedName(csvName);
+        if (nMatch === cn || nMatch.includes(cn) || cn.includes(nMatch)) return owner;
+        if (nComp === cnComp || nComp.includes(cnComp) || cnComp.includes(nComp)) return owner;
+    }
+    return null;
+}
+
 let ownershipMap = {};
+
+function updateFaLegendVisibility() {
+    const el = document.getElementById('faLegend');
+    if (el) {
+        el.classList.toggle('show', Object.keys(ownershipMap).length > 0);
+        el.setAttribute('aria-hidden', Object.keys(ownershipMap).length === 0 ? 'true' : 'false');
+    }
+}
 
 function applyFantasyCsv(text, opts) {
     text = (text || '').trim();
@@ -1264,6 +1329,7 @@ function applyFantasyCsv(text, opts) {
     sessionStorage.setItem(FANTASY_STORAGE, text);
     const btn = document.getElementById('btnUploadRoster');
     if (btn) { btn.textContent = 'Roster Loaded ✓'; btn.classList.add('loaded'); }
+    updateFaLegendVisibility();
     render();
 
     if (opts?.skipClose !== true) {
@@ -1319,6 +1385,7 @@ function processAndApplyCsv(text) {
         ownershipMap = parseFantasyCsv(saved);
         const btn = document.getElementById('btnUploadRoster');
         if (btn) { btn.textContent = 'Roster Loaded ✓'; btn.classList.add('loaded'); }
+        updateFaLegendVisibility();
     }
 })();
 
@@ -1372,12 +1439,13 @@ function processAndApplyCsv(text) {
 // ============================================================
 // RENDER TABLE
 // ============================================================
+function displayTier(tier) { return (tier === 0 || tier == null) ? 1 : tier; }
 function tierClass(tier) {
-    if (tier === 0) return 'rank-tier0';
-    if (tier === 1) return 'rank-gold';
-    if (tier === 2) return 'rank-silver';
-    if (tier === 3) return 'rank-bronze';
-    if (tier === 4) return 'rank-tier4';
+    if (tier === 0 || tier === 1) return 'rank-tier1';   // Tier 1 = best (0 is legacy)
+    if (tier === 2) return 'rank-gold';
+    if (tier === 3) return 'rank-silver';
+    if (tier === 4) return 'rank-bronze';
+    if (tier === 5) return 'rank-tier4';
     return 'rank-steel';
 }
 
@@ -1412,6 +1480,7 @@ function displayName(p) {
 }
 
 function render() {
+    updateFaLegendVisibility();
     const search = document.getElementById('searchInput').value.toLowerCase();
     const pos    = document.getElementById('posFilter').value;
     const team   = document.getElementById('teamFilter').value;
@@ -1443,7 +1512,7 @@ function render() {
         if (isFirstInTier) {
             const breakerRow = document.createElement('tr');
             breakerRow.className = 'tier-breaker';
-            breakerRow.innerHTML = `<td colspan="9"><div class="tier-breaker-line"><span class="tier-breaker-label">Tier ${p.tier}</span></div></td>`;
+            breakerRow.innerHTML = `<td colspan="9"><div class="tier-breaker-line"><span class="tier-breaker-label">Tier ${displayTier(p.tier)}</span></div></td>`;
             tbody.appendChild(breakerRow);
         }
         prevTier = p.tier;
@@ -1468,6 +1537,8 @@ function render() {
 
         const tr = document.createElement('tr');
         if (!isFree) tr.className = 'locked-ghost';
+        const owner = getOwnerForProspect(p.name);
+        if (Object.keys(ownershipMap).length > 0 && !owner) tr.classList.add('free-agent');
 
         // 6 consensus dots (sources that agreed on position within ±10% percentile)
         const dotsHtml = [1,2,3,4,5,6].map(i =>
@@ -1500,7 +1571,7 @@ function render() {
             : '';
 
         tr.innerHTML = `
-            <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${p.tier}">#${p.displayRank}</div>${arrowHtml}</div></td>
+            <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
             <td class="team-col">${p.team}</td>
