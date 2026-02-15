@@ -1506,11 +1506,55 @@ function processAndApplyCsv(text) {
 })();
 
 // ============================================================
+// TEAM ABBREVIATION TO FULL NAME MAPPING
+// ============================================================
+const TEAM_MAP = {
+    'ARI': 'Arizona Diamondbacks',
+    'ATH': 'Oakland Athletics',
+    'ATL': 'Atlanta Braves',
+    'BAL': 'Baltimore Orioles',
+    'BOS': 'Boston Red Sox',
+    'CHC': 'Chicago Cubs',
+    'CHW': 'Chicago White Sox',
+    'CIN': 'Cincinnati Reds',
+    'CWS': 'Chicago White Sox',
+    'CLE': 'Cleveland Guardians',
+    'COL': 'Colorado Rockies',
+    'DET': 'Detroit Tigers',
+    'HOU': 'Houston Astros',
+    'KC': 'Kansas City Royals',
+    'LAA': 'Los Angeles Angels',
+    'LAD': 'Los Angeles Dodgers',
+    'MIA': 'Miami Marlins',
+    'MIL': 'Milwaukee Brewers',
+    'MIN': 'Minnesota Twins',
+    'NYM': 'New York Mets',
+    'NYY': 'New York Yankees',
+    'OAK': 'Oakland Athletics',
+    'PHI': 'Philadelphia Phillies',
+    'PIT': 'Pittsburgh Pirates',
+    'SD': 'San Diego Padres',
+    'SEA': 'Seattle Mariners',
+    'SF': 'San Francisco Giants',
+    'STL': 'St. Louis Cardinals',
+    'TB': 'Tampa Bay Rays',
+    'TEX': 'Texas Rangers',
+    'TOR': 'Toronto Blue Jays',
+    'WAS': 'Washington Nationals',
+    'WSH': 'Washington Nationals'
+};
+
+function getTeamName(abbr) {
+    return TEAM_MAP[abbr] || abbr;
+}
+
+// ============================================================
 // POPULATE FILTER DROPDOWNS
 // ============================================================
 (function populateFilters() {
     const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(p => p.pos))];
-    const teams     = ['ALL', ...new Set(ALL_PROSPECTS.map(p => p.team))].sort();
+    const rawTeams = [...new Set(ALL_PROSPECTS.map(p => p.team))];
+    const teams = ['ALL', ...new Set(rawTeams.map(t => getTeamName(t)))].sort();
 
     const posEl  = document.getElementById('posFilter');
     const teamEl = document.getElementById('teamFilter');
@@ -1582,7 +1626,7 @@ function render() {
     const filtered = ALL_PROSPECTS.filter(p => {
         if (search && !p.name.toLowerCase().includes(search)) return false;
         if (pos  !== 'ALL' && p.pos  !== pos)  return false;
-        if (team !== 'ALL' && p.team !== team) return false;
+        if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
         if (vol  !== 'ALL' && p.volatility !== vol) return false;
         return true;
     });
@@ -1637,6 +1681,13 @@ function render() {
         const dotsHtml = [1,2,3,4,5,6].map(i =>
             `<div class="cons-dot ${i <= p.consensusAgreement ? 'on' : ''}"></div>`
         ).join('');
+        
+        // Tooltip for consensus dots
+        const consensusTooltip = p.consensusAgreement === 0 
+            ? 'No expert sources agree on this prospect\'s position.'
+            : p.consensusAgreement === 1
+            ? 'One expert source agrees on this prospect\'s position.'
+            : `${p.consensusAgreement} expert sources agree on this prospect's position.`;
 
         // Single-source warning
         const warnHtml = p.sourceCount === 1
@@ -1667,14 +1718,14 @@ function render() {
             <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
-            <td class="team-col">${p.team}</td>
+            <td class="team-col">${getTeamName(p.team)}</td>
             <td class="num-col">${p.age}</td>
             <td class="num-col">${p.eta}</td>
             <td class="borda-col">${p.rankleScore.toFixed(1)}</td>
             <td>
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>
             </td>
-            <td><div class="cons-dots">${dotsHtml}</div></td>
+            <td title="${consensusTooltip}"><div class="cons-dots">${dotsHtml}</div></td>
         `;
         tbody.appendChild(tr);
     });
