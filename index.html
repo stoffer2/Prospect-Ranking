@@ -1548,6 +1548,18 @@ function getTeamName(abbr) {
     return TEAM_MAP[abbr] || abbr;
 }
 
+function getTeamShortName(abbr) {
+    const fullName = getTeamName(abbr);
+    // Special cases for teams with two-word names
+    if (fullName.includes('White Sox')) return 'White Sox';
+    if (fullName.includes('Red Sox')) return 'Red Sox';
+    if (fullName.includes('Blue Jays')) return 'Blue Jays';
+    
+    // Extract just the team name (last word), e.g., "Miami Marlins" → "Marlins"
+    const parts = fullName.split(' ');
+    return parts[parts.length - 1];
+}
+
 // ============================================================
 // POPULATE FILTER DROPDOWNS
 // ============================================================
@@ -1718,7 +1730,7 @@ function render() {
             <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
-            <td class="team-col">${getTeamName(p.team)}</td>
+            <td class="team-col">${getTeamShortName(p.team)}</td>
             <td class="num-col">${p.age}</td>
             <td class="num-col">${p.eta}</td>
             <td class="borda-col">${p.rankleScore.toFixed(1)}</td>
