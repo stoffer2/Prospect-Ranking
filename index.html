@@ -76,6 +76,15 @@ header {
     0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5); }
     50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.8); }
 }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 .beta-badge {
     font-family: 'Bebas Neue', cursive;
     font-size: 0.85rem;
@@ -133,6 +142,7 @@ header {
     padding: 1.5rem 2rem 1.5rem;
     margin-bottom: 0.5rem;
     overflow: hidden;
+    animation: fadeInUp 0.8s ease-out;
 }
 .hero::before,
 .hero::after {
@@ -187,6 +197,14 @@ header {
     gap: 0.75rem;
     margin-top: 0.75rem;
     margin-bottom: 0.75rem;
+    animation: fadeInUp 0.8s ease-out 0.1s both;
+}
+
+.hero-tagline {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.8s ease-out 0.05s both;
 }
 .hero-pill {
     font-size: 0.82rem;
@@ -248,6 +266,7 @@ header {
     max-width: 1100px; margin: 2rem auto 1.5rem;
     padding: 0 1.5rem;
     display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 .filter-group { display:flex; flex-direction:column; gap:.3rem; flex:1; min-width:140px; }
 .filter-group label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-mid); font-weight: 600; }
@@ -277,6 +296,7 @@ header {
     box-shadow: 0 4px 24px rgba(0,0,0,.12);
     border-radius: 12px;
     overflow: visible;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
 }
 table { width:100%; border-collapse:collapse; }
 
@@ -307,7 +327,24 @@ td:nth-child(n+3) { text-align: center; }
 tbody tr {
     border-bottom: 1px solid var(--border);
     transition: background .2s ease;
+    animation: fadeInUp 0.5s ease-out both;
 }
+tbody tr:nth-child(1) { animation-delay: 0.35s; }
+tbody tr:nth-child(2) { animation-delay: 0.37s; }
+tbody tr:nth-child(3) { animation-delay: 0.39s; }
+tbody tr:nth-child(4) { animation-delay: 0.41s; }
+tbody tr:nth-child(5) { animation-delay: 0.43s; }
+tbody tr:nth-child(6) { animation-delay: 0.45s; }
+tbody tr:nth-child(7) { animation-delay: 0.47s; }
+tbody tr:nth-child(8) { animation-delay: 0.49s; }
+tbody tr:nth-child(9) { animation-delay: 0.51s; }
+tbody tr:nth-child(10) { animation-delay: 0.53s; }
+tbody tr:nth-child(11) { animation-delay: 0.55s; }
+tbody tr:nth-child(12) { animation-delay: 0.57s; }
+tbody tr:nth-child(13) { animation-delay: 0.59s; }
+tbody tr:nth-child(14) { animation-delay: 0.61s; }
+tbody tr:nth-child(15) { animation-delay: 0.63s; }
+tbody tr:nth-child(n+16) { animation-delay: 0.63s; }
 tbody tr:nth-child(odd)  { background: var(--bg-row); }
 tbody tr:nth-child(even) { background: var(--bg-row-alt); }
 tbody tr:hover           { background: rgba(27,77,62,.05); box-shadow: inset 0 0 0 1px rgba(27,77,62,.35); }
@@ -453,6 +490,7 @@ td:first-child { padding-left:1rem; }
 .method-section {
     max-width: 1100px; margin: 0 auto 2.5rem;
     padding: 0 1.5rem;
+    animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 .method-card {
     background: var(--bg-card);
@@ -605,6 +643,7 @@ footer {
     padding: 0 1.5rem;
     font-size: 0.78rem;
     color: var(--text-mid);
+    animation: fadeInUp 0.8s ease-out 0.32s both;
 }
 .fa-legend.show { display: flex; }
 .fa-legend-bar {
@@ -734,7 +773,7 @@ footer {
 <!-- HERO -->
 <div class="hero">
     <div class="hero-inner">
-        <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 0.5rem;">
+        <div class="hero-tagline">
             <p class="hero-desc" style="margin: 0; font-size: 1.15rem; font-family: 'Playfair Display', serif;">"Like Rotten Tomatoes, but for baseball prospects."</p>
         </div>
         <div class="hero-content">
