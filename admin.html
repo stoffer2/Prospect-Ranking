@@ -468,7 +468,8 @@ const SOURCES = {
     justbaseball: { label:"Just Baseball",    listLength:100 },
     rotoprospects:{ label:"RotoProspects",    listLength:100 },
     prospect361:  { label:"Prospect361",      listLength:100 },
-    rotochamp:    { label:"RotoChamp",        listLength:100 }
+    rotochamp:    { label:"RotoChamp",        listLength:100 },
+    keithlaw:     { label:"Keith Law",        listLength:100 }
 };
 
 // Holds a reference to index.html. Persisted in IndexedDB across sessions.
@@ -754,7 +755,8 @@ const SOURCE_PARSER = {
     justbaseball: 'justbaseball',  // Two-line: rank on line 1, "Name\tTeam\tAge\tLevel\tPos\tETA\tGrade" on line 2
     rotoprospects:'rotoprospects',  // Tab-separated: Rank	Name	Pos	Team	B/T	Grades	Level	Age	ETA	Last
     prospect361:  'prospect361',   // "1. Name (Pos, Team) – description"
-    rotochamp:   'rotochamp'      // Tab: Rank	Name	Team	Pos	Age	ETA	999	999	?	999
+    rotochamp:   'rotochamp',      // Tab: Rank	Name	Team	Pos	Age	ETA	999	999	?	999
+    keithlaw:     'keithlaw'       // Keith Law: "Rank Name Pos, Pos2 Team Age: age ... \n 2025 Ranking: number"
 };
 
 // ============================================================
@@ -903,6 +905,67 @@ function parseRotoChamp(rawText) {
         const eta = etaRaw && /20\d{2}/.test(etaRaw) ? etaRaw.replace(/\D/g, '').slice(0, 4) : null;
         out.push({ rank: rankNum, name, pos, team: team || null, age: (age >= 16 && age <= 50) ? age : null, eta });
     }
+    return out;
+}
+
+// Keith Law: Multi-line format starting with "Rank Name Pos, Pos2 Team Age: age Ht: ... Wt: ..." then "2025 Ranking: number" on next line
+// Followed by description lines until next rank number
+function parseKeithLaw(rawText) {
+    const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Match start of entry: "Rank Name Pos, Pos2 Team" at start of line
+        // Format: "1 Konnor Griffin SS, CF Pittsburgh Pirates Age: 19 Ht: 6-4 ..."
+        const m = line.match(/^(\d+)\s+(.+?)\s+([A-Z\/,\s]+?)\s+(Pittsburgh Pirates|Detroit Tigers|Cleveland Guardians|Seattle Mariners|New York Mets|Milwaukee Brewers|San Francisco Giants|Colorado Rockies|St\.\s+Louis Cardinals|Boston Red Sox|Philadelphia Phillies|Baltimore Orioles|New York Yankees|Los Angeles Dodgers|Los Angeles Angels|Houston Astros|Chicago Cubs|Chicago White Sox|Cincinnati Reds|Minnesota Twins|Kansas City Royals|Texas Rangers|Toronto Blue Jays|Tampa Bay Rays|Washington Nationals|Miami Marlins|Arizona Diamondbacks|Atlanta Braves|San Diego Padres|Oakland Athletics)\s+Age:\s*(\d+)/i);
+        
+        if (!m) continue;
+        
+        const rank = parseInt(m[1], 10);
+        if (rank < 1 || rank > 200) continue;
+        
+        const name = m[2].trim();
+        let posRaw = m[3].trim();
+        
+        // Extract first position from "SS, CF" or "SS/CF" format
+        let pos = null;
+        if (posRaw.indexOf(',') >= 0) pos = posRaw.split(',')[0].trim();
+        else if (posRaw.indexOf('/') >= 0) pos = posRaw.split('/')[0].trim();
+        else pos = posRaw;
+        
+        // Map position
+        const POS_MAP = { "INF":"SS", "DH":"1B" };
+        pos = POS_MAP[pos] || pos || null;
+        
+        // Get team abbreviation from full name
+        const teamFull = m[4].toUpperCase().trim();
+        const teamMap = {
+            "PITTSBURGH PIRATES":"PIT", "DETROIT TIGERS":"DET", "CLEVELAND GUARDIANS":"CLE",
+            "SEATTLE MARINERS":"SEA", "NEW YORK METS":"NYM", "MILWAUKEE BREWERS":"MIL",
+            "SAN FRANCISCO GIANTS":"SF", "COLORADO ROCKIES":"COL", "ST. LOUIS CARDINALS":"STL",
+            "BOSTON RED SOX":"BOS", "PHILADELPHIA PHILLIES":"PHI", "BALTIMORE ORIOLES":"BAL",
+            "NEW YORK YANKEES":"NYY", "LOS ANGELES DODGERS":"LAD", "LOS ANGELES ANGELS":"LAA",
+            "HOUSTON ASTROS":"HOU", "CHICAGO CUBS":"CHC", "CHICAGO WHITE SOX":"CWS",
+            "CINCINNATI REDS":"CIN", "MINNESOTA TWINS":"MIN", "KANSAS CITY ROYALS":"KC",
+            "TEXAS RANGERS":"TEX", "TORONTO BLUE JAYS":"TOR", "TAMPA BAY RAYS":"TB",
+            "WASHINGTON NATIONALS":"WAS", "MIAMI MARLINS":"MIA", "ARIZONA DIAMONDBACKS":"ARI",
+            "ATLANTA BRAVES":"ATL", "SAN DIEGO PADRES":"SD", "OAKLAND ATHLETICS":"ATH"
+        };
+        const team = teamMap[teamFull] || null;
+        
+        const age = parseInt(m[5], 10);
+        
+        out.push({
+            rank: rank,
+            name: name,
+            pos: pos,
+            team: team,
+            age: (age >= 16 && age <= 50) ? age : null,
+            eta: null
+        });
+    }
+    
     return out;
 }
 
@@ -1135,6 +1198,11 @@ function runParser() {
     if (fmt === 'rotoprospects') return parseRotoProspects(text);
     if (fmt === 'prospect361')   return parseProspect361(text);
     if (fmt === 'rotochamp')     return parseRotoChamp(text);
+    if (fmt === 'keithlaw') {
+        const klOut = parseKeithLaw(text);
+        if (klOut.length > 0) return klOut;
+        return parseNumbered(text);
+    }
     if (fmt === 'numbered')      return parseNumbered(text);
     return parseNamesOnly(text);
 }
