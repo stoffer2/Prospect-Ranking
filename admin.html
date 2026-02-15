@@ -282,6 +282,7 @@ header {
                         <option value="rotoprospects">RotoProspects</option>
                         <option value="prospect361">Prospect361</option>
                         <option value="rotochamp">RotoChamp</option>
+                        <option value="keithlaw">Keith Law</option>
                     </select>
                 </div>
                 <div class="field">
@@ -326,6 +327,7 @@ header {
                         <option value="rotoprospects">RotoProspects</option>
                         <option value="prospect361">Prospect361</option>
                         <option value="rotochamp">RotoChamp</option>
+                        <option value="keithlaw">Keith Law</option>
                     </select>
                 </div>
                 <div class="field">
@@ -908,53 +910,80 @@ function parseRotoChamp(rawText) {
     return out;
 }
 
-// Keith Law: Multi-line format starting with "Rank Name Pos, Pos2 Team Age: age Ht: ... Wt: ..." then "2025 Ranking: number" on next line
-// Followed by description lines until next rank number
+// Keith Law: Multi-line format starting with "Rank Name Pos, Pos2 Team Age: age ..."
+// Format: "1 Konnor Griffin SS, CF Pittsburgh Pirates Age: 19 Ht: 6-4 ..."
 function parseKeithLaw(rawText) {
     const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
     const out = [];
     
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        // Match start of entry: "Rank Name Pos, Pos2 Team" at start of line
-        // Format: "1 Konnor Griffin SS, CF Pittsburgh Pirates Age: 19 Ht: 6-4 ..."
-        const m = line.match(/^(\d+)\s+(.+?)\s+([A-Z\/,\s]+?)\s+(Pittsburgh Pirates|Detroit Tigers|Cleveland Guardians|Seattle Mariners|New York Mets|Milwaukee Brewers|San Francisco Giants|Colorado Rockies|St\.\s+Louis Cardinals|Boston Red Sox|Philadelphia Phillies|Baltimore Orioles|New York Yankees|Los Angeles Dodgers|Los Angeles Angels|Houston Astros|Chicago Cubs|Chicago White Sox|Cincinnati Reds|Minnesota Twins|Kansas City Royals|Texas Rangers|Toronto Blue Jays|Tampa Bay Rays|Washington Nationals|Miami Marlins|Arizona Diamondbacks|Atlanta Braves|San Diego Padres|Oakland Athletics)\s+Age:\s*(\d+)/i);
+    const teamMap = {
+        "PITTSBURGH PIRATES":"PIT", "DETROIT TIGERS":"DET", "CLEVELAND GUARDIANS":"CLE",
+        "SEATTLE MARINERS":"SEA", "NEW YORK METS":"NYM", "MILWAUKEE BREWERS":"MIL",
+        "SAN FRANCISCO GIANTS":"SF", "COLORADO ROCKIES":"COL", "ST. LOUIS CARDINALS":"STL",
+        "BOSTON RED SOX":"BOS", "PHILADELPHIA PHILLIES":"PHI", "BALTIMORE ORIOLES":"BAL",
+        "NEW YORK YANKEES":"NYY", "LOS ANGELES DODGERS":"LAD", "LOS ANGELES ANGELS":"LAA",
+        "HOUSTON ASTROS":"HOU", "CHICAGO CUBS":"CHC", "CHICAGO WHITE SOX":"CWS",
+        "CINCINNATI REDS":"CIN", "MINNESOTA TWINS":"MIN", "KANSAS CITY ROYALS":"KC",
+        "TEXAS RANGERS":"TEX", "TORONTO BLUE JAYS":"TOR", "TAMPA BAY RAYS":"TB",
+        "WASHINGTON NATIONALS":"WAS", "MIAMI MARLINS":"MIA", "ARIZONA DIAMONDBACKS":"ARI",
+        "ATLANTA BRAVES":"ATL", "SAN DIEGO PADRES":"SD", "OAKLAND ATHLETICS":"ATH"
+    };
+    
+    for (const line of lines) {
+        // Check if line starts with a rank number
+        const rankMatch = line.match(/^(\d+)\s+/);
+        if (!rankMatch) continue;
         
-        if (!m) continue;
-        
-        const rank = parseInt(m[1], 10);
+        const rank = parseInt(rankMatch[1], 10);
         if (rank < 1 || rank > 200) continue;
         
-        const name = m[2].trim();
-        let posRaw = m[3].trim();
+        // Remove rank from front and look for Age: in the line
+        const rest = line.replace(/^\d+\s+/, '');
+        const ageMatch = rest.match(/Age:\s*(\d+)/i);
+        if (!ageMatch) continue;
         
-        // Extract first position from "SS, CF" or "SS/CF" format
+        const age = parseInt(ageMatch[1], 10);
+        
+        // Extract everything before "Age:" and parse name/pos/team from it
+        const beforeAge = rest.substring(0, ageMatch.index).trim();
+        
+        // Find team name by looking for known team patterns
+        let team = null;
+        let teamName = null;
+        for (const [fullName, abbr] of Object.entries(teamMap)) {
+            if (beforeAge.toUpperCase().includes(fullName)) {
+                team = abbr;
+                teamName = fullName;
+                break;
+            }
+        }
+        
+        if (!team) continue; // No team found
+        
+        // Extract everything before team name
+        const beforeTeam = beforeAge.substring(0, beforeAge.toUpperCase().indexOf(teamName)).trim();
+        
+        // Now split beforeTeam into name and position(s)
+        // Format: "Name Pos, Pos2" or "Name Pos/Pos2" or just "Name Pos"
+        // Strategy: look for known positions at the end
+        const posPat = /\b([A-Z]{1,3}(?:\/[A-Z]{1,3})?(?:,\s*[A-Z]{1,3})*)\s*$/;
+        const posMatch = beforeTeam.match(posPat);
+        
+        let name = beforeTeam;
         let pos = null;
-        if (posRaw.indexOf(',') >= 0) pos = posRaw.split(',')[0].trim();
-        else if (posRaw.indexOf('/') >= 0) pos = posRaw.split('/')[0].trim();
-        else pos = posRaw;
+        
+        if (posMatch) {
+            pos = posMatch[1].trim();
+            name = beforeTeam.substring(0, posMatch.index).trim();
+            
+            // Extract first position
+            if (pos.indexOf(',') >= 0) pos = pos.split(',')[0].trim();
+            else if (pos.indexOf('/') >= 0) pos = pos.split('/')[0].trim();
+        }
         
         // Map position
         const POS_MAP = { "INF":"SS", "DH":"1B" };
         pos = POS_MAP[pos] || pos || null;
-        
-        // Get team abbreviation from full name
-        const teamFull = m[4].toUpperCase().trim();
-        const teamMap = {
-            "PITTSBURGH PIRATES":"PIT", "DETROIT TIGERS":"DET", "CLEVELAND GUARDIANS":"CLE",
-            "SEATTLE MARINERS":"SEA", "NEW YORK METS":"NYM", "MILWAUKEE BREWERS":"MIL",
-            "SAN FRANCISCO GIANTS":"SF", "COLORADO ROCKIES":"COL", "ST. LOUIS CARDINALS":"STL",
-            "BOSTON RED SOX":"BOS", "PHILADELPHIA PHILLIES":"PHI", "BALTIMORE ORIOLES":"BAL",
-            "NEW YORK YANKEES":"NYY", "LOS ANGELES DODGERS":"LAD", "LOS ANGELES ANGELS":"LAA",
-            "HOUSTON ASTROS":"HOU", "CHICAGO CUBS":"CHC", "CHICAGO WHITE SOX":"CWS",
-            "CINCINNATI REDS":"CIN", "MINNESOTA TWINS":"MIN", "KANSAS CITY ROYALS":"KC",
-            "TEXAS RANGERS":"TEX", "TORONTO BLUE JAYS":"TOR", "TAMPA BAY RAYS":"TB",
-            "WASHINGTON NATIONALS":"WAS", "MIAMI MARLINS":"MIA", "ARIZONA DIAMONDBACKS":"ARI",
-            "ATLANTA BRAVES":"ATL", "SAN DIEGO PADRES":"SD", "OAKLAND ATHLETICS":"ATH"
-        };
-        const team = teamMap[teamFull] || null;
-        
-        const age = parseInt(m[5], 10);
         
         out.push({
             rank: rank,
