@@ -860,30 +860,6 @@ footer {
     </table>
 </div>
 
-<!-- METHODOLOGY -->
-<div class="method-section">
-    <div class="method-card">
-        <h3>Our Methodology</h3>
-        <div class="method-grid">
-            <div class="method-item">
-                <h4>Percentile Normalization</h4>
-                <p>Raw ranks are converted to a 0–100 scale using the formula <strong style="color:var(--accent-hi);">score = 100 × (1 − (rank−1) / (N−1))</strong>. This means #1 on a Top-100 list scores identically to #1 on a Top-500 list. Being in the top 10% of any list produces the same normalized score regardless of list length.</p>
-            </div>
-            <div class="method-item">
-                <h4>Rankle Score</h4>
-                <p>Each source's rankings are statistically normalized to account for differences in list length and depth. Scores are then combined using a proprietary weighting method that rewards broad consensus across multiple experts.</p>
-            </div>
-            <div class="method-item">
-                <h4>Volatility (Standard Deviation)</h4>
-                <p>Sample standard deviation of <strong style="color:var(--accent-hi);">Z-scores</strong> across sources. <strong style="color:var(--green);">Low (&lt;0.3)</strong> = sources agree. <strong style="color:#fbbf24;">Moderate (0.3–0.7)</strong> = some disagreement. <strong style="color:var(--red);">High (0.7–0.85)</strong> = significant divergence. <strong style="color:#a78bfa;">Extreme (≥0.85)</strong> = major outlier or stark disagreement. Requires 2+ sources.</p>
-            </div>
-            <div class="method-item">
-                <h4>Tiers (Percentile-Based Cliffs)</h4>
-                <p>Tiers are computed using a non-parametric approach: we calculate score deltas between consecutive players, then identify tier breaks at gaps in the top 10% (90th percentile). A talent cliff occurs when the drop from one player to the next is among the largest in the list. We enforce a minimum spacing between breaks to avoid tiny clusters. If #1's lead over #2 meets the threshold, they receive Tier 1 (top tier).</p>
-            </div>
-        </div>
-    </div>
-</div>
 
 </div><!-- /.main-content -->
 
