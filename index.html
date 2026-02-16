@@ -1152,8 +1152,9 @@ function buildProspects() {
 // Tier breaks occur at gaps in the top P% of all score drops.
 // Non-parametric, interpretable, tunable.
 // ============================================================
-const TIER_PERCENTILE = 90;   // 90th percentile = largest 10% of gaps trigger breaks
-const TIER_MIN_SPACING = 3;   // minimum players between breaks (avoid tiny clusters)
+const TIER_PERCENTILE = 85;   // 85th percentile = largest 15% of gaps trigger breaks
+const TIER_MIN_SPACING = 0;   // minimum players between breaks (allow single prospects if statistically different)
+const MAX_TIER_SIZE = 15;     // maximum prospects per tier; auto-split larger tiers
 
 function percentile(arr, p) {
     if (arr.length === 0) return 0;
@@ -1190,7 +1191,7 @@ function calculateTalentCliffs(prospects) {
     // Tier 1 = top (when #1 is far ahead); tier 2, 3, ... below
     const topIsSolo = gaps[0] >= threshold;
 
-    return prospects.map((p, i) => {
+    let tierAssignments = prospects.map((p, i) => {
         if (topIsSolo && i === 0) return { ...p, tier: 1 };
         let tier = 1;
         for (const b of breakIndices) {
@@ -1199,6 +1200,41 @@ function calculateTalentCliffs(prospects) {
         }
         return { ...p, tier };
     });
+
+    // Enforce MAX_TIER_SIZE: split any tier larger than the limit
+    let continueProcessing = true;
+    while (continueProcessing) {
+        continueProcessing = false;
+        const tierCounts = {};
+        tierAssignments.forEach(p => {
+            tierCounts[p.tier] = (tierCounts[p.tier] || 0) + 1;
+        });
+
+        for (const tierNum of Object.keys(tierCounts)) {
+            const tier = parseInt(tierNum);
+            if (tierCounts[tier] > MAX_TIER_SIZE) {
+                continueProcessing = true;
+                // Find the first prospect in this oversized tier
+                const tierIndices = tierAssignments
+                    .map((p, i) => p.tier === tier ? i : null)
+                    .filter(i => i !== null);
+                
+                // Split at the midpoint of this tier
+                const splitPoint = tierIndices[Math.floor(tierIndices.length / 2)];
+                
+                // Re-assign all tiers at or after split point: increment by 1
+                const maxTierBefore = Math.max(...tierAssignments.map(p => p.tier));
+                for (let i = splitPoint; i < tierAssignments.length; i++) {
+                    if (tierAssignments[i].tier >= tier) {
+                        tierAssignments[i] = { ...tierAssignments[i], tier: tierAssignments[i].tier + 1 };
+                    }
+                }
+                break;  // restart the while loop to re-check all tiers
+            }
+        }
+    }
+
+    return tierAssignments;
 }
 
 // Load previous display ranks (from last page view) for change arrows
