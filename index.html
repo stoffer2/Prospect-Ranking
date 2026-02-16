@@ -1142,7 +1142,7 @@ function buildProspects() {
             sourceRankings
         );
     })
-    .filter(p => p.sourceCount > 0)                    // exclude prospects with no ranks (would show 0.0)
+    .filter(p => p.sourceCount > 1)                    // exclude single-source prospects; minimum 2 sources for consensus
     .sort((a, b) => b.rankleScore - a.rankleScore)     // primary: Rankle Score descending
     .map((p, i) => ({ ...p, displayRank: i + 1 }));   // assign final display rank
 }
@@ -1714,9 +1714,9 @@ function render() {
             ? 'One expert source agrees on this prospect\'s position.'
             : `${p.consensusAgreement} expert sources agree on this prospect's position.`;
 
-        // Single-source warning
-        const warnHtml = p.sourceCount === 1
-            ? `<span class="warn-badge">⚠ 1 source</span>`
+        // 2-source flag (lower confidence than 3+ sources)
+        const warnHtml = p.sourceCount === 2
+            ? `<span class="warn-badge">⚠ 2 sources</span>`
             : '';
 
         // Rank change arrow (vs previous view): positive change = moved up, negative = moved down
