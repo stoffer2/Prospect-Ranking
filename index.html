@@ -25,6 +25,24 @@
     --header-height: 190px;  /* fixed site header height; main-content padding-top */
 }
 
+/* Dark theme */
+body.dark-mode {
+    --bg-deep:    #0f172a;  /* deep blue-black */
+    --bg-card:    #1e3a3a;  /* dark teal */
+    --bg-row:     #1a2332;  /* dark row */
+    --bg-row-alt: #0f172a;  /* darker row alt */
+    --border:     #334155;  /* dark gray border */
+    --text-hi:    #f1f5f9;  /* light text */
+    --text-mid:   #cbd5e1;  /* medium text */
+    --text-lo:    #94a3b8;  /* subtle text */
+    --accent:     #2f7f63;  /* brighter green */
+    --accent-hi:  #3bb38a;  /* lighter green */
+    --gold:       #fbbf24;  /* slightly brighter gold */
+    --green:      #4ade80;  /* brighter green */
+    --red:        #fb7185;  /* slightly brighter red */
+    --purple:     #d8b4fe;  /* brighter purple */
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html { overflow-x: hidden; }
@@ -61,6 +79,14 @@ header {
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
+    transition: background .3s, border-color .3s, box-shadow .3s;
+}
+
+body.dark-mode header {
+    background: #1a2332;
+    border-bottom-color: #334155;
+    border-top-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,.5);
 }
 .header-spacer { grid-column: 1; }
 .header-logo-wrap {
@@ -107,6 +133,11 @@ header {
     max-width: 400px;
     object-fit: contain;
     display: block;
+    transition: filter .3s;
+}
+
+body.dark-mode .header-logo-wrap img {
+    filter: brightness(0) saturate(100%) invert(1) sepia(20%);
 }
 .logo-title {
     font-family: 'Bebas Neue', cursive;
@@ -134,6 +165,29 @@ header {
 }
 .btn-pro:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 16px rgba(28,92,71,.7); }
 .btn-pro:focus-visible, .btn-upload-roster:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+
+/* Dark mode toggle */
+.btn-dark-toggle {
+    background: transparent;
+    border: 2px solid rgba(47, 127, 99, 0.5);
+    color: var(--accent);
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-dark-toggle:hover {
+    border-color: var(--accent);
+    background: rgba(47, 127, 99, 0.1);
+}
+body.dark-mode .btn-dark-toggle {
+    border-color: var(--accent-hi);
+    color: var(--accent-hi);
+}
 
 /* ── HERO ── */
 .hero {
@@ -231,6 +285,12 @@ header {
     min-width: 240px;
     position: relative;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
+    transition: background .3s, border-color .3s;
+}
+
+body.dark-mode .hero-preview {
+    background: rgba(30, 58, 58, 0.8);
+    border-color: rgba(59, 179, 138, 0.3);
 }
 .hero-preview-title {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
@@ -281,10 +341,22 @@ header {
     font-size: 0.85rem;
     font-family: inherit;
     outline: none;
-    transition: border-color .2s, box-shadow .2s;
+    transition: border-color .2s, box-shadow .2s, background .2s, color .2s;
 }
 .filter-group input:focus,
 .filter-group select:focus { border-color: var(--accent-hi); box-shadow: 0 0 0 3px rgba(47,127,99,.4); }
+
+body.dark-mode .filter-group input,
+body.dark-mode .filter-group select {
+    background: #1e3a3a;
+    border-color: #334155;
+    color: var(--text-hi);
+}
+body.dark-mode .filter-group input:focus,
+body.dark-mode .filter-group select:focus {
+    border-color: var(--accent-hi);
+    box-shadow: 0 0 0 3px rgba(59, 179, 138, .3);
+}
 .filter-group input:focus-visible,
 .filter-group select:focus-visible { outline: none; }
 .filter-group input::placeholder { color: var(--text-mid); }
@@ -298,6 +370,11 @@ header {
     border-radius: 12px;
     overflow: visible;
     animation: fadeInUp 0.8s ease-out 0.3s both;
+    transition: box-shadow .3s;
+}
+
+body.dark-mode .table-wrap {
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
 }
 table { width:100%; border-collapse:collapse; }
 
@@ -352,6 +429,10 @@ tbody tr:hover           { background: rgba(27,77,62,.05); box-shadow: inset 0 0
 tbody tr.free-agent      { background: #fef3c7; box-shadow: inset 3px 0 0 var(--gold); }
 tbody tr.free-agent:nth-child(even) { background: #fef9e7; box-shadow: inset 3px 0 0 var(--gold); }
 tbody tr.free-agent:hover { background: #fef3c7; box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(245,158,11,.3); }
+
+body.dark-mode tbody tr.free-agent { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
+body.dark-mode tbody tr.free-agent:nth-child(even) { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
+body.dark-mode tbody tr.free-agent:hover { background: #4d4000; box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(251,191,36,.3); }
 
 td { padding: 0.8rem 0.75rem; vertical-align: middle; }
 td:first-child { padding-left:1rem; }
@@ -471,6 +552,12 @@ td:first-child { padding-left:1rem; }
     padding:2.5rem 2rem;
     text-align:center;
     max-width:420px; margin:1.8rem auto;
+    transition: background .3s, border-color .3s;
+}
+
+body.dark-mode .lock-box {
+    background: linear-gradient(135deg, #1e3a3a, #1a2f2f);
+    border-color: #334155;
 }
 .lock-icon { font-size:2.8rem; margin-bottom:.6rem; }
 .lock-title { font-family:'Bebas Neue',cursive; font-size:1.55rem; letter-spacing:2px; margin-bottom:.35rem; }
@@ -499,8 +586,15 @@ td:first-child { padding-left:1rem; }
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
+    transition: background .3s, border-color .3s, box-shadow .3s;
 }
-.method-card h3 { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:2px; margin-bottom:1rem; color:#fff; }
+
+body.dark-mode .method-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+}
+.method-card h3 { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:2px; margin-bottom:1rem; color:#fff; transition: color .3s; }
+
+body.dark-mode .method-card h3 { color: var(--text-hi); }
 .method-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
 .method-item h4 { font-size:.82rem; color:var(--accent-hi); font-weight:600; margin-bottom:.35rem; text-transform:uppercase; letter-spacing:0.8px; }
 .method-item p  { font-size:.8rem; color:var(--text-mid); line-height:1.65; }
@@ -512,6 +606,7 @@ footer {
     text-align: center;
     color: var(--text-lo); font-size: 0.75rem;
     margin-top: 2rem;
+    transition: border-color .3s, color .3s;
 }
 
 /* ── ROSTER UPLOAD ── */
@@ -536,35 +631,74 @@ footer {
 .btn-upload-roster.loaded { background: var(--green); color: #0a0e1a; }
 .btn-upload-roster.loaded:hover { box-shadow: 0 4px 14px rgba(52,211,153,.4); }
 .fantasy-section {
-    display: none;
-    padding: 1rem 2rem;
-    background: var(--bg-card);
+    display: block;
+    padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(201, 228, 217, 0.7) 100%);
     border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+    transition: background .3s, border-color .3s;
+}
+
+body.dark-mode .fantasy-section {
+    background: linear-gradient(135deg, #1e3a3a 0%, rgba(30, 58, 58, 0.7) 100%);
 }
 .fantasy-section.open { display: block; }
-.fantasy-desc { color: var(--text-mid); font-size: 0.82rem; margin-bottom: 0.75rem; line-height: 1.5; }
+.fantasy-header {
+    max-width: 1100px;
+    margin: 0 auto 1.5rem;
+    text-align: center;
+}
+.fantasy-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+.fantasy-desc { color: var(--text-mid); font-size: 0.95rem; margin-bottom: 0.75rem; line-height: 1.6; font-weight: 500; }
 .fantasy-drop-zone {
     position: relative;
     border: 2px dashed var(--border);
-    border-radius: 8px;
-    transition: border-color .2s, background .2s;
+    border-radius: 12px;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
-.fantasy-drop-zone.drag-over { border-color: var(--gold); background: rgba(245,158,11,.08); }
-.fantasy-drop-zone.success { border-color: var(--green); background: rgba(52,211,153,.06); }
+
+body.dark-mode .fantasy-drop-zone {
+    background: #1a2332;
+    border-color: #334155;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.fantasy-drop-zone.drag-over { 
+    border-color: var(--gold); 
+    background: rgba(245,158,11,.12);
+    box-shadow: 0 4px 16px rgba(245,158,11,.2);
+}
+.fantasy-drop-zone.success { 
+    border-color: var(--green); 
+    background: rgba(52,211,153,.08);
+    box-shadow: 0 4px 16px rgba(52,211,153,.15);
+}
 .fantasy-drop-content {
-    padding: 2rem 1rem;
+    padding: 3rem 2rem;
     text-align: center;
     position: relative;
-    min-height: 60px;
+    min-height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 .fantasy-drop-placeholder {
-    color: var(--text-mid);
-    font-size: 0.9rem;
+    color: var(--text-hi);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
 }
 .fantasy-drop-processing,
 .fantasy-drop-success { display: none; }
@@ -626,13 +760,17 @@ footer {
     padding: 1rem 1.5rem;
     z-index: 9999;
     opacity: 0;
-    transition: transform .3s, opacity .3s;
+    transition: transform .3s, opacity .3s, background .3s, border-color .3s, box-shadow .3s;
     max-width: 90%;
 }
 .fantasy-toast strong { color: var(--green); }
 .fantasy-toast.show {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
+}
+
+body.dark-mode .fantasy-toast {
+    box-shadow: 0 8px 24px rgba(0,0,0,.7);
 }
 
 .fa-legend {
@@ -666,8 +804,12 @@ footer {
     .beta-badge { font-size: 0.9rem; letter-spacing: 0.08em; }
     .logo-title { font-size: 2.25rem; letter-spacing: 3px; }
     .header-right { flex-wrap: wrap; }
-    .btn-upload-roster { padding: 0.4rem 0.75rem; font-size: 0.72rem; white-space: nowrap; }
     .btn-pro { padding: 0.4rem 0.75rem; font-size: 0.72rem; }
+    .fantasy-section { padding: 1.5rem 1rem; margin-bottom: 0.75rem; }
+    .fantasy-title { font-size: 1.3rem; }
+    .fantasy-desc { font-size: 0.85rem; }
+    .fantasy-drop-content { padding: 2rem 1rem; min-height: 100px; }
+    .fantasy-drop-placeholder { font-size: 0.9rem; }
     .hero { padding: 1.25rem 1rem 1.5rem; margin-bottom: 0; }
     .hero h1 { font-size: 1.85rem; }
     .filter-bar { margin: 0 auto 0.75rem; padding: 0 1rem; gap: 0.6rem; }
@@ -708,13 +850,18 @@ footer {
     .header-right { grid-column: auto; justify-self: center; gap: 0.5rem; flex-wrap: wrap; }
     .header-logo-wrap img { height: 56px; max-width: 200px; }
     .beta-badge { font-size: 0.75rem; letter-spacing: 0.06em; }
-    .btn-upload-roster, .btn-pro {
+    .btn-pro {
         flex: 1;
         min-width: 100px;
         padding: 0.45rem 0.5rem;
         font-size: 0.68rem;
     }
     .logo-title { font-size: 1.55rem; letter-spacing: 1px; }
+    .fantasy-section { padding: 1.25rem 0.75rem; margin-bottom: 0.5rem; }
+    .fantasy-title { font-size: 1.1rem; }
+    .fantasy-desc { font-size: 0.8rem; }
+    .fantasy-drop-content { padding: 1.5rem 0.75rem; min-height: 90px; }
+    .fantasy-drop-placeholder { font-size: 0.85rem; }
     .hero { padding: 1rem 0.75rem 1.25rem; }
     .hero h1 { font-size: 1.5rem; }
     .filter-bar { padding: 0 0.75rem; flex-direction: column; }
@@ -746,31 +893,12 @@ footer {
         <span class="beta-badge" aria-label="Beta">BETA</span>
     </a>
     <div class="header-right">
-        <button type="button" class="btn-upload-roster" id="btnUploadRoster" onclick="document.getElementById('fantasySection').classList.toggle('open')">Upload Roster</button>
+        <button class="btn-dark-toggle" id="darkModeToggle" title="Toggle dark mode">🌙</button>
         <button class="btn-pro">⭐ Upgrade to Pro</button>
     </div>
 </header>
 
 <div class="main-content" id="mainContent">
-<div class="fantasy-section" id="fantasySection">
-    <p class="fantasy-desc">Drop your roster CSV or paste (Ctrl+V).</p>
-    <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
-        <div class="fantasy-drop-content">
-            <div class="fantasy-drop-placeholder">Drop CSV file or paste (Ctrl+V)</div>
-            <div class="fantasy-drop-processing">
-                <span>Processing…</span>
-            </div>
-            <div class="fantasy-drop-success">
-                <div class="fantasy-checkmark">✓</div>
-                <span>Roster imported!</span>
-            </div>
-        </div>
-        <div class="fantasy-progress-wrap">
-            <div class="fantasy-progress-bar" id="fantasyProgressBar"></div>
-        </div>
-    </div>
-</div>
-
 <!-- HERO -->
 <div class="hero">
     <div class="hero-inner">
@@ -806,6 +934,29 @@ footer {
                     </div>
                 </div>
             </div>
+    </div>
+</div>
+
+<!-- ROSTER UPLOAD SECTION -->
+<div class="fantasy-section" id="fantasySection" style="display: block;">
+    <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
+        <div class="fantasy-drop-content">
+            <div class="fantasy-drop-placeholder">
+                <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📋</div>
+                <strong>Upload your league's roster CSV file for player availability.</strong>
+                <div style="font-size: 0.85rem; color: var(--text-lo); margin-top: 0.35rem;">Fantrax, ESPN, or your own list</div>
+            </div>
+            <div class="fantasy-drop-processing">
+                <span>Processing…</span>
+            </div>
+            <div class="fantasy-drop-success">
+                <div class="fantasy-checkmark">✓</div>
+                <span>Roster imported!</span>
+            </div>
+        </div>
+        <div class="fantasy-progress-wrap">
+            <div class="fantasy-progress-bar" id="fantasyProgressBar"></div>
+        </div>
     </div>
 </div>
 
@@ -866,6 +1017,30 @@ footer {
 <div class="fantasy-toast" id="fantasyToast"></div>
 
 <script>
+// ============================================================
+// DARK MODE TOGGLE
+// ============================================================
+(function initDarkMode() {
+    const toggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    
+    // Check localStorage for saved preference
+    const savedMode = localStorage.getItem('rankle-dark-mode');
+    if (savedMode === 'true') {
+        body.classList.add('dark-mode');
+        toggle.textContent = '☀️';
+    }
+    
+    // Toggle dark mode on button click
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        body.classList.toggle('dark-mode');
+        const isDarkMode = body.classList.contains('dark-mode');
+        localStorage.setItem('rankle-dark-mode', isDarkMode);
+        toggle.textContent = isDarkMode ? '☀️' : '🌙';
+    });
+})();
+
 // ============================================================
 // RANKING ENGINE  — unit-tested & verified before deployment
 // ============================================================
