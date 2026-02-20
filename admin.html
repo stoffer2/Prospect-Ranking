@@ -751,7 +751,7 @@ const ROTOCHAMP_TEAM_ALIAS = { "KAN":"KC", "CWS":"CHW", "OAK":"ATH" };
 const SOURCE_PARSER = {
     pipeline:     'pipeline',    // MLB Pipeline: 5-line block with junk stats line
     ba:           'ba',          // Baseball America: 4-line block
-    fangraphs:    'numbered',   // placeholder
+    fangraphs:    'fangraphs',  // Tab: Rank, Name, Team, Pos (or similar); else "1. Name" fallback
     br:           'br',          // Bleacher Report: "100. C Thayron Liranzo, DET" per line
     espn:         'numbered',   // placeholder
     justbaseball: 'justbaseball',  // Two-line: rank on line 1, "Name\tTeam\tAge\tLevel\tPos\tETA\tGrade" on line 2
@@ -880,6 +880,68 @@ function parseProspect361(rawText) {
         out.push({ rank, name, pos, team });
     }
     return out;
+}
+
+// FanGraphs: Tab-separated (e.g. from The Board: Rank, Name, Team, Pos or Rank, OrgRank, Name, Team, …).
+// Skips header row if first line looks like column headers. Falls back to "1. Name" for article paste.
+function parseFangraphs(rawText) {
+    const lines = (rawText || '').split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return [];
+    const out = [];
+    const POS_MAP = { "INF":"SS", "DH":"1B" };
+    const FG_TEAM_ALIAS = { "KAN":"KC", "CHW":"CWS", "OAK":"ATH" };
+    const POS_SET = new Set(["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP","CF","LF","RF"]);
+    let start = 0;
+    const first = lines[0];
+    const firstCols = first.split('\t');
+    if (firstCols.length >= 2) {
+        const col0 = (firstCols[0] || '').trim();
+        const col1 = (firstCols[1] || '').trim();
+        const looksLikeHeader = /^(Rank|Name|Team|Org|FV|Tier|Position|Pos|#)/i.test(col0) || /^(Rank|Name|Team|Org|FV|Tier|Position|Pos)$/i.test(col1);
+        if (looksLikeHeader) start = 1;
+    }
+    const hasTabs = lines.slice(start).some(l => l.indexOf('\t') >= 0);
+    if (hasTabs) {
+        for (let i = start; i < lines.length; i++) {
+            const cols = lines[i].split('\t');
+            if (cols.length < 2) continue;
+            const c0 = (cols[0] || '').trim();
+            const c1 = (cols[1] || '').trim();
+            let rank = parseInt(c0, 10);
+            let name, teamRaw, posRaw;
+            if (!isNaN(rank) && rank >= 1 && rank <= 200 && c1.length > 1 && !/^\d+$/.test(c1)) {
+                name = c1;
+                teamRaw = (cols[2] || cols[3] || '').trim();
+                posRaw = (cols[3] || cols[4] || cols[2] || '').trim();
+            } else {
+                rank = out.length + 1;
+                name = c0;
+                teamRaw = c1;
+                posRaw = (cols[2] || cols[3] || '').trim();
+            }
+            if (!name) continue;
+            let team = TEAM_MAP[teamRaw.toLowerCase()] || null;
+            if (!team && /^[A-Z]{2,3}$/i.test(teamRaw)) {
+                const abbr = teamRaw.toUpperCase();
+                team = FG_TEAM_ALIAS[abbr] || abbr;
+            }
+            let pos = null;
+            if (posRaw) {
+                const p = posRaw.split(/[,/]/)[0].trim();
+                pos = POS_MAP[p] || (POS_SET.has(p) ? p : null);
+            }
+            out.push({
+                rank,
+                name: name.trim(),
+                team,
+                pos,
+                age: null,
+                eta: null
+            });
+        }
+        if (out.length > 0) return out;
+    }
+    return parseNumbered(rawText);
 }
 
 // RotoChamp: Rank\tName\tTeam\tPos\tAge\tETA\t999\t999\t?\t999 — tab-separated, age/ETA can be empty
@@ -1221,6 +1283,11 @@ function runParser() {
     if (fmt === 'keithlaw') {
         const klOut = parseKeithLaw(text);
         if (klOut.length > 0) return klOut;
+        return parseNumbered(text);
+    }
+    if (fmt === 'fangraphs') {
+        const fgOut = parseFangraphs(text);
+        if (fgOut.length > 0) return fgOut;
         return parseNumbered(text);
     }
     if (fmt === 'numbered')      return parseNumbered(text);

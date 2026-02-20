@@ -166,6 +166,25 @@ body.dark-mode .header-logo-wrap img {
 .btn-pro:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 16px rgba(28,92,71,.7); }
 .btn-pro:focus-visible, .btn-upload-roster:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent); }
 
+.btn-fa-filter {
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    color: #1a1a1a;
+    border: 2px solid rgba(217, 119, 6, 0.7);
+    padding: 0.5rem 1.15rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    transition: transform .15s, box-shadow .15s, background .15s;
+}
+.btn-fa-filter:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 16px rgba(217, 119, 6, .7); }
+.btn-fa-filter:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gold); }
+.btn-fa-filter.active { background: linear-gradient(135deg, #dc2626, #b91c1c); border-color: rgba(220, 38, 38, 0.7); color: #fff; }
+
 /* Dark mode toggle */
 .btn-dark-toggle {
     background: transparent;
@@ -787,10 +806,10 @@ body.dark-mode .fantasy-toast {
 .fa-legend.show { display: flex; }
 .fa-legend-bar {
     display: inline-block;
-    width: 12px;
-    height: 4px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--gold), #d97706);
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: linear-gradient(135deg, var(--gold), #d97706);
     flex-shrink: 0;
 }
 .fa-legend-text { font-weight: 500; }
@@ -984,11 +1003,12 @@ body.dark-mode .fantasy-toast {
             <option value="Extreme">Extreme</option>
         </select>
     </div>
+    <button class="btn-fa-filter" id="btnFaFilter" style="display:none;">Show Free Agents</button>
 </div>
 
 <div class="fa-legend" id="faLegend" aria-hidden="true">
     <span class="fa-legend-bar"></span>
-    <span class="fa-legend-text">Gold highlight = free agents (not on any roster)</span>
+    <span class="fa-legend-text">Free agents in your league</span>
 </div>
 
 <!-- TABLE -->
@@ -1578,19 +1598,103 @@ function compressedName(s) {
     return nameForMatch(s).replace(/\s+/g, '');
 }
 
+function stripAccents(str) {
+    // Normalize to NFD (Canonical Decomposition), then remove combining marks
+    return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function levenshteinDistance(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
+
 function getOwnerForProspect(prospectName) {
     if (!prospectName || Object.keys(ownershipMap).length === 0) return null;
     const n = normalizeName(prospectName);
     const nMatch = nameForMatch(prospectName);
     const nComp = compressedName(prospectName);
+    
+    // Strip accents for matching
+    const nNoAccent = stripAccents(n);
+    const nMatchNoAccent = stripAccents(nMatch);
+    const nCompNoAccent = stripAccents(nComp);
+    
+    // Parse prospect name into parts
+    const prospectParts = n.split(/\s+/);
+    const prospectFirst = prospectParts[0];
+    const prospectLast = prospectParts.slice(1).join(' ');
+    
+    // Exact match first (with and without accents)
     if (ownershipMap[n]) return ownershipMap[n];
+    
+    let bestMatch = null;
+    let bestScore = -1;
+    
     for (const [csvName, owner] of Object.entries(ownershipMap)) {
         const cn = nameForMatch(csvName);
         const cnComp = compressedName(csvName);
-        if (nMatch === cn || nMatch.includes(cn) || cn.includes(nMatch)) return owner;
-        if (nComp === cnComp || nComp.includes(cnComp) || cnComp.includes(nComp)) return owner;
+        const csvNormalized = normalizeName(csvName);
+        const csvParts = csvNormalized.split(/\s+/);
+        const csvFirst = csvParts[0];
+        const csvLast = csvParts.slice(1).join(' ');
+        
+        // Strip accents for comparison
+        const cnNoAccent = stripAccents(cn);
+        const cnCompNoAccent = stripAccents(cnComp);
+        const csvLastNoAccent = stripAccents(csvLast);
+        const prospectLastNoAccent = stripAccents(prospectLast);
+        
+        let score = 0;
+        
+        // Exact match on cleaned names (high priority)
+        if (nMatch === cn || nMatchNoAccent === cnNoAccent) return owner;
+        if (nComp === cnComp || nCompNoAccent === cnCompNoAccent) return owner;
+        
+        // Substring matching (with accent stripping)
+        if (nMatchNoAccent.includes(cnNoAccent) || cnNoAccent.includes(nMatchNoAccent)) score += 80;
+        if (nCompNoAccent.includes(cnCompNoAccent) || cnCompNoAccent.includes(nCompNoAccent)) score += 80;
+        
+        // Last name exact match + first name variation (accent-insensitive)
+        if (csvLastNoAccent && prospectLastNoAccent && csvLastNoAccent === prospectLastNoAccent) {
+            score += 100;
+            // First name: check if one is abbreviation/nickname of other
+            const csvFirstClean = stripAccents(csvFirst).replace(/[.\-']/g, '');
+            const prospectFirstClean = stripAccents(prospectFirst).replace(/[.\-']/g, '');
+            
+            // CSV first name contains prospect first (e.g., "Leodalis" contains "Leo")
+            if (csvFirstClean.toLowerCase().startsWith(prospectFirstClean.toLowerCase())) {
+                score += 50;  // Strong match - full name is abbreviation
+            }
+            // Prospect first name is start of CSV first (reverse)
+            else if (prospectFirstClean.toLowerCase().startsWith(csvFirstClean.toLowerCase())) {
+                score += 30;  // Moderate match
+            }
+            // Fuzzy match on first names (typos, etc.)
+            else {
+                const dist = levenshteinDistance(csvFirstClean.toLowerCase(), prospectFirstClean.toLowerCase());
+                const maxLen = Math.max(csvFirstClean.length, prospectFirstClean.length);
+                if (dist <= Math.ceil(maxLen * 0.3)) {  // Allow 30% difference
+                    score += Math.max(0, 40 - dist * 5);
+                }
+            }
+        }
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestMatch = owner;
+        }
     }
-    return null;
+    
+    return bestScore >= 30 ? bestMatch : null;  // Return match if score is reasonable
 }
 
 let ownershipMap = {};
@@ -1601,6 +1705,38 @@ function updateFaLegendVisibility() {
         el.classList.toggle('show', Object.keys(ownershipMap).length > 0);
         el.setAttribute('aria-hidden', Object.keys(ownershipMap).length === 0 ? 'true' : 'false');
     }
+    
+    // Show/hide the FA filter button
+    const btnFaFilter = document.getElementById('btnFaFilter');
+    if (btnFaFilter) {
+        btnFaFilter.style.display = Object.keys(ownershipMap).length > 0 ? 'inline-flex' : 'none';
+        btnFaFilter.classList.remove('active');  // Reset to default state
+    }
+}
+
+let faFilterActive = false;
+
+function toggleFaFilter() {
+    faFilterActive = !faFilterActive;
+    const btn = document.getElementById('btnFaFilter');
+    const table = document.getElementById('tbody');
+    
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+        if (faFilterActive) {
+            // Show only free agents
+            row.style.display = row.classList.contains('free-agent') ? '' : 'none';
+        } else {
+            // Show all rows
+            row.style.display = '';
+        }
+    });
+    
+    // Update button appearance
+    btn.classList.toggle('active', faFilterActive);
+    btn.textContent = faFilterActive ? 'Showing Free Agents' : 'Show Free Agents';
 }
 
 function applyFantasyCsv(text, opts) {
@@ -1691,6 +1827,14 @@ function processAndApplyCsv(text) {
         const text = e.clipboardData?.getData('text/plain') || '';
         if (text.trim()) processAndApplyCsv(text);
     });
+})();
+
+// Setup FA filter button
+(function setupFaFilterButton() {
+    const btn = document.getElementById('btnFaFilter');
+    if (btn) {
+        btn.addEventListener('click', toggleFaFilter);
+    }
 })();
 
 // ============================================================
