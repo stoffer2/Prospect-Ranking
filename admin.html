@@ -247,7 +247,7 @@ header {
     </div>
     <div style="display:flex; align-items:center; gap:.75rem;">
         <span id="linkStatus" style="font-size:.75rem; color:var(--text-lo); display:none;">✓ linked to index.html</span>
-        <button id="linkBtn" class="btn btn-ghost btn-sm" onclick="linkIndexHTML()">🔗 Link index.html</button>
+        <button id="linkBtn" class="btn btn-ghost btn-sm" onclick="linkIndexHTML()" style="display:none;">🔗 Link index.html</button>
     </div>
 </header>
 
@@ -257,9 +257,8 @@ header {
     <div class="tabs">
         <button class="tab active" onclick="switchTab('enter')">📝 Enter Rankings</button>
         <button class="tab" onclick="switchTab('paste')">📋 Paste Rankings</button>
-        <button class="tab" onclick="switchTab('export')">💾 Export Code</button>
+        <button class="tab" onclick="switchTab('export')">💾 Save</button>
         <button class="tab" onclick="switchTab('status')">📅 Last Updated</button>
-        <button class="tab" onclick="switchTab('news')">📰 News Buzz</button>
     </div>
 
     <!-- ════════════════════════════════════════════════════════ -->
@@ -283,6 +282,7 @@ header {
                         <option value="prospect361">Prospect361</option>
                         <option value="rotochamp">RotoChamp</option>
                         <option value="keithlaw">Keith Law</option>
+                        <option value="zips">ZiPS</option>
                     </select>
                 </div>
                 <div class="field">
@@ -328,6 +328,7 @@ header {
                         <option value="prospect361">Prospect361</option>
                         <option value="rotochamp">RotoChamp</option>
                         <option value="keithlaw">Keith Law</option>
+                        <option value="zips">ZiPS</option>
                     </select>
                 </div>
                 <div class="field">
@@ -346,7 +347,8 @@ header {
                 <button class="btn btn-ghost btn-sm" onclick="previewParse()">👁 Preview</button>
                 <button class="btn btn-ghost btn-sm" onclick="copyPasteDebugToClipboard()" title="Copy exact paste info so we can fix the parser">📋 Copy for debugging</button>
                 <button class="btn btn-ghost btn-sm" onclick="showPasteDebug()" title="See why parser might return 0">🔍 Debug paste</button>
-                <button class="btn btn-ghost btn-sm" onclick="loadJustBaseballSample()" title="Load a small tab-separated sample">📋 Load sample</button>
+                <button class="btn btn-ghost btn-sm" onclick="loadPasteSample()" title="Load a small sample for the selected source">📋 Load sample</button>
+                <button class="btn btn-ghost btn-sm" onclick="setTrendBaseline()" title="Capture current ranking order as the baseline for ↑/↓ trend arrows (3+ spots)">📌 Set trend baseline</button>
                 <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             <p style="margin-top:.5rem; font-size:.75rem; color:var(--text-lo);">If Just Baseball won’t parse: click <strong>📋 Copy for debugging</strong> (above), then paste the copied block in chat so we can fix it.</p>
             </div>
@@ -373,17 +375,16 @@ header {
 
         <!-- Bulk update ages & ETA -->
         <div class="card" style="margin-top:1rem;">
-            <div class="section-title"><span class="ico">🎂</span> Bulk Update Ages &amp; ETA</div>
-            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:.75rem; line-height:1.5;">Paste one per line: <strong>Name	Age</strong> or <strong>Name	Age	ETA</strong>. Use tab or comma between columns. ETA = year (e.g. 2026). Copy from RotoProspects, Baseball-Reference, etc.</p>
-            <p style="color:var(--text-lo); font-size:.75rem; margin-bottom:.5rem;">When sources disagree on ETA, we use the <strong>earliest</strong> (most optimistic) year.</p>
+            <div class="section-title"><span class="ico">🎂</span> Ages &amp; ETA</div>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:.5rem; line-height:1.5;">When a pasted list includes ages (e.g. RotoChamp, FanGraphs, or tabbed columns), we use them on import. For anyone still at default age (19), use <strong>Fill ages from MLB</strong> or paste <strong>Name TAB Age</strong> below.</p>
+            <p id="ageStatusLine" style="font-size:.8rem; color:var(--text-lo); margin-bottom:.75rem;"></p>
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:.5rem;">Paste one per line: <strong>Name TAB Age</strong> or <strong>Name TAB Age TAB ETA</strong>. Use tab or comma. ETA = year (e.g. 2026).</p>
             <div class="paste-zone" style="min-height:80px;">
-                <textarea id="agePasteInput" placeholder="Konnor Griffin	20	2027&#10;Kevin McGonigle	20	2026&#10;Walker Jenkins	20	2027"></textarea>
+                <textarea id="agePasteInput" placeholder="Hagen Smith	21	2026&#10;Walker Jenkins	20	2027"></textarea>
             </div>
             <div style="margin-top:.75rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" onclick="bulkUpdateAges()">Update Ages</button>
-                <button class="btn btn-ghost btn-sm" id="fetchAgesBtn" onclick="fetchAgesFromMLB()">⚡ Fetch from MLB API</button>
-                <button class="btn btn-ghost btn-sm" id="fetchRemainingBtn" onclick="fetchRemainingAges()">⚡ Fetch remaining only</button>
-                <button class="btn btn-ghost btn-sm" id="assignIdsBtn" onclick="assignIds()">🆔 Assign IDs</button>
+                <button class="btn btn-primary btn-sm" id="fillAgesBtn" onclick="fillAgesFromMLB()">Fill ages from MLB</button>
+                <button class="btn btn-ghost btn-sm" onclick="bulkUpdateAges()">Update ages (paste)</button>
                 <span id="ageResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             </div>
         </div>
@@ -394,47 +395,24 @@ header {
     <!-- ════════════════════════════════════════════════════════ -->
     <div class="tab-panel" id="panel-export">
         <div class="card">
-            <div class="section-title"><span class="ico">💾</span> Export Code</div>
+            <div class="section-title"><span class="ico">💾</span> Save</div>
             <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
-                Hit <strong style="color:#fff;">Save to index.html</strong> to write directly into your file — no copy/paste needed. Keep admin.html and index.html in the same folder.
+                <strong style="color:#fff;">Save</strong> stores your prospect list in this browser. Open <strong>index.html</strong> in the same folder (same browser) and it will load this data automatically. Copy or download the data below to back up or move it.
             </p>
 
+            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:.5rem;"><strong>Sources to include in ranking</strong> — only checked sources count toward scores and consensus. Uncheck any you didn't paste.</p>
+            <div id="includedSourcesWrap" style="display:flex; flex-wrap:wrap; gap:.5rem .8rem; margin-bottom:1rem;"></div>
+
             <div style="display:flex; gap:.6rem; margin-bottom:1rem; flex-wrap:wrap;">
-                <button class="btn btn-success btn-sm" onclick="saveToIndexHTML()">💾 Save to index.html</button>
-                <button class="btn btn-ghost btn-sm" onclick="copyExport()">📋 Copy to Clipboard</button>
-                <button class="btn btn-ghost btn-sm" onclick="downloadExport()">⬇ Download as .js</button>
+                <button class="btn btn-success btn-sm" onclick="saveToIndexHTML()">💾 Save</button>
+                <button class="btn btn-ghost btn-sm" onclick="copyExport()">📋 Copy data</button>
+                <button class="btn btn-ghost btn-sm" onclick="downloadExport()">⬇ Download .js</button>
             </div>
             <span id="saveResult" style="font-size:.78rem; color:var(--text-lo); display:block; margin-bottom:.5rem;"></span>
 
             <div class="output-wrap">
                 <div class="output-box" id="exportBox"></div>
             </div>
-        </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- TAB: NEWS BUZZ (GNews scraper)                           -->
-    <!-- ════════════════════════════════════════════════════════ -->
-    <div class="tab-panel" id="panel-news">
-        <div class="card">
-            <div class="section-title"><span class="ico">📰</span> News Scraper (GNews)</div>
-            <p style="color:var(--text-mid); font-size:.82rem; margin-bottom:1rem; line-height:1.6;">
-                Fetches news articles for each prospect and calculates a Buzz Score from sentiment and recency. Uses prospects from index.html when linked, otherwise from your current list. <strong>Requires a GNews API key</strong> — get one free at <a href="https://gnews.io/register" target="_blank" rel="noopener" style="color:var(--accent-hi);">gnews.io/register</a>.
-            </p>
-            <div style="display:flex; gap:.6rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:1rem;">
-                <div class="field" style="min-width:200px;">
-                    <label>GNews API Key</label>
-                    <input type="password" id="gnewsApiKey" placeholder="Enter your GNews API key" style="width:100%;">
-                </div>
-                <div class="field" style="min-width:80px;">
-                    <label>Limit</label>
-                    <input type="number" id="newsLimitInput" placeholder="All" min="1" max="500" style="width:80px; text-align:center;">
-                </div>
-                <button class="btn btn-primary" id="scrapeNewsBtn" onclick="scrapeNewsForAllProspects()">📰 Scrape News</button>
-                <button class="btn btn-ghost" id="scrapeNewsCancelBtn" onclick="cancelNewsScrape()" style="display:none; color:var(--red);">Cancel</button>
-            </div>
-            <div id="newsResult" style="font-size:.82rem; color:var(--text-mid); margin-bottom:1rem;"></div>
-            <div id="newsResultsTable" style="overflow-x:auto; max-height:400px; overflow-y:auto;"></div>
         </div>
     </div>
 
@@ -471,8 +449,22 @@ const SOURCES = {
     rotoprospects:{ label:"RotoProspects",    listLength:100 },
     prospect361:  { label:"Prospect361",      listLength:100 },
     rotochamp:    { label:"RotoChamp",        listLength:100 },
-    keithlaw:     { label:"Keith Law",        listLength:100 }
+    keithlaw:     { label:"Keith Law",        listLength:100 },
+    zips:         { label:"ZiPS",             listLength:100 }
 };
+
+// Prospect age bounds — reject FV grades (e.g. 50) and other bad parses; cap display/export
+const VALID_AGE_MIN = 16;
+const VALID_AGE_MAX = 40;
+function isValidProspectAge(age) {
+    if (age == null || typeof age !== 'number' || isNaN(age)) return false;
+    const a = Math.round(age);
+    return a >= VALID_AGE_MIN && a <= VALID_AGE_MAX;
+}
+function clampProspectAge(age) {
+    if (!isValidProspectAge(age)) return null;
+    return Math.round(age);
+}
 
 // Holds a reference to index.html. Persisted in IndexedDB across sessions.
 let indexFileHandle = null;
@@ -528,6 +520,10 @@ async function linkIndexHTML() {
             return;
         }
         indexFileHandle = handle;
+        // Request read/write permission now (while user gesture is active) so auto-save after import works
+        if (typeof handle.requestPermission === 'function' && (await handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+            await handle.requestPermission({ mode: 'readwrite' });
+        }
         await persistFileHandle(handle);
         // Pull in any persisted LAST_UPDATED timestamps from index.html
         updateLastUpdatedFromIndexContent(content);
@@ -584,7 +580,7 @@ async function writeToIndex() {
 // localStorage will override this with your real data after first import.
 let prospects = [];
 
-const POSITIONS = ["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP"];
+const POSITIONS = ["SS","OF","LHP","RHP","1B","2B","3B","C","RP"];
 const TEAMS = ["ATH","ATL","ARI","BAL","BOS","CHC","CWS","CIN","CLE","COL","DET","HOU","KC","LAD","LAA","MIA","MIL","MIN","NYM","NYY","OAK","PHI","PIT","SD","SEA","SF","STL","TB","TEX","TOR","WAS"];
 
 // Given { pipeline: "SS", ba: "OF", justbaseball: "SS" }, return the position listed most often. Tie-break: POSITIONS order.
@@ -592,7 +588,8 @@ function modePosition(positionsBySource) {
     if (!positionsBySource || typeof positionsBySource !== 'object') return null;
     const counts = {};
     Object.values(positionsBySource).forEach(pos => {
-        const p = (pos || '').trim();
+        let p = (pos || '').trim();
+        if (p === 'SP') p = 'RHP';
         if (p) counts[p] = (counts[p] || 0) + 1;
     });
     const entries = Object.entries(counts);
@@ -609,17 +606,13 @@ function modePosition(positionsBySource) {
 // ============================================================
 // TAB SWITCHING
 // ============================================================
-const TAB_ORDER = ['enter','paste','export','status','news'];
+const TAB_ORDER = ['enter','paste','export','status'];
 function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', TAB_ORDER[i] === name));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-'+name).classList.add('active');
-    if (name === 'export') renderExport();
+    if (name === 'export') { renderExport(); renderIncludedSources(); }
     if (name === 'status') renderStatus();
-    if (name === 'news' && document.getElementById('gnewsApiKey') && !document.getElementById('gnewsApiKey').value) {
-        const k = sessionStorage.getItem('rankle-gnews-key');
-        if (k) document.getElementById('gnewsApiKey').value = k;
-    }
 }
 
 // ============================================================
@@ -751,14 +744,15 @@ const ROTOCHAMP_TEAM_ALIAS = { "KAN":"KC", "CWS":"CHW", "OAK":"ATH" };
 const SOURCE_PARSER = {
     pipeline:     'pipeline',    // MLB Pipeline: 5-line block with junk stats line
     ba:           'ba',          // Baseball America: 4-line block
-    fangraphs:    'fangraphs',  // Tab: Rank, Name, Team, Pos (or similar); else "1. Name" fallback
+    fangraphs:    'fangraphs',  // The Board tab: Rank, Org Rk, Name, Org, Pos, Level, ETA, … Age@10
     br:           'br',          // Bleacher Report: "100. C Thayron Liranzo, DET" per line
     espn:         'numbered',   // placeholder
     justbaseball: 'justbaseball',  // Two-line: rank on line 1, "Name\tTeam\tAge\tLevel\tPos\tETA\tGrade" on line 2
     rotoprospects:'rotoprospects',  // Tab-separated: Rank	Name	Pos	Team	B/T	Grades	Level	Age	ETA	Last
     prospect361:  'prospect361',   // "1. Name (Pos, Team) – description"
     rotochamp:   'rotochamp',      // Tab: Rank	Name	Team	Pos	Age	ETA	999	999	?	999
-    keithlaw:     'keithlaw'       // Keith Law: rank on own line, then name, position(s), team, then Age:/value, Ht:, etc.
+    keithlaw:     'keithlaw',      // Keith Law: rank on own line, then name, position(s), team, then Age:/value, Ht:, etc.
+    zips:         'zips'           // ZiPS: tab Rank, Name, Pos., Organization, FanGraphs Rank
 };
 
 // ============================================================
@@ -882,65 +876,177 @@ function parseProspect361(rawText) {
     return out;
 }
 
-// FanGraphs: Tab-separated (e.g. from The Board: Rank, Name, Team, Pos or Rank, OrgRank, Name, Team, …).
-// Skips header row if first line looks like column headers. Falls back to "1. Name" for article paste.
+// FanGraphs The Board: ROBUST parser for various table formats
+// Handles: (A) tab-separated table, (B) line-by-line data blocks, (C) numbered list fallback
+// FG Board columns (when copy/pasted): Rank | Org Rk | Name | Org | Pos | Level | ETA | ... | Age@10
 function parseFangraphs(rawText) {
-    const lines = (rawText || '').split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
-    if (lines.length === 0) return [];
+    const normalized = (rawText || '').replace(/^\uFEFF/, '').replace(/\u00A0/g, ' ');
+    const lines = normalized.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0 && !l.match(/^(Rank|Rk|FV|#|-{3,})$/i));
     const out = [];
-    const POS_MAP = { "INF":"SS", "DH":"1B" };
-    const FG_TEAM_ALIAS = { "KAN":"KC", "CHW":"CWS", "OAK":"ATH" };
-    const POS_SET = new Set(["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP","CF","LF","RF"]);
-    let start = 0;
-    const first = lines[0];
-    const firstCols = first.split('\t');
-    if (firstCols.length >= 2) {
-        const col0 = (firstCols[0] || '').trim();
-        const col1 = (firstCols[1] || '').trim();
-        const looksLikeHeader = /^(Rank|Name|Team|Org|FV|Tier|Position|Pos|#)/i.test(col0) || /^(Rank|Name|Team|Org|FV|Tier|Position|Pos)$/i.test(col1);
-        if (looksLikeHeader) start = 1;
-    }
-    const hasTabs = lines.slice(start).some(l => l.indexOf('\t') >= 0);
-    if (hasTabs) {
-        for (let i = start; i < lines.length; i++) {
-            const cols = lines[i].split('\t');
-            if (cols.length < 2) continue;
-            const c0 = (cols[0] || '').trim();
-            const c1 = (cols[1] || '').trim();
-            let rank = parseInt(c0, 10);
-            let name, teamRaw, posRaw;
-            if (!isNaN(rank) && rank >= 1 && rank <= 200 && c1.length > 1 && !/^\d+$/.test(c1)) {
-                name = c1;
-                teamRaw = (cols[2] || cols[3] || '').trim();
-                posRaw = (cols[3] || cols[4] || cols[2] || '').trim();
-            } else {
-                rank = out.length + 1;
-                name = c0;
-                teamRaw = c1;
-                posRaw = (cols[2] || cols[3] || '').trim();
+    
+    // Team and position aliases (FanGraphs org abbreviations)
+    const FG_TEAM_ALIAS = { "WSN":"WAS", "WSH":"WAS", "KCR":"KC", "SFG":"SF", "TBR":"TB", "CHW":"CWS", "OAK":"ATH", "LAA":"LAA", "SD":"SD", "Nats":"WAS" };
+    const POS_ALIAS = { "INF":"SS", "DH":"1B", "SIRP":"RP", "C/DH":"C", "SS/2B":"SS", "OF/DH":"OF", "SP":"RHP" };
+    const POS_SET = new Set(["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP","CF","LF","RF","DH","INF"]);
+    const VALID_TEAMS = new Set([...Object.values(FG_TEAM_ALIAS), ...TEAMS]);
+    // Name: letters (including accented), spaces, hyphen, period, apostrophe; min 2 chars
+    const NAME_REGEX = /^[\p{L}\s\-\.']{2,}$/u;
+
+    // ────────────────────────────────────────────────────────────
+    // STRATEGY 1: Tab-separated (best case — direct table copy)
+    // ────────────────────────────────────────────────────────────
+    const anyLineHasTab = lines.some(l => l.indexOf('\t') >= 0);
+    if (anyLineHasTab) {
+        const NON_NAME_SECOND_COL = new Set(['Draft', 'Intl', 'Intl15', 'Intl16', 'FA', 'Trade', 'Rule 5', 'High', 'Med', 'Low', 'MLB', 'AAA', 'AA', 'A+', 'A', 'ROK']);
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line.includes('\t')) continue;
+            const cols = line.split('\t').map(c => c.trim());
+            if (cols.length < 5) continue;
+            
+            const firstVal = cols[0] || '';
+            const secondVal = (cols[1] || '').trim();
+            // Skip continuation line: "19.8\t6' 4"\t225\t..." or "19\tDraft\tPIT\t..."
+            const firstNum = parseFloat(firstVal);
+            const firstIsDecimalAge = /^\d+\.\d+$/.test(firstVal) && firstNum >= 14 && firstNum <= 50;
+            const firstIsIntAge = /^\d+$/.test(firstVal) && (parseInt(firstVal, 10) >= 14 && parseInt(firstVal, 10) <= 50);
+            const secondIsNonName = NON_NAME_SECOND_COL.has(secondVal) || VALID_TEAMS.has(secondVal) || FG_TEAM_ALIAS[secondVal.toUpperCase()];
+            if (firstIsDecimalAge) continue;  // always skip "19.8\t6' 4"\t225..."
+            if (firstIsIntAge && secondIsNonName) continue;  // skip "19\tDraft\tPIT..."
+            
+            // FanGraphs The Board: rank=col0, (col1=Org Rk or empty), name=col2, org=col3, pos=col4, then Level, ETA, ...
+            if (!/^\d+$/.test(firstVal)) continue;  // skip header lines like "Top 100" or "Name"
+            const rank = parseInt(firstVal, 10);
+            if (rank < 1 || rank > 200) continue;
+            const nameCol = (cols[2] || '').trim();
+            const orgCol = (cols[3] || '').trim();
+            const posCol = (cols[4] || '').trim();
+            if (nameCol && NAME_REGEX.test(nameCol) && nameCol.length > 2 && (VALID_TEAMS.has(orgCol) || FG_TEAM_ALIAS[orgCol.toUpperCase()])) {
+                const team = FG_TEAM_ALIAS[orgCol.toUpperCase()] || orgCol;
+                const pos = (POS_SET.has(posCol) || POS_ALIAS[posCol]) ? (POS_ALIAS[posCol] || posCol) : null;
+                let age = null, eta = null;
+                for (let j = 5; j < cols.length; j++) {
+                    const val = cols[j];
+                    if (!val) continue;
+                    if (!eta && /20\d{2}/.test(val)) eta = val.match(/20\d{2}/)[0];
+                    const ageNum = parseFloat(val);
+                    if (!age && isValidProspectAge(ageNum) && val.length <= 3) age = Math.round(ageNum);
+                }
+                out.push({ rank, name: nameCol, team, pos, age, eta });
+                continue;
             }
-            if (!name) continue;
-            let team = TEAM_MAP[teamRaw.toLowerCase()] || null;
-            if (!team && /^[A-Z]{2,3}$/i.test(teamRaw)) {
-                const abbr = teamRaw.toUpperCase();
-                team = FG_TEAM_ALIAS[abbr] || abbr;
+            
+            // Fallback: scan columns (for other FG layouts)
+            let name = null, team = null, pos = null, age = null, eta = null;
+            for (let j = 0; j < cols.length; j++) {
+                const val = cols[j];
+                if (!val) continue;
+                if (!name && NAME_REGEX.test(val) && val.length > 2 && !/^\d+$/.test(val) && !POS_SET.has(val) && !VALID_TEAMS.has(val) && !FG_TEAM_ALIAS[val.toUpperCase()]) name = val;
+                if (!team && /^[A-Z]{2,3}$/.test(val) && VALID_TEAMS.has(val)) team = val;
+                else if (!team && FG_TEAM_ALIAS[val.toUpperCase()]) team = FG_TEAM_ALIAS[val.toUpperCase()];
+                if (!pos && (POS_SET.has(val) || POS_ALIAS[val])) pos = POS_ALIAS[val] || val;
+                if (!age) { const ageNum = parseFloat(val); if (isValidProspectAge(ageNum) && val.length <= 3) age = Math.round(ageNum); }
+                if (!eta && /20\d{2}/.test(val)) eta = val.match(/20\d{2}/)[0];
             }
-            let pos = null;
-            if (posRaw) {
-                const p = posRaw.split(/[,/]/)[0].trim();
-                pos = POS_MAP[p] || (POS_SET.has(p) ? p : null);
-            }
-            out.push({
-                rank,
-                name: name.trim(),
-                team,
-                pos,
-                age: null,
-                eta: null
-            });
+            if (name && rank && team) out.push({ rank, name, team, pos: pos || null, age, eta });
         }
-        if (out.length > 0) return out;
     }
+
+    // ────────────────────────────────────────────────────────────
+    // STRATEGY 2: Line-by-line data (if tabbed approach returned nothing)
+    // ────────────────────────────────────────────────────────────
+    if (out.length === 0 && lines.length >= 4) {
+        const rankIndices = [];
+        for (let i = 0; i < lines.length; i++) {
+            const r = parseInt(lines[i], 10);
+            if (!isNaN(r) && r >= 1 && r <= 200 && lines[i] === String(r)) {
+                rankIndices.push(i);
+            }
+        }
+        
+        for (let j = 0; j < rankIndices.length; j++) {
+            const start = rankIndices[j];
+            const end = j + 1 < rankIndices.length ? rankIndices[j + 1] : Math.min(start + 15, lines.length);
+            const rank = parseInt(lines[start], 10);
+            const name = (lines[start + 1] || '').trim();
+            
+            if (!name || !/[\p{L}]{2,}/u.test(name)) continue;
+            
+            let team = null, pos = null, age = null, eta = null;
+            
+            // Scan remaining lines in this block
+            for (let k = start + 2; k < end; k++) {
+                const line = (lines[k] || '').trim();
+                if (!line) continue;
+                
+                // Team lookup
+                if (!team) {
+                    const t = line.toUpperCase();
+                    if (VALID_TEAMS.has(t)) { team = t; continue; }
+                    if (FG_TEAM_ALIAS[t]) { team = FG_TEAM_ALIAS[t]; continue; }
+                }
+                
+                // Position lookup
+                if (!pos && (POS_SET.has(line) || POS_ALIAS[line])) {
+                    pos = POS_ALIAS[line] || line;
+                    continue;
+                }
+                
+                // Age (numeric, valid prospect range)
+                if (!age) {
+                    const ageNum = parseFloat(line);
+                    if (isValidProspectAge(ageNum) && line.length <= 3) {
+                        age = Math.round(ageNum);
+                        continue;
+                    }
+                }
+                
+                // ETA (year)
+                if (!eta && /20\d{2}/.test(line)) {
+                    eta = line.match(/20\d{2}/)[0];
+                }
+            }
+            
+            if (team) {
+                out.push({ rank, name, team, pos: pos || null, age, eta });
+            }
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────
+    // FALLBACK: Numbered list (generic)
+    // ────────────────────────────────────────────────────────────
+    if (out.length === 0) {
+        return parseNumbered(rawText);
+    }
+
+    return out;
+}
+
+// ZiPS: tab-separated. Header "ZiPS Rank	Name	Pos.	Organization	FanGraphs Rank", then rank, name, pos, org, fgRank.
+function parseZiPS(rawText) {
+    const lines = (rawText || '').split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const out = [];
+    const POS_MAP = { "P":"SP", "INF":"SS", "DH":"1B" };
+    const POS_SET = new Set(["SS","OF","RHP","LHP","1B","2B","3B","C","SP","RP","CF","LF","RF"]);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.indexOf('\t') < 0) continue;
+        const cols = line.split('\t');
+        if (cols.length < 4) continue;
+        const rank = parseInt(cols[0], 10);
+        if (isNaN(rank) || rank < 1 || rank > 200) continue;
+        if (i === 0 || /ZiPS Rank|Organization/i.test(line) && /Name|Pos\./i.test(line)) continue;
+        const name = (cols[1] || '').trim();
+        if (!name || !/[a-zA-Z]{2,}/.test(name)) continue;
+        const orgRaw = (cols[3] || '').trim().toLowerCase();
+        const team = TEAM_MAP[orgRaw] || null;
+        if (!team) continue;
+        let pos = (cols[2] || '').trim();
+        pos = pos ? (POS_MAP[pos] || (POS_SET.has(pos) ? pos : null)) : null;
+        out.push({ rank, name, team, pos, age: null, eta: null });
+    }
+    if (out.length > 0) return out;
     return parseNumbered(rawText);
 }
 
@@ -967,7 +1073,7 @@ function parseRotoChamp(rawText) {
         const age = ageRaw && !/^999$/.test(ageRaw) ? parseInt(ageRaw, 10) : null;
         const etaRaw = (cols[5] || '').trim();
         const eta = etaRaw && /20\d{2}/.test(etaRaw) ? etaRaw.replace(/\D/g, '').slice(0, 4) : null;
-        out.push({ rank: rankNum, name, pos, team: team || null, age: (age >= 16 && age <= 50) ? age : null, eta });
+        out.push({ rank: rankNum, name, pos, team: team || null, age: clampProspectAge(age) || null, eta });
     }
     return out;
 }
@@ -1043,7 +1149,7 @@ function parseKeithLaw(rawText) {
             name: name || null,
             pos,
             team,
-            age: (age >= 16 && age <= 50) ? age : null,
+            age: clampProspectAge(age) || null,
             eta: null
         });
         while (i < lines.length && !/^\d+$/.test(lines[i])) i++;
@@ -1051,22 +1157,23 @@ function parseKeithLaw(rawText) {
     return out;
 }
 
-// Bleacher Report: "100. C Thayron Liranzo, DET" or "27. SS George Lombard Jr., NYY" — rank. pos name, team
+// Bleacher Report: "100. C Thayron Liranzo, DET" or "91	1B Cam Collier, CIN" — rank (tab or .) pos name, team
 const BR_TEAM_ALIAS = { "AR":"ARI", "CHW":"CWS" };
 function parseBR(rawText) {
     const lines = rawText.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
     const out = [];
     for (const line of lines) {
-        const m = line.match(/^(\d+)\\.?\s+([A-Z\/]+)\s+(.+?),\s*([A-Z]{2,3})\s*$/);
+        // Rank then tab or ". " then position (1B, 2B, 3B, SS, RHP, SHP, etc.) then name, team
+        const m = line.match(/^(\d+)[.\s\t]+\s*([A-Z0-9\/]+)\s+(.+?),\s*([A-Z]{2,3})\s*$/);
         if (!m) continue;
         const rank = parseInt(m[1], 10);
         if (rank < 1 || rank > 200) continue;
         let pos = (m[2] || '').trim();
         if (pos && pos.includes('/')) pos = pos.split('/')[0].trim();
-        const name = m[3].trim();
+        const name = (m[3] || '').trim();
         let team = (m[4] || '').trim().toUpperCase();
         if (BR_TEAM_ALIAS[team]) team = BR_TEAM_ALIAS[team];
-        const POS_MAP = { "INF":"SS", "DH":"1B", "SHP":"SP" };
+        const POS_MAP = { "INF":"SS", "DH":"1B", "SHP":"RHP", "SP":"RHP" };
         pos = POS_MAP[pos] || pos || null;
         out.push({ rank, name, pos, team: team || null });
     }
@@ -1147,7 +1254,7 @@ function parseJustBaseball(rawText) {
             name: name.trim(),
             team: team,
             pos: pos,
-            age: (age != null && age >= 16 && age <= 50) ? age : null,
+            age: clampProspectAge(age) || null,
             eta: eta
         });
     }
@@ -1227,6 +1334,21 @@ function copyPasteDebugToClipboard() {
     }
 }
 
+function loadPasteSample() {
+    const src = document.getElementById('pasteSourceSelect').value;
+    if (src === 'fangraphs') loadFangraphsSample();
+    else if (src === 'justbaseball') loadJustBaseballSample();
+    else { document.getElementById('pasteResult').innerHTML = '<span style="color:var(--text-lo);">No sample for this source.</span>'; }
+}
+function loadFangraphsSample() {
+    var sample = '1\t\tKonnor Griffin\tPIT\tSS\tAA\t2026\t70\tHigh\t\n19.8\t6\' 4"\t225\tR\tR\t2024\tDraft\tPIT\t$6.5M\tJackson Prep (MS)\t\t\n2\t1\tJesús Made\tMIL\tSS\tAA\t2027\t65\tMed\t\n18.8\t6\' 1"\t180\tS\tR\t2024\tIntl15\tMIL\t$950k\tDominican Republic\t\t\n3\t\tNolan McLean\tNYM\tSP\tMLB\t2026\t65\tMed\t\n24.6\t6\' 3"\t205\tR\tR\t2023\tDraft\tNYM\t$748k\tOklahoma State\t\t';
+    var el = document.getElementById('pasteInput');
+    if (el) {
+        el.value = sample;
+        document.getElementById('pasteListLength').value = 3;
+        document.getElementById('pasteResult').innerHTML = '<span style="color:var(--text-mid);">Loaded 3-row FanGraphs sample (tab-separated). Click Preview — you should see 3 parsed.</span>';
+    }
+}
 function loadJustBaseballSample() {
     var sample = '1\t\nKonnor Griffin\tPittsburgh Pirates\t19\tAA\tSS, OF\t2026\t65\n2\t\nKevin McGonigle\tDetroit Tigers\t21\tAA\tSS\t2026\t65\n3\t\nNolan McLean\tNew York Mets\t24\tMLB\tRHP\t2025\t60+\n4\t\nJesus Made\tMilwaukee Brewers\t18\tAA\tSS\t2027\t60\n5\t\nColt Emerson\tSeattle Mariners\t20\tAAA\tSS\t2026\t60';
     var el = document.getElementById('pasteInput');
@@ -1237,14 +1359,29 @@ function loadJustBaseballSample() {
     }
 }
 
-// Numbered list: "1. Name" or "1) Name", one per line
+// Numbered list: "1. Name" or "1) Name" or "1. Name\tAge" / "1. Name  20  2026" — extract age/eta when present
 function parseNumbered(rawText) {
     return rawText.split('\n')
         .map(l => l.trim())
         .filter(l => l.length > 0)
         .map(l => {
             const m = l.match(/^(\d+)[\.\)]\s+(.+)$/);
-            return m ? { rank: parseInt(m[1]), name: m[2].trim(), team: null, pos: null } : null;
+            if (!m) return null;
+            const rank = parseInt(m[1], 10);
+            const rest = m[2].trim();
+            // Split by tab or 2+ spaces to get name + optional age, eta
+            const parts = rest.split(/\t|\s{2,}/).map(p => p.trim()).filter(Boolean);
+            let name = parts[0] || rest;
+            let age = null, eta = null;
+            for (let i = 1; i < parts.length; i++) {
+                const val = parts[i];
+                if (!age && /^\d{1,2}$/.test(val)) {
+                    const n = parseInt(val, 10);
+                    if (n >= 16 && n <= 40) age = n;
+                }
+                if (!eta && /^20\d{2}$/.test(val)) eta = val;
+            }
+            return { rank, name, team: null, pos: null, age: age || null, eta: eta || null };
         })
         .filter(Boolean);
 }
@@ -1290,6 +1427,11 @@ function runParser() {
         if (fgOut.length > 0) return fgOut;
         return parseNumbered(text);
     }
+    if (fmt === 'zips') {
+        const zipsOut = parseZiPS(text);
+        if (zipsOut.length > 0) return zipsOut;
+        return parseNumbered(text);
+    }
     if (fmt === 'numbered')      return parseNumbered(text);
     return parseNamesOnly(text);
 }
@@ -1327,6 +1469,11 @@ function previewParse() {
             const firstData = lines.find(l => !/^\d+/.test(l));
             const hasTabs = firstData && firstData.indexOf('\t') >= 0;
             msg = 'Nothing parsed. Lines: ' + lines.length + ', first data line has tabs: ' + hasTabs + '. Expected: rank then data (e.g. 1 then Konnor Griffin	Pittsburgh Pirates	...).';
+        } else if (src === 'fangraphs') {
+            const raw = (document.getElementById('pasteInput').value || '').replace(/\u00A0/g, ' ');
+            const lines = raw.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+            const anyTab = lines.some(l => l.indexOf('\t') >= 0);
+            msg = 'Nothing parsed. Lines: ' + lines.length + ', any line has tab: ' + anyTab + '. Try "Load sample" (with FanGraphs selected) then Preview. Expected: tab-separated rows with Rank, (empty), Name, Org, Pos in first 5 columns.';
         }
         document.getElementById('pasteResult').innerHTML = '<span style="color:var(--red);">' + msg + '</span>';
         return;
@@ -1373,7 +1520,7 @@ async function getDraftAgesMap() {
             picks.forEach(round => {
                 (round.picks || []).forEach(pick => {
                     const person = pick.person;
-                    if (person?.fullName && person?.id && person.currentAge >= 16 && person.currentAge <= 50) {
+                    if (person?.fullName && person?.id && isValidProspectAge(person.currentAge)) {
                         map[person.fullName] = { age: person.currentAge, id: person.id };
                     }
                 });
@@ -1386,23 +1533,55 @@ async function getDraftAgesMap() {
 
 async function fetchAgesFromMLB() { await doFetchAges(null); }
 async function fetchRemainingAges() { await doFetchAges(19); }
-async function assignIds() {
-    const needId = prospects.map((p,i) => [i,p]).filter(([i,p]) => !p.mlbId);
-    if (needId.length === 0) {
-        document.getElementById('ageResult').innerHTML = '<span style="color:var(--green);">✓ All prospects already have MLB IDs</span>';
+function updateAgeStatus() {
+    const total = prospects.length;
+    if (total === 0) {
+        const el = document.getElementById('ageStatusLine');
+        if (el) el.textContent = '';
         return;
     }
-    await doFetchAges(null, needId);
+    const at19 = prospects.filter(p => p.age === 19);
+    const noId = prospects.filter(p => !p.mlbId);
+    const set = total - at19.length;
+    const el = document.getElementById('ageStatusLine');
+    if (!el) return;
+    if (at19.length === 0 && noId.length === 0) {
+        el.innerHTML = 'Ages: <span style="color:var(--green);">all ' + total + ' set</span>. MLB IDs: <span style="color:var(--green);">all set</span>.';
+        document.getElementById('agePasteInput').value = '';
+        return;
+    }
+    let msg = 'Ages: <strong>' + set + '</strong> set, <strong>' + at19.length + '</strong> at default (19).';
+    if (noId.length > 0) msg += ' MLB IDs: <strong>' + (total - noId.length) + '</strong> set, <strong>' + noId.length + '</strong> missing.';
+    msg += ' <strong>Fill ages from MLB</strong> fetches ages and assigns IDs for the missing.';
+    if (at19.length > 0) msg += ' <a href="#" id="ageStatusCopyLink" style="color:var(--accent-hi);">Copy names</a> (at default age) to look up elsewhere, then paste Name TAB Age above.';
+    el.innerHTML = msg;
+    document.getElementById('agePasteInput').value = at19.map(p => p.name + '\t').join('\n');
+    const link = document.getElementById('ageStatusCopyLink');
+    if (link) link.onclick = (e) => { e.preventDefault(); copyAge19NamesToClipboard(); };
+}
+
+function copyAge19NamesToClipboard() {
+    const at19 = prospects.filter(p => p.age === 19);
+    if (at19.length === 0) return;
+    const text = at19.map(p => p.name).join('\n');
+    navigator.clipboard.writeText(text).then(() => { if (typeof showToast === 'function') showToast('Copied ' + at19.length + ' names', '📋'); });
+}
+
+async function fillAgesFromMLB() {
+    // Fetch for anyone at default age (19) OR missing MLB ID — one button fills ages and assigns IDs
+    const needAgeOrId = prospects.map((p, i) => [i, p]).filter(([i, p]) => p.age === 19 || !p.mlbId);
+    if (needAgeOrId.length === 0) {
+        updateAgeStatus();
+        document.getElementById('ageResult').innerHTML = '<span style="color:var(--green);">All ages set and all have MLB IDs.</span>';
+        return;
+    }
+    await doFetchAges(null, needAgeOrId);
 }
 
 async function doFetchAges(onlyIfAge, indicesToFetch) {
-    const btn = document.getElementById('fetchAgesBtn');
-    const remBtn = document.getElementById('fetchRemainingBtn');
-    const assignBtn = document.getElementById('assignIdsBtn');
+    const btn = document.getElementById('fillAgesBtn');
     const resultEl = document.getElementById('ageResult');
-    btn.disabled = true;
-    if (remBtn) remBtn.disabled = true;
-    if (assignBtn) assignBtn.disabled = true;
+    if (btn) btn.disabled = true;
     let toFetch;
     if (indicesToFetch && indicesToFetch.length > 0) {
         toFetch = indicesToFetch;
@@ -1436,8 +1615,8 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
                 try { r = await fetch(personUrl(p.mlbId)); } catch (e) { r = await fetch(proxy(personUrl(p.mlbId))); }
                 const data = await r.json();
                 const person = data.people?.[0];
-                if (person && person.currentAge >= 16 && person.currentAge <= 50) {
-                    prospects[i].age = person.currentAge;
+                if (person && isValidProspectAge(person.currentAge)) {
+                    prospects[i].age = Math.round(person.currentAge);
                     updated++;
                     found = true;
                 }
@@ -1451,8 +1630,8 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
                     try { r = await fetch(search(qName)); } catch (e) { r = await fetch(proxy(search(qName))); }
                     const data = await r.json();
                     const person = data.people?.[0];
-                    if (person && person.currentAge >= 16 && person.currentAge <= 50) {
-                        prospects[i].age = person.currentAge;
+                    if (person && isValidProspectAge(person.currentAge)) {
+                        prospects[i].age = Math.round(person.currentAge);
                         prospects[i].mlbId = person.id;
                         updated++;
                         idsAssigned++;
@@ -1467,8 +1646,8 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
             try {
                 const draftMap = await getDraftAgesMap();
                 const entry = draftMap[p.name] || draftMap[p.name.replace(/\s+Jr\.?$/i,'')];
-                if (entry && entry.age) {
-                    prospects[i].age = entry.age;
+                if (entry && isValidProspectAge(entry.age)) {
+                    prospects[i].age = Math.round(entry.age);
                     if (entry.id) { prospects[i].mlbId = entry.id; idsAssigned++; }
                     updated++;
                     found = true;
@@ -1479,6 +1658,7 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
         await new Promise(r => setTimeout(r, 120));
     }
     saveToStorage();
+    saveToLocalStorage(); // so index.html sees updated ages when you refresh
     renderProspects();
     renderExport();
     if (indexFileHandle) await writeToIndex().then(r => { if (r.ok) saveToStorage(); });
@@ -1488,216 +1668,42 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
     if (idsAssigned) msg += ` · <span style="color:var(--accent-hi);">${idsAssigned} IDs assigned</span>`;
     msg += ` <span style="color:var(--text-lo); font-size:.8rem;">(${withId} with mlbId)</span>`;
     if (failed) msg += ` <span style="color:var(--gold);">(${failed} not found)</span>`;
+    if (updated) msg += ` <span style="color:var(--text-lo); font-size:.75rem;">Refresh the ranking page to see changes.</span>`;
     if (stillMissing.length > 0) {
-        msg += `<br><span style="color:var(--text-lo); font-size:.72rem;">${stillMissing.length} still at 19 — names listed in box above. Add ages (tab or comma after each name) and click Update Ages.</span>`;
-        document.getElementById('agePasteInput').value = stillMissing.map(p => p.name + '\t').join('\n');
+        msg += `<br><span style="color:var(--text-lo); font-size:.72rem;">${stillMissing.length} still at default — box above pre-filled. Paste Name TAB Age and click Update ages (paste).</span>`;
     }
     resultEl.innerHTML = msg;
-    btn.disabled = false;
-    if (remBtn) remBtn.disabled = false;
-    if (assignBtn) assignBtn.disabled = false;
+    if (btn) btn.disabled = false;
+    updateAgeStatus();
 }
 
 // ============================================================
-// NEWS SCRAPER (GNews only — no Reddit)
-// ============================================================
-const POSITIVE_KEYWORDS = ["breakout","sleeper","stash","must-add","must add","call-up","callup","promoted","raking","mashing","filthy","ace","stud","league winner","add now","get him","fire","elite","dominant","nasty","underrated"];
-const NEGATIVE_KEYWORDS = ["injured","injury","IL","surgery","torn","struggling","demoted","bust","avoid","drop","overrated","overhyped","disappointing","setback","shut down","out for","DL"];
-const BASEBALL_KEYWORDS = ["prospect","mlb","minor league","baseball","draft","rookie","call-up","callup","triple-a","double-a","single-a","affiliate","organizational","farm system","spring training","debut","call up"];
-const NEWS_SENTIMENT = { positive: 1.2, negative: -1.0, neutral: 0.3 };
-const NEWS_BASE = 8;
-const DECAY_LAMBDA = 0.1;
-const GNEWS_DELAY_MS = 600;
-
-function isBaseballRelevant(text) {
-    if (!text) return false;
-    const t = text.toLowerCase();
-    return BASEBALL_KEYWORDS.some(kw => t.includes(kw));
-}
-
-function isIrrelevantContent(text) {
-    if (!text) return false;
-    const t = text.toLowerCase();
-    return /dating|girlfriend|boyfriend|relationship status|married|wedding/i.test(t);
-}
-
-function analyzeSentiment(text) {
-    if (!text) return "neutral";
-    const t = text.toLowerCase();
-    const pos = POSITIVE_KEYWORDS.filter(kw => t.includes(kw)).length;
-    const neg = NEGATIVE_KEYWORDS.filter(kw => t.includes(kw)).length;
-    return neg > pos ? "negative" : pos > neg ? "positive" : "neutral";
-}
-
-function newsContribution(articles) {
-    const now = Date.now() / 1000;
-    const cutoff30 = now - 30 * 86400;
-    let total = 0;
-    articles.forEach(a => {
-        const ts = a.published_ts || 0;
-        if (ts < cutoff30) return;
-        const daysOld = (now - ts) / 86400;
-        const decay = Math.exp(-DECAY_LAMBDA * daysOld);
-        const mod = NEWS_SENTIMENT[a.sentiment] || NEWS_SENTIMENT.neutral;
-        total += NEWS_BASE * decay * mod;
-    });
-    return total;
-}
-
-function normalizeScores(rawScores) {
-    if (!rawScores.length) return [];
-    const sorted = [...rawScores].sort((a,b)=>a-b);
-    const p5 = sorted[Math.max(0, Math.floor(sorted.length * 0.05))];
-    const p95 = sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95))];
-    const range = p95 - p5 || 1;
-    return rawScores.map(r => Math.min(100, Math.max(0, ((r - p5) / range) * 100)));
-}
-
-async function getProspectNamesFromIndex() {
-    if (!indexFileHandle) return null;
-    try {
-        const file = await indexFileHandle.getFile();
-        const text = await file.text();
-        const matches = text.matchAll(/name:"([^"]+)"/g);
-        return [...matches].map(m => m[1]);
-    } catch (e) { return null; }
-}
-
-let scrapeNewsAborted = false;
-
-function cancelNewsScrape() {
-    scrapeNewsAborted = true;
-}
-
-async function scrapeNewsForAllProspects() {
-    scrapeNewsAborted = false;
-    const keyInput = document.getElementById('gnewsApiKey');
-    const resultEl = document.getElementById('newsResult');
-    const tableEl = document.getElementById('newsResultsTable');
-    const btn = document.getElementById('scrapeNewsBtn');
-    const cancelBtn = document.getElementById('scrapeNewsCancelBtn');
-    const limitInput = document.getElementById('newsLimitInput');
-    const apiKey = (keyInput?.value || '').trim();
-    if (apiKey) sessionStorage.setItem('rankle-gnews-key', apiKey);
-    if (!apiKey) {
-        resultEl.innerHTML = '<span style="color:var(--red);">Enter your GNews API key.</span>';
-        return;
-    }
-
-    let names = [];
-    const fromIndex = await getProspectNamesFromIndex();
-    if (fromIndex && fromIndex.length > 0) {
-        names = fromIndex;
-    } else if (prospects.length > 0) {
-        names = prospects.map(p => p.name);
-    } else {
-        resultEl.innerHTML = '<span style="color:var(--red);">No prospects. Link index.html and save, or import a list first.</span>';
-        return;
-    }
-
-    const limitNum = parseInt(limitInput?.value || '0', 10);
-    if (limitNum > 0) names = names.slice(0, limitNum);
-    resultEl.innerHTML = `<span style="color:var(--text-mid);">Scraping ${names.length} prospects…</span>`;
-
-    btn.disabled = true;
-    cancelBtn.style.display = 'inline-flex';
-    const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-    const results = [];
-    const rawScores = [];
-
-    for (let i = 0; i < names.length; i++) {
-        if (scrapeNewsAborted) break;
-        resultEl.innerHTML = `<span style="color:var(--text-mid);">Scraping ${i + 1}/${names.length}: ${names[i]}…</span>`;
-        const fullName = names[i];
-        const lastName = fullName.split(/\s+/).pop() || fullName;
-        const primaryQuery = `"${fullName}" prospect baseball`;
-        const fallbackQuery = `${lastName} prospect MLB`;
-        const seenUrls = new Set();
-        const articles = [];
-
-        const runQuery = async (q) => {
-            const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&token=${apiKey}&lang=en&max=10`;
-            let data = { articles: [] };
-            try {
-                const r = await fetch(proxy(url));
-                data = await r.json();
-            } catch (e) {}
-            const fullNameLc = fullName.toLowerCase();
-            const lastNameLc = lastName.toLowerCase();
-            (data.articles || []).forEach(item => {
-                const title = (item.title || '').trim();
-                if (!title) return;
-                if (seenUrls.has(item.url)) return;
-                seenUrls.add(item.url);
-                const desc = (item.description || item.content || '').slice(0, 300);
-                const content = (desc + ' ' + title).toLowerCase();
-                const textForRelevance = title + ' ' + desc;
-                if (!content.includes(fullNameLc) && !content.includes(lastNameLc)) return;
-                if (!isBaseballRelevant(textForRelevance)) return;
-                if (isIrrelevantContent(title)) return;
-                const rawAt = item.publishedAt || '';
-                let published_ts = 0;
-                let published_at = '';
-                if (rawAt.length >= 10) {
-                    try {
-                        const dt = new Date(rawAt.replace('Z',''));
-                        published_ts = Math.floor(dt.getTime() / 1000);
-                        published_at = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    } catch (_) { published_at = rawAt.slice(0, 10); }
-                }
-                const sentiment = analyzeSentiment(title + ' ' + desc);
-                articles.push({ title, url: item.url || '', source: (item.source || {}).name || 'Unknown', published_at, published_ts, sentiment });
-            });
-        };
-
-        await runQuery(primaryQuery);
-        await new Promise(r => setTimeout(r, GNEWS_DELAY_MS));
-        if (articles.length < 3 && !scrapeNewsAborted) {
-            await runQuery(fallbackQuery);
-            await new Promise(r => setTimeout(r, GNEWS_DELAY_MS));
-        }
-
-        const raw = newsContribution(articles);
-        rawScores.push(raw);
-        results.push({ name: names[i], articles, raw });
-    }
-
-    const normed = normalizeScores(rawScores);
-    results.forEach((r, i) => { r.score = Math.round(normed[i] * 10) / 10; });
-
-    results.sort((a, b) => b.score - a.score);
-
-    let html = '<table style="width:100%; border-collapse:collapse; font-size:.8rem;"><thead><tr><th style="text-align:left; padding:.5rem; border-bottom:1px solid var(--border);">Prospect</th><th style="text-align:center; padding:.5rem; border-bottom:1px solid var(--border);">Score</th><th style="text-align:center; padding:.5rem; border-bottom:1px solid var(--border);">Articles</th><th style="text-align:left; padding:.5rem; border-bottom:1px solid var(--border);">Top headlines</th></tr></thead><tbody>';
-    results.forEach(r => {
-        const top2 = r.articles.slice(0, 2).map(a => `<span style="color:var(--text-mid); font-size:.75rem;">${a.title.slice(0, 60)}…</span> (${a.sentiment})`).join('<br>') || '—';
-        html += `<tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">${r.name}</td><td style="padding:.5rem; text-align:center; font-weight:600; color:var(--accent-hi);">${r.score}</td><td style="padding:.5rem; text-align:center;">${r.articles.length}</td><td style="padding:.5rem;">${top2}</td></tr>`;
-    });
-    html += '</tbody></table>';
-
-    tableEl.innerHTML = html;
-    resultEl.innerHTML = scrapeNewsAborted
-        ? `<span style="color:var(--gold);">Cancelled. Scraped ${results.length} prospects.</span>`
-        : `<span style="color:var(--green);">✓ Done. Scraped news for ${results.length} prospects.</span>`;
-    btn.disabled = false;
-    cancelBtn.style.display = 'none';
-}
-
-// ============================================================
-// BULK UPDATE AGES & ETA — paste "Name	Age" or "Name	Age	ETA" per line
+// BULK UPDATE AGES & ETA — paste "Name	Age" or "Name	Age	ETA" per line (tab, comma, or 2+ spaces)
 // ============================================================
 function bulkUpdateAges() {
     const text = (document.getElementById('agePasteInput')?.value || '').trim();
     const lines = text.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0);
     let agesUpdated = 0, etasUpdated = 0;
     lines.forEach(line => {
-        const parts = line.split(/\t|,\s*/).map(p => p.trim());
+        let parts = line.split(/\t/).map(p => p.trim());
+        if (parts.length < 2) parts = line.split(/,\s*/).map(p => p.trim());
+        if (parts.length < 2) {
+            const spaceMatch = line.match(/^(.+?)\s{2,}(\d+)(?:\s+(\d{4}))?\s*$/);
+            if (spaceMatch) parts = [spaceMatch[1].trim(), spaceMatch[2], spaceMatch[3] || ''];
+        }
         if (parts.length < 2) return;
-        const name = parts[0];
+        const name = (parts[0] || '').trim();
         const age = parseInt(parts[1], 10);
-        const eta = parts.length >= 3 ? parts[2].replace(/[^0-9]/g, '').slice(0, 4) : null;
-        const idx = fuzzyMatch(name, prospects);
+        const eta = parts.length >= 3 ? (parts[2] || '').replace(/[^0-9]/g, '').slice(0, 4) : null;
+        if (!name || isNaN(age)) return;
+        let idx = fuzzyMatch(name, prospects);
+        if (idx === null && name.includes(' ')) idx = fuzzyMatch(name.split(/\s+/).reverse().join(' '), prospects);
+        if (idx === null && name.includes(', ')) {
+            const [last, first] = name.split(/,\s*/);
+            if (first) idx = fuzzyMatch(`${(first || '').trim()} ${(last || '').trim()}`, prospects);
+        }
         if (idx === null) return;
-        if (!isNaN(age) && age >= 16 && age <= 50) { prospects[idx].age = age; agesUpdated++; }
+        if (isValidProspectAge(age)) { prospects[idx].age = Math.round(age); agesUpdated++; }
         if (eta && eta.length === 4 && parseInt(eta) >= 2024 && parseInt(eta) <= 2030) {
             const current = prospects[idx].eta || '';
             const currentYear = parseInt(String(current).replace(/\D/g, '').slice(0, 4), 10);
@@ -1709,11 +1715,20 @@ function bulkUpdateAges() {
         }
     });
     saveToStorage();
+    saveToLocalStorage(); // so index.html sees updated ages when you refresh
     renderProspects();
     renderExport();
     if (indexFileHandle) writeToIndex().then(r => { if (r.ok) saveToStorage(); });
-    const msg = [agesUpdated && `✓ ${agesUpdated} ages`, etasUpdated && `✓ ${etasUpdated} ETAs`].filter(Boolean).join(' · ') || 'No updates';
-    document.getElementById('ageResult').innerHTML = `<span style="color:var(--green);">${msg}</span>`;
+    let msg = [agesUpdated && `✓ ${agesUpdated} ages`, etasUpdated && `✓ ${etasUpdated} ETAs`].filter(Boolean).join(' · ');
+    if (!msg) {
+        const firstLine = lines[0] || '';
+        const firstName = firstLine.split(/\t|,\s*/)[0]?.trim() || (firstLine.match(/^(.+?)\s{2,}/)?.[1]?.trim()) || firstLine.slice(0, 30);
+        msg = 'No updates';
+        document.getElementById('ageResult').innerHTML = `<span style="color:var(--gold);">${msg}</span> — use <strong>Name TAB Age</strong>. No match for "<strong>${firstName}</strong>". Check spelling or try <strong>Fill ages from MLB</strong>.`;
+    } else {
+        document.getElementById('ageResult').innerHTML = `<span style="color:var(--green);">${msg}</span> <span style="color:var(--text-lo); font-size:.75rem;">Refresh the ranking page to see changes.</span>`;
+    }
+    updateAgeStatus();
 }
 
 // ============================================================
@@ -1753,7 +1768,7 @@ function importPasted() {
                 prospects[idx].positions[source] = firstPos;
                 prospects[idx].pos = modePosition(prospects[idx].positions) || prospects[idx].pos;
             }
-            if (p.age != null && !isNaN(p.age) && p.age >= 16 && p.age <= 50) prospects[idx].age = p.age;
+            if (isValidProspectAge(p.age)) prospects[idx].age = Math.round(p.age);
             if (p.eta) {
                 const newYear = parseInt(String(p.eta).replace(/\D/g, '').slice(0, 4), 10);
                 const curYear = parseInt(String(prospects[idx].eta || '').replace(/\D/g, '').slice(0, 4), 10);
@@ -1762,7 +1777,7 @@ function importPasted() {
                 }
             }
         } else {
-            const ageVal = (p.age != null && !isNaN(p.age) && p.age >= 16 && p.age <= 50) ? p.age : 19;
+            const ageVal = isValidProspectAge(p.age) ? Math.round(p.age) : 19;
             const etaVal = (p.eta && /20\d{2}/.test(String(p.eta))) ? String(p.eta).replace(/\D/g, '').slice(0, 4) : "2027";
             const blank = { name: p.name, pos: firstPos, team: p.team || "ATH", age: ageVal, eta: etaVal, ranks: {}, positions: { [source]: firstPos } };
             Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
@@ -1774,20 +1789,26 @@ function importPasted() {
 
     lastUpdated[source] = new Date().toISOString();
     saveToStorage(); // always persist timestamp (localStorage) so it survives refresh
+    saveToLocalStorage(); // so index.html (same folder) loads this data without linking
     document.getElementById('pasteInput').value = ''; // clear paste box after successful import
     document.getElementById('previewWrap').style.display = 'none';
     renderProspects();
     renderExport();
+    updateAgeStatus();
     if (document.getElementById('panel-status').classList.contains('active')) renderStatus();
 
     const tsDisplay = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Clear success indicator: toast + inline details
+    showToast(`Imported ${parsed.length} from ${SOURCES[source].label}` + (added ? ` (${added} new)` : ''), '✓');
 
     // Auto-save to index.html if linked (timestamp is also written there)
     if (indexFileHandle) {
         writeToIndex().then(r => {
             saveToStorage();
             if (r.ok) showToast('Saved ' + prospects.length + ' prospects to index.html', '💾');
-            const failMsg = r.error ? `save failed: ${r.error}` : 'save failed — re-link index.html and try again';
+            const isPermError = r.error && /User activation|requestPermission|permission/i.test(r.error);
+            const failMsg = r.error ? (isPermError ? 'save failed (re-link index.html and allow write when prompted)' : `save failed: ${r.error}`) : 'save failed — re-link index.html and try again';
             document.getElementById('pasteResult').innerHTML =
                 `<span style="color:var(--green);">✓ ${matched} matched</span>` +
                 (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
@@ -1802,7 +1823,7 @@ function importPasted() {
             (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
             ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
             ` · <span style="color:var(--text-mid);" title="Logged for ${SOURCES[source].label}">📅 ${tsDisplay}</span>` +
-            ` <span style="color:var(--accent-hi); font-weight:600; margin-left:.6rem;">→ Link index.html to also save timestamps to file</span>`;
+            ` · <span style="color:var(--green);">Open index.html in this browser to see the ranking page.</span>`;
     }
 }
 
@@ -1831,7 +1852,8 @@ function generateExportCode() {
         });
         const namePad = ' '.repeat(Math.max(1, 22 - p.name.length));
         const mlbPart = p.mlbId ? ` mlbId:${p.mlbId},` : '';
-        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${p.age}, eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
+        const ageExport = isValidProspectAge(p.age) ? Math.round(p.age) : 19;
+        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${ageExport}, eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
     });
     lines.push('];');
     lines.push('');
@@ -1853,6 +1875,20 @@ function generateExportCode() {
 // Renders the export box on the Export tab
 function renderExport() {
     document.getElementById('exportBox').textContent = generateExportCode();
+}
+
+function setTrendBaseline() {
+    try {
+        localStorage.setItem('rankle-set-baseline-request', '1');
+        const el = document.getElementById('pasteResult');
+        if (el) {
+            el.textContent = 'Open the ranking page (index.html) once to freeze this baseline. Arrows will then show movement vs it until you click Set trend baseline again.';
+            el.style.color = 'var(--green, #22c55e)';
+            setTimeout(() => { el.textContent = ''; }, 8000);
+        }
+    } catch (e) {
+        console.error('setTrendBaseline', e);
+    }
 }
 
 function copyExport() {
@@ -1887,69 +1923,75 @@ function downloadExport() {
     a.click();
 }
 
+// localStorage key shared with index.html — no file linking needed when both are opened from same folder
+const RANKLE_INDEX_DATA_KEY = 'rankle-index-data';
+
+function getSourcesWithData() {
+    const set = new Set();
+    prospects.forEach(p => {
+        if (p.ranks && typeof p.ranks === 'object')
+            Object.entries(p.ranks).forEach(([k, v]) => { if (v != null) set.add(k); });
+    });
+    return [...set].sort();
+}
+
+function getIncludedSourceKeys() {
+    const wrap = document.getElementById('includedSourcesWrap');
+    if (!wrap) return null;
+    const boxes = wrap.querySelectorAll('input[type="checkbox"][data-source]');
+    if (boxes.length === 0) return null;
+    const keys = [];
+    boxes.forEach(cb => { if (cb.checked) keys.push(cb.getAttribute('data-source')); });
+    return keys.length ? keys : null;
+}
+
+function renderIncludedSources() {
+    const wrap = document.getElementById('includedSourcesWrap');
+    if (!wrap) return;
+    const saved = (typeof includedSourceKeys !== 'undefined' && Array.isArray(includedSourceKeys)) ? includedSourceKeys : null;
+    const withData = getSourcesWithData();
+    const defaultChecked = saved || withData.length > 0 ? withData : Object.keys(SOURCES);
+    wrap.innerHTML = Object.keys(SOURCES).map(key => {
+        const label = SOURCES[key].label;
+        const checked = saved ? saved.includes(key) : defaultChecked.includes(key);
+        return `<label style="display:inline-flex; align-items:center; gap:.35rem; font-size:.82rem; cursor:pointer;"><input type="checkbox" data-source="${key}" ${checked ? 'checked' : ''}>${label}</label>`;
+    }).join('');
+}
+
+// Save current prospects + timestamps to localStorage so index.html (same origin) can load them.
+// Open index.html in the same browser/folder and it will use this data automatically.
+function saveToLocalStorage() {
+    try {
+        const RAW_DATA = prospects.map(p => ({
+            name: p.name,
+            pos: p.pos,
+            team: p.team,
+            age: isValidProspectAge(p.age) ? Math.round(p.age) : 19,
+            eta: p.eta,
+            ...(p.mlbId && { mlbId: p.mlbId }),
+            ...(p.positions && { positions: p.positions }),
+            ranks: p.ranks
+        }));
+        const included = getIncludedSourceKeys() ?? includedSourceKeys ?? getSourcesWithData();
+        const payload = { SOURCES, RAW_DATA, LAST_UPDATED: lastUpdated || {}, includedSourceKeys: included };
+        localStorage.setItem(RANKLE_INDEX_DATA_KEY, JSON.stringify(payload));
+    } catch (e) { console.error('saveToLocalStorage', e); }
+}
+
 // ============================================================
-// SAVE DIRECTLY TO index.html (File System Access API)
-// Opens a file picker, reads the file, surgically replaces
-// the SOURCES + RAW_DATA block, writes it back. Zero copy/paste.
+// SAVE — writes to localStorage (always) and optionally to index.html file if linked
+// No need to "link" index.html: open index.html in the same browser and it loads from localStorage.
 // ============================================================
 async function saveToIndexHTML() {
     const statusEl = document.getElementById('saveResult');
-    if (!window.showOpenFilePicker) {
-        statusEl.innerHTML = '<span style="color:var(--red);">Your browser doesn\'t support direct file saving. Use Copy to Clipboard instead.</span>';
-        return;
-    }
+    saveToLocalStorage();
+    statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! Open index.html in this browser to see the ranking page.</span>';
     if (indexFileHandle) {
         const r = await writeToIndex();
-        if (r.ok) { saveToStorage(); statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! index.html updated with ' + prospects.length + ' prospects.</span>'; }
-        else { statusEl.innerHTML = '<span style="color:var(--red);" title="' + (r.error || '') + '">Save failed: ' + (r.error || 'try linking again') + '</span>'; }
-        setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
-        return;
+        if (r.ok) { saveToStorage(); statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved to memory and to index.html file.</span>'; }
+        else { statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved to memory.</span> <span style="color:var(--gold);">File write failed: ' + (r.error || '') + '</span>'; }
     }
-    try {
-        const [fileHandle] = await window.showOpenFilePicker({
-            types: [{ description: 'HTML Files', accept: { 'text/html': ['.html'] } }],
-            suggestedName: 'index.html'
-        });
-
-        // 2. Read current contents
-        const file    = await fileHandle.getFile();
-        const content = await file.text();
-
-        // 3. Verify this is actually our index.html (has the markers)
-        if (!content.includes('const SOURCES =') || !content.includes('const RAW_DATA =')) {
-            statusEl.innerHTML = '<span style="color:var(--red);">That doesn\'t look like a Rankle index.html — no SOURCES or RAW_DATA found.</span>';
-            return;
-        }
-
-        // 4. Surgical replace: everything from "const SOURCES =" up to and including
-        // the RAW_DATA block and optional LAST_UPDATED block
-        const newData  = document.getElementById('exportBox').textContent;
-        const startMarker = 'const SOURCES =';
-        const endMarker   = /const RAW_DATA = \[[\s\S]*?\];(?:\s*const LAST_UPDATED = \{[\s\S]*?\};)?/;
-
-        const startIdx = content.indexOf(startMarker);
-        const afterStart = content.slice(startIdx);
-        const endMatch  = afterStart.match(endMarker);
-
-        if (startIdx === -1 || !endMatch) {
-            statusEl.innerHTML = '<span style="color:var(--red);">Couldn\'t find the data block to replace. File may have been edited.</span>';
-            return;
-        }
-
-        const endIdx     = startIdx + endMatch.index + endMatch[0].length;
-        const newContent = content.slice(0, startIdx) + newData + content.slice(endIdx);
-
-        // 5. Write back
-        const writable = await fileHandle.createWritable();
-        await writable.write(newContent);
-        await writable.close();
-
-        statusEl.innerHTML = '<span style="color:var(--green);">✓ Saved! Link index.html in the header for one-click save next time.</span>';
-        setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
-    } catch (err) {
-        if (err.name === 'AbortError') return;
-        statusEl.innerHTML = '<span style="color:var(--red);">Error: ' + err.message + '</span>';
-    }
+    setTimeout(() => { statusEl.innerHTML = ''; }, 4000);
 }
 
 
@@ -1976,6 +2018,7 @@ const STORAGE_KEY = 'rankle-admin-data';
 // lastUpdated: { pipeline: "2026-02-03T14:30:00Z", ... }
 let lastUpdated = {};
 let lastPasteSource = null;
+let includedSourceKeys = null;  // which source keys count in ranking; null = use sources-with-data default
 
 // Merge LAST_UPDATED data from an index.html string (if present) into lastUpdated
 function updateLastUpdatedFromIndexContent(text) {
@@ -2007,7 +2050,9 @@ function saveToStorage() {
     try {
         const sel = document.getElementById('pasteSourceSelect');
         const src = sel ? sel.value : lastPasteSource;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ SOURCES, prospects, lastUpdated, lastPasteSource: src }));
+        const included = getIncludedSourceKeys();
+        if (included) includedSourceKeys = included;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ SOURCES, prospects, lastUpdated, lastPasteSource: src, includedSourceKeys: includedSourceKeys }));
     } catch(e) { /* silent */ }
 }
 
@@ -2018,6 +2063,7 @@ function loadFromStorage() {
         const data = JSON.parse(raw);
         if (data.lastUpdated) lastUpdated = data.lastUpdated;
         if (data.lastPasteSource) lastPasteSource = data.lastPasteSource;
+        if (data.includedSourceKeys && Array.isArray(data.includedSourceKeys)) includedSourceKeys = data.includedSourceKeys;
         if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
             prospects = data.prospects;
             prospects.forEach(p => {
@@ -2040,6 +2086,136 @@ function loadFromStorage() {
 }
 
 // ============================================================
+// SCRAPE MLB PIPELINE (MiLB Top 100 page)
+// Fetches https://www.mlb.com/milb/prospects — initial load often has only 5 rows;
+// the site shows the full list after you click "Show Full List".
+// ============================================================
+async function scrapeMLBPipeline() {
+    const pasteResultEl = document.getElementById('pasteResult');
+    const pasteInputEl = document.getElementById('pasteInput');
+    const pasteSourceSelect = document.getElementById('pasteSourceSelect');
+    if (!pasteResultEl || !pasteInputEl) return;
+    pasteResultEl.textContent = 'Scraping MiLB prospects page…';
+    pasteResultEl.style.color = 'var(--text-mid)';
+    switchTab('paste');
+    // Open the page in a new tab so you can click "Show Full List" and copy the table if scrape finds nothing
+    window.open('https://www.mlb.com/milb/prospects', '_blank');
+    const proxy = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    let html = '';
+    const urlsToTry = ['https://www.mlb.com/milb/prospects', 'https://www.mlb.com/milb/prospects/2026/top100'];
+    for (const url of urlsToTry) {
+        try {
+            const r = await fetch(proxy(url));
+            if (!r.ok) continue;
+            html = await r.text();
+            if (html.length > 5000) break;
+        } catch (e) { continue; }
+    }
+    if (!html) {
+        pasteResultEl.textContent = 'Scrape failed: could not load the page. Try opening the page, click "Show Full List", then copy the table and paste here.';
+        pasteResultEl.style.color = 'var(--red, #ef4444)';
+        return;
+    }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    // Try multiple selectors (some pages use table without tbody, or different structure)
+    let rows = doc.querySelectorAll('table tbody tr');
+    if (!rows.length) rows = doc.querySelectorAll('table tr');
+    // Player names sometimes appear in links (cards) rather than in table cells
+    const nameLinks = Array.from(doc.querySelectorAll('a[href*="/stories/"], a[href*="/player/"]')).filter(a => {
+        const t = (a.textContent || '').trim();
+        return t.length > 2 && t.length < 40 && !/^\d+$/.test(t) && !/^(MLB|AAA|AA|Show|Full|List)$/i.test(t);
+    });
+    const namesFromLinks = nameLinks.map(a => (a.textContent || '').trim()).filter(Boolean);
+    const out = [];
+    let usedNames = 0;
+    rows.forEach((tr) => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 4) return;
+        const rank = (tds[0]?.textContent || '').trim();
+        if (!/^\d+$/.test(rank)) return;
+        let name = (tds[1]?.textContent || '').trim();
+        const nameFromLink = tds[1]?.querySelector('a');
+        if (nameFromLink) name = (nameFromLink.textContent || '').trim();
+        if (!name && namesFromLinks[usedNames]) { name = namesFromLinks[usedNames]; usedNames++; }
+        const pos = (tds[2]?.textContent || '').trim().replace(/\s*\/\s*/, '/') || '';
+        const team = (tds[3]?.textContent || '').trim() || '';
+        const level = (tds[4]?.textContent || '').trim() || '';
+        const eta = (tds[5]?.textContent || '').trim() || '';
+        const age = (tds[6]?.textContent || '').trim() || '';
+        if (!name) return;
+        out.push([rank, name, pos, team, level, eta, age].join('\n'));
+    });
+    // Fallback: try __NEXT_DATA__ (Next.js embedded JSON)
+    if (out.length === 0) {
+        const nextData = doc.getElementById('__NEXT_DATA__');
+        if (nextData && nextData.textContent) {
+            try {
+                const data = JSON.parse(nextData.textContent);
+                const walk = (obj, depth) => {
+                    if (depth > 10) return;
+                    if (Array.isArray(obj)) {
+                        const first = obj[0];
+                        if (first && typeof first === 'object' && (first.name || first.playerName || first.fullName) && (first.rank != null || first.rankNum != null || first.overallRank != null)) {
+                            obj.forEach((p, i) => {
+                                const name = (p.name || p.playerName || p.fullName || '').trim();
+                                const rank = p.rank ?? p.rankNum ?? p.overallRank ?? (i + 1);
+                                const pos = (p.position || p.primaryPosition || p.pos || '').replace(/\s*\/\s*/, '/');
+                                const team = (p.team || p.teamName || p.organization || p.orgName || '').trim();
+                                const eta = (p.eta || p.etaYear || p.mlbEta || '');
+                                const age = p.age != null ? String(p.age) : '';
+                                if (name) out.push([String(rank), name, pos, team, (p.level || ''), String(eta), String(age)].join('\n'));
+                            });
+                            return true;
+                        }
+                        obj.forEach(item => walk(item, depth + 1));
+                    } else if (obj && typeof obj === 'object') {
+                        for (const k of Object.keys(obj)) {
+                            if (walk(obj[k], depth + 1)) return true;
+                        }
+                    }
+                };
+                walk(data, 0);
+            } catch (e) { /* ignore */ }
+        }
+    }
+    // Fallback: name links + rows that have rank + position/team/level (table may omit name column)
+    if (out.length === 0 && namesFromLinks.length > 0 && rows.length > 0) {
+        const dataRows = Array.from(rows).filter(tr => {
+            const tds = tr.querySelectorAll('td');
+            const r = (tds[0]?.textContent || '').trim();
+            return tds.length >= 5 && /^\d+$/.test(r);
+        });
+        if (dataRows.length > 0 && dataRows.length <= namesFromLinks.length + 2) {
+            dataRows.forEach((tr, i) => {
+                const tds = tr.querySelectorAll('td');
+                const rank = (tds[0]?.textContent || '').trim();
+                const name = namesFromLinks[i] || namesFromLinks[namesFromLinks.length - 1];
+                const pos = (tds[2]?.textContent || '').trim().replace(/\s*\/\s*/, '/') || '';
+                const team = (tds[3]?.textContent || '').trim() || '';
+                const level = (tds[4]?.textContent || '').trim() || '';
+                const eta = (tds[5]?.textContent || '').trim() || '';
+                const age = (tds[6]?.textContent || '').trim() || '';
+                out.push([rank, name, pos, team, level, eta, age].join('\n'));
+            });
+        }
+    }
+    if (out.length === 0) {
+        pasteResultEl.textContent = 'No table rows found. The page may load the list via JavaScript. Open the page, click "Show Full List", then copy the table and paste here.';
+        pasteResultEl.style.color = 'var(--gold)';
+        return;
+    }
+    const pasteText = out.join('\n\n');
+    pasteInputEl.value = pasteText;
+    if (pasteSourceSelect) { pasteSourceSelect.value = 'pipeline'; saveToStorage(); }
+    const limited = out.length <= 5;
+    pasteResultEl.textContent = limited
+        ? `Scraped ${out.length} prospects (initial page only). For the full list: open the MiLB page, click "Show Full List", then copy the table and paste here.`
+        : `Scraped ${out.length} prospects. Click Preview or Import & Save.`;
+    pasteResultEl.style.color = limited ? 'var(--gold)' : 'var(--green, #22c55e)';
+    setTimeout(() => { pasteResultEl.textContent = ''; }, 8000);
+}
+
+// ============================================================
 // RENDER STATUS TAB — last updated timestamps per source
 // ============================================================
 function renderStatus() {
@@ -2058,9 +2234,13 @@ function renderStatus() {
         const { text, stale } = formatTs(lastUpdated[key]);
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:.6rem .8rem; background:var(--bg-input); border:1px solid var(--border); border-radius:8px;';
+        const scrapeBtn = key === 'pipeline' ? '<button class="btn btn-ghost btn-sm" onclick="scrapeMLBPipeline()" title="Fetch MiLB Top 100 page (initial load may only have 5; site shows full list after you click Show Full List)">Scrape</button>' : '';
         row.innerHTML = `
             <span style="font-weight:600;">${src.label}</span>
-            <span style="font-size:.85rem; color:${stale ? 'var(--gold)' : 'var(--text-mid)'};">${text}</span>
+            <span style="display:flex; align-items:center; gap:.5rem;">
+                <span style="font-size:.85rem; color:${stale ? 'var(--gold)' : 'var(--text-mid)'};">${text}</span>
+                ${scrapeBtn}
+            </span>
         `;
         return row.outerHTML;
     }).join('');
@@ -2071,7 +2251,9 @@ function renderStatus() {
 // ============================================================
 const loaded = loadFromStorage();
 renderProspects();
+updateAgeStatus();
 renderExport();
+renderIncludedSources();
 
 // Restore linked file handle from IndexedDB (skip re-linking)
 restoreFileHandle().then(() => {

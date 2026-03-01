@@ -8,39 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Oswald:wght@500;600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 <style>
  :root {
-    --bg-deep:    #f9fafb;  /* primary page background (near-white) */
-    --bg-card:    #c9e4d9;  /* cards / panels */
-    --bg-row:     #ffffff;  /* table row odd */
-    --bg-row-alt: #f9fafb;  /* table row even */
-    --border:     #e5e7eb;  /* light gray border */
-    --text-hi:    #11241e;  /* main text – deep green charcoal */
-    --text-mid:   #3c5e50;  /* body copy / secondary */
-    --text-lo:    #7a9a8c;  /* subtle labels */
-    --accent:     #1b4d3e;  /* forest green from logo */
-    --accent-hi:  #2f7f63;  /* brighter green for highlights */
-    --gold:       #f59e0b;  /* keep warm gold */
-    --green:      #3bb38a;  /* success / positive */
-    --red:        #f87171;
-    --purple:     #a78bfa;
-    --header-height: 190px;  /* fixed site header height; main-content padding-top */
-}
-
-/* Dark theme */
-body.dark-mode {
-    --bg-deep:    #0f172a;  /* deep blue-black */
-    --bg-card:    #1e3a3a;  /* dark teal */
-    --bg-row:     #1a2332;  /* dark row */
-    --bg-row-alt: #0f172a;  /* darker row alt */
+    --bg-deep:    #0f172a;  /* primary page background (deep blue-black) */
+    --bg-card:    #1e3a3a;  /* dark teal cards */
+    --bg-row:     #1a2332;  /* table row odd */
+    --bg-row-alt: #0f172a;  /* table row even */
     --border:     #334155;  /* dark gray border */
-    --text-hi:    #f1f5f9;  /* light text */
-    --text-mid:   #cbd5e1;  /* medium text */
-    --text-lo:    #94a3b8;  /* subtle text */
-    --accent:     #2f7f63;  /* brighter green */
+    --text-hi:    #f1f5f9;  /* main text */
+    --text-mid:   #cbd5e1;  /* body copy / secondary */
+    --text-lo:    #94a3b8;  /* subtle labels */
+    --accent:     #2f7f63;  /* green */
     --accent-hi:  #3bb38a;  /* lighter green */
-    --gold:       #fbbf24;  /* slightly brighter gold */
-    --green:      #4ade80;  /* brighter green */
-    --red:        #fb7185;  /* slightly brighter red */
-    --purple:     #d8b4fe;  /* brighter purple */
+    --gold:       #fbbf24;  /* gold */
+    --green:      #4ade80;  /* success / positive */
+    --red:        #fb7185;
+    --purple:     #d8b4fe;
+    --header-height: 190px;  /* fixed site header height; main-content padding-top */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -68,25 +50,17 @@ header {
     height: auto !important;
     min-height: var(--header-height);
     z-index: 1000 !important;
-    background: #ffffff;
+    background: #1a2332;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #334155;
     border-top: 3px solid var(--accent);
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,.5);
     padding: 0.6rem 2rem;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
-    transition: background .3s, border-color .3s, box-shadow .3s;
-}
-
-body.dark-mode header {
-    background: #1a2332;
-    border-bottom-color: #334155;
-    border-top-color: var(--accent);
-    box-shadow: 0 2px 8px rgba(0,0,0,.5);
 }
 .header-spacer { grid-column: 1; }
 .header-logo-wrap {
@@ -133,10 +107,6 @@ body.dark-mode header {
     max-width: 400px;
     object-fit: contain;
     display: block;
-    transition: filter .3s;
-}
-
-body.dark-mode .header-logo-wrap img {
     filter: brightness(0) saturate(100%) invert(1) sepia(20%);
 }
 .logo-title {
@@ -185,29 +155,6 @@ body.dark-mode .header-logo-wrap img {
 .btn-fa-filter:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gold); }
 .btn-fa-filter.active { background: linear-gradient(135deg, #dc2626, #b91c1c); border-color: rgba(220, 38, 38, 0.7); color: #fff; }
 
-/* Dark mode toggle */
-.btn-dark-toggle {
-    background: transparent;
-    border: 2px solid rgba(47, 127, 99, 0.5);
-    color: var(--accent);
-    padding: 0.5rem 0.85rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all .2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.btn-dark-toggle:hover {
-    border-color: var(--accent);
-    background: rgba(47, 127, 99, 0.1);
-}
-body.dark-mode .btn-dark-toggle {
-    border-color: var(--accent-hi);
-    color: var(--accent-hi);
-}
-
 /* ── HERO ── */
 .hero {
     position: relative;
@@ -244,7 +191,7 @@ body.dark-mode .btn-dark-toggle {
 .hero h1 {
     font-family: 'Playfair Display', serif;
     font-size: 3.5rem; font-weight: 800;
-    letter-spacing: 0.5px; line-height: 1.1;
+    letter-spacing: 0.5px; line-height: 1.15;
     margin-bottom: 0;
     color: #ffffff;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -256,9 +203,9 @@ body.dark-mode .btn-dark-toggle {
     display: none;
 }
 .hero-desc {
-    color: #ffffff;
+    color: rgba(255,255,255,0.9);
     font-size: 1.1rem;
-    line-height: 1.6;
+    line-height: 1.45;
     font-style: normal;
     font-weight: 500;
     margin-top: 0.75rem;
@@ -288,8 +235,8 @@ body.dark-mode .btn-dark-toggle {
     border-radius: 20px;
     border: 2px solid var(--accent);
     color: var(--accent);
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     transition: transform .15s, box-shadow .15s;
 }
 .hero-pill:hover {
@@ -297,24 +244,18 @@ body.dark-mode .btn-dark-toggle {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .hero-preview {
-    background: #ffffff;
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    min-width: 240px;
+    background: rgba(30, 58, 58, 0.85);
+    border: 1px solid rgba(59, 179, 138, 0.3);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    min-width: 220px;
     position: relative;
-    box-shadow: 0 4px 24px rgba(0,0,0,.15);
-    transition: background .3s, border-color .3s;
-}
-
-body.dark-mode .hero-preview {
-    background: rgba(30, 58, 58, 0.8);
-    border-color: rgba(59, 179, 138, 0.3);
+    box-shadow: 0 2px 12px rgba(0,0,0,.2);
 }
 .hero-preview-title {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 1.5px; color: var(--text-lo);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     display: none;
 }
 .hero-legend { display: flex; flex-direction: column; gap: 1rem; }
@@ -352,8 +293,8 @@ body.dark-mode .hero-preview {
 .filter-group label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-mid); font-weight: 600; }
 .filter-group input,
 .filter-group select {
-    background: #ffffff;
-    border: 1px solid #d1d5db;
+    background: #1e3a3a;
+    border: 1px solid #334155;
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
     color: var(--text-hi);
@@ -363,16 +304,7 @@ body.dark-mode .hero-preview {
     transition: border-color .2s, box-shadow .2s, background .2s, color .2s;
 }
 .filter-group input:focus,
-.filter-group select:focus { border-color: var(--accent-hi); box-shadow: 0 0 0 3px rgba(47,127,99,.4); }
-
-body.dark-mode .filter-group input,
-body.dark-mode .filter-group select {
-    background: #1e3a3a;
-    border-color: #334155;
-    color: var(--text-hi);
-}
-body.dark-mode .filter-group input:focus,
-body.dark-mode .filter-group select:focus {
+.filter-group select:focus {
     border-color: var(--accent-hi);
     box-shadow: 0 0 0 3px rgba(59, 179, 138, .3);
 }
@@ -385,15 +317,10 @@ body.dark-mode .filter-group select:focus {
 .table-wrap {
     max-width: 1100px; margin: 0 auto 2.5rem;
     padding: 0 1.5rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,.12);
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
     border-radius: 12px;
     overflow: visible;
     animation: fadeInUp 0.8s ease-out 0.3s both;
-    transition: box-shadow .3s;
-}
-
-body.dark-mode .table-wrap {
-    box-shadow: 0 4px 24px rgba(0,0,0,.5);
 }
 table { width:100%; border-collapse:collapse; }
 
@@ -444,14 +371,10 @@ tbody tr:nth-child(15) { animation-delay: 0.63s; }
 tbody tr:nth-child(n+16) { animation-delay: 0.63s; }
 tbody tr:nth-child(odd)  { background: var(--bg-row); }
 tbody tr:nth-child(even) { background: var(--bg-row-alt); }
-tbody tr:hover           { background: rgba(27,77,62,.05); box-shadow: inset 0 0 0 1px rgba(27,77,62,.35); }
-tbody tr.free-agent      { background: #fef3c7; box-shadow: inset 3px 0 0 var(--gold); }
-tbody tr.free-agent:nth-child(even) { background: #fef9e7; box-shadow: inset 3px 0 0 var(--gold); }
-tbody tr.free-agent:hover { background: #fef3c7; box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(245,158,11,.3); }
-
-body.dark-mode tbody tr.free-agent { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
-body.dark-mode tbody tr.free-agent:nth-child(even) { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
-body.dark-mode tbody tr.free-agent:hover { background: #4d4000; box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(251,191,36,.3); }
+tbody tr:hover           { background: rgba(59,179,138,.08); box-shadow: inset 0 0 0 1px rgba(59,179,138,.25); }
+tbody tr.free-agent      { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
+tbody tr.free-agent:nth-child(even) { background: #3a3000; box-shadow: inset 3px 0 0 var(--gold); }
+tbody tr.free-agent:hover { background: #4d4000; box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px rgba(251,191,36,.3); }
 
 td { padding: 0.8rem 0.75rem; vertical-align: middle; }
 td:first-child { padding-left:1rem; }
@@ -462,7 +385,7 @@ td:first-child { padding-left:1rem; }
     width:38px; height:38px; border-radius:8px;
     font-weight:700; font-size:.88rem;
 }
-.rank-tier1 { background: linear-gradient(135deg,#fef3c7,#fde68a); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 10px rgba(253,224,71,.5); }
+.rank-tier1 { background: linear-gradient(135deg,#fde047,#facc15); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 0 1px rgba(250,204,21,.4), 0 4px 14px rgba(250,204,21,.45); }
 .rank-gold   { background: linear-gradient(135deg,#a8c5d1,#7aa4b8); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 8px rgba(122,164,184,.3); }
 .rank-silver { background: linear-gradient(135deg,#f97316,#ea580c); color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 6px rgba(249,115,22,.35); }
 .rank-bronze { background: #d1d5db; color: #6b7280; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.05); }
@@ -515,7 +438,8 @@ td:first-child { padding-left:1rem; }
 .pos-1b { background:#0891b2; color:#ffffff; }  /* First Base – teal */
 .pos-2b { background:#06b6d4; color:#ffffff; }  /* Second Base – cyan */
 .pos-3b { background:#f59e0b; color:#1a1a1a; }  /* Third Base – gold */
-.pos-sp { background:#2563eb; color:#ffffff; }  /* Starting Pitcher – blue */
+.pos-rhp { background:#2563eb; color:#ffffff; }  /* Right-handed pitcher – blue */
+.pos-lhp { background:#0d9488; color:#ffffff; }  /* Left-handed pitcher – teal */
 .pos-if { background:#6366f1; color:#ffffff; }  /* Infield – indigo */
 
 .team-col { font-weight:600; font-size:.85rem; color:var(--text-mid); }
@@ -528,14 +452,16 @@ td:first-child { padding-left:1rem; }
 .vol-wrap { display:flex; align-items:center; gap:.45rem; }
 .vol-num  { font-size:.78rem; color:var(--text-mid); font-weight:500; }
 .vol-badge {
-    font-size:.65rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.8px; padding:.2rem .55rem; border-radius:999px;
+    font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; padding:.25rem .6rem; border-radius:999px;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: 0 1px 1px rgba(0,0,0,.25);
 }
-.vol-low     { background:#3bb38a; color:#ffffff; }
-.vol-mod     { background:#6b7280; color:#ffffff; }
-.vol-high    { background:#ef4444; color:#ffffff; }
-.vol-extreme { background:#a78bfa; color:#ffffff; }
-.vol-na      { background:rgba(100,116,139,.15); color:var(--text-lo); }
+.vol-low     { background:#2d8a6e; color:#fff; }
+.vol-mod     { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; box-shadow: 0 1px 3px rgba(217,119,6,.35); }
+.vol-high    { background:#dc2626; color:#fff; }
+.vol-extreme { background:#7c3aed; color:#fff; }
+.vol-na      { background:rgba(100,116,139,.15); color:var(--text-lo); text-shadow: none; }
 
 /* consensus dots */
 .cons-dots { display:flex; gap:.3rem; }
@@ -565,18 +491,12 @@ td:first-child { padding-left:1rem; }
 /* ── LOCKED SECTION ── */
 .lock-row td { padding:0; border:none !important; }
 .lock-box {
-    background: linear-gradient(135deg,#f5faf8,#e8f3ed);
-    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #1e3a3a, #1a2f2f);
+    border: 1px solid #334155;
     border-radius:14px;
     padding:2.5rem 2rem;
     text-align:center;
     max-width:420px; margin:1.8rem auto;
-    transition: background .3s, border-color .3s;
-}
-
-body.dark-mode .lock-box {
-    background: linear-gradient(135deg, #1e3a3a, #1a2f2f);
-    border-color: #334155;
 }
 .lock-icon { font-size:2.8rem; margin-bottom:.6rem; }
 .lock-title { font-family:'Bebas Neue',cursive; font-size:1.55rem; letter-spacing:2px; margin-bottom:.35rem; }
@@ -604,16 +524,9 @@ body.dark-mode .lock-box {
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 2rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,.15);
-    transition: background .3s, border-color .3s, box-shadow .3s;
-}
-
-body.dark-mode .method-card {
     box-shadow: 0 4px 24px rgba(0,0,0,.5);
 }
-.method-card h3 { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:2px; margin-bottom:1rem; color:#fff; transition: color .3s; }
-
-body.dark-mode .method-card h3 { color: var(--text-hi); }
+.method-card h3 { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:2px; margin-bottom:1rem; color: var(--text-hi); }
 .method-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
 .method-item h4 { font-size:.82rem; color:var(--accent-hi); font-weight:600; margin-bottom:.35rem; text-transform:uppercase; letter-spacing:0.8px; }
 .method-item p  { font-size:.8rem; color:var(--text-mid); line-height:1.65; }
@@ -652,15 +565,10 @@ footer {
 .fantasy-section {
     display: block;
     padding: 2.5rem 2rem;
-    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(201, 228, 217, 0.7) 100%);
+    background: linear-gradient(135deg, #1e3a3a 0%, rgba(30, 58, 58, 0.7) 100%);
     border-bottom: 1px solid var(--border);
     margin-bottom: 1rem;
     animation: fadeInUp 0.8s ease-out 0.4s both;
-    transition: background .3s, border-color .3s;
-}
-
-body.dark-mode .fantasy-section {
-    background: linear-gradient(135deg, #1e3a3a 0%, rgba(30, 58, 58, 0.7) 100%);
 }
 .fantasy-section.open { display: block; }
 .fantasy-header {
@@ -683,11 +591,6 @@ body.dark-mode .fantasy-section {
     transition: border-color .2s, background .2s, box-shadow .2s;
     max-width: 1100px;
     margin: 0 auto;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-}
-
-body.dark-mode .fantasy-drop-zone {
     background: #1a2332;
     border-color: #334155;
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -774,7 +677,7 @@ body.dark-mode .fantasy-drop-zone {
     transform: translateX(-50%) translateY(100px);
     background: var(--bg-card);
     border: 1px solid var(--border);
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,.7);
     border-radius: 10px;
     padding: 1rem 1.5rem;
     z-index: 9999;
@@ -786,10 +689,6 @@ body.dark-mode .fantasy-drop-zone {
 .fantasy-toast.show {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
-}
-
-body.dark-mode .fantasy-toast {
-    box-shadow: 0 8px 24px rgba(0,0,0,.7);
 }
 
 .fa-legend {
@@ -892,7 +791,7 @@ body.dark-mode .fantasy-toast {
     thead th:first-child, td:first-child { padding-left: 0.5rem; }
     .rank-pill { width: 30px; height: 30px; font-size: 0.75rem; }
     .pos-badge { padding: 0.15rem 0.4rem; font-size: 0.65rem; }
-    .vol-badge { font-size: 0.6rem; padding: 0.12rem 0.35rem; }
+    .vol-badge { font-size: 0.65rem; padding: 0.18rem 0.45rem; }
     .cons-dot { width: 6px; height: 6px; }
     .tier-breaker td { padding: 0.4rem 0.5rem; }
     .tier-breaker-label { font-size: 0.62rem; }
@@ -912,7 +811,6 @@ body.dark-mode .fantasy-toast {
         <span class="beta-badge" aria-label="Beta">BETA</span>
     </a>
     <div class="header-right">
-        <button class="btn-dark-toggle" id="darkModeToggle" title="Toggle dark mode">🌙</button>
         <button class="btn-pro">⭐ Upgrade to Pro</button>
     </div>
 </header>
@@ -934,12 +832,15 @@ body.dark-mode .fantasy-toast {
         </div>
         <div class="hero-preview">
                 <div class="hero-legend">
+                    <div class="hero-legend-item" id="sources-in-data-wrap" style="margin-bottom:0.5rem;">
+                        <span class="hero-legend-note" id="sources-in-data">Rankings from — sources</span>
+                    </div>
                     <div class="hero-legend-item">
                         <strong>Score</strong> — 0–100, higher = better consensus rank
                     </div>
                     <div class="hero-legend-item">
                         <strong>Consensus</strong> <div class="cons-dots"><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot"></div><div class="cons-dot"></div><div class="cons-dot"></div></div>
-                        <span class="hero-legend-note">Lit dots = sources that agreed on position</span>
+                        <span class="hero-legend-note">Lit dots = how many lists put this prospect in roughly the same spot</span>
                     </div>
                     <div class="hero-legend-item">
                         <strong>Volatility</strong>
@@ -949,7 +850,7 @@ body.dark-mode .fantasy-toast {
                             <span class="vol-badge vol-high">High</span>
                             <span class="vol-badge vol-extreme">Ext</span>
                         </div>
-                        <span class="hero-legend-note">Lower = sources agree; higher = more disagreement</span>
+                        <span class="hero-legend-note">Low = lists mostly agree on rank; High = lists are all over the map</span>
                     </div>
                 </div>
             </div>
@@ -1038,30 +939,6 @@ body.dark-mode .fantasy-toast {
 
 <script>
 // ============================================================
-// DARK MODE TOGGLE
-// ============================================================
-(function initDarkMode() {
-    const toggle = document.getElementById('darkModeToggle');
-    const body = document.body;
-    
-    // Check localStorage for saved preference
-    const savedMode = localStorage.getItem('rankle-dark-mode');
-    if (savedMode === 'true') {
-        body.classList.add('dark-mode');
-        toggle.textContent = '☀️';
-    }
-    
-    // Toggle dark mode on button click
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        body.classList.toggle('dark-mode');
-        const isDarkMode = body.classList.contains('dark-mode');
-        localStorage.setItem('rankle-dark-mode', isDarkMode);
-        toggle.textContent = isDarkMode ? '☀️' : '🌙';
-    });
-})();
-
-// ============================================================
 // RANKING ENGINE  — unit-tested & verified before deployment
 // ============================================================
 
@@ -1103,7 +980,10 @@ function computeProspect(meta, sourceRankings) {
     // Scale to 0-100 Rankle Score
     // Z range for a 100-item list is roughly -1.7 to +1.7
     // 50 + z*29.4 maps that to 0-100
-    const rankleScore = Math.max(0, Math.min(100, 50 + zAvg * 29.4));
+    let rankleScore = Math.max(0, Math.min(100, 50 + zAvg * 29.4));
+    // Reserve 100 for unanimous #1: if any list has this prospect not at #1, cap at 99.9
+    const allOnes = rawRanks.every(r => r === 1);
+    if (!allOnes && rankleScore >= 99.95) rankleScore = 99.9;
 
     // Volatility: stddev of Z-scores across sources
     let sd = null, volatility = "N/A";
@@ -1136,15 +1016,17 @@ function computeProspect(meta, sourceRankings) {
         ? (rankleScore + K * 50) / (1 + K)
         : rankleScore;
 
-    return { ...meta, sourceCount: n, consensusAgreement, rankleScore: Math.round(penalizedScore * 10) / 10, sd, volatility };
+    const sourcesAt1 = capped.filter(s => s.rank === 1).length;
+    const notAt1 = capped.filter(s => s.rank > 1).map(s => ({ source: s.source, rank: s.rank }));
+
+    return { ...meta, sourceCount: n, consensusAgreement, rankleScore: Math.round(penalizedScore * 10) / 10, sd, volatility, sourcesAt1, notAt1 };
 }
 
 // ============================================================
 // SOURCE DEFINITIONS
-// Each source has its own list length — this is what makes
-// normalization matter. Change these as you add real sources.
+// Data can come from admin via localStorage (rankle-index-data) so no file linking is needed.
 // ============================================================
-const SOURCES = {
+var SOURCES = {
     pipeline:      { label: "MLB Pipeline",      listLength: 100 },
     ba:            { label: "Baseball America",  listLength: 100 },
     fangraphs:     { label: "FanGraphs",         listLength: 100 },
@@ -1153,187 +1035,260 @@ const SOURCES = {
     justbaseball:  { label: "Just Baseball",     listLength: 100 },
     rotoprospects: { label: "RotoProspects",     listLength: 50 },
     prospect361:   { label: "Prospect361",       listLength: 100 },
-    rotochamp:     { label: "RotoChamp",         listLength: 100 }
+    rotochamp:     { label: "RotoChamp",         listLength: 100 },
+    keithlaw:      { label: "Keith Law",         listLength: 100 },
+    zips:          { label: "ZiPS",              listLength: 100 }
 };
 
-const RAW_DATA = [
-    { name:"Konnor Griffin",        pos:"SS", team:"PIT", age:19, eta:"2026", ranks:{ pipeline:1, ba:1, fangraphs:null, br:2, espn:null, justbaseball:1, rotoprospects:1, prospect361:1, rotochamp:1 } },
-    { name:"Kevin McGonigle",       pos:"SS", team:"DET", age:21, eta:"2026", ranks:{ pipeline:2, ba:2, fangraphs:null, br:1, espn:null, justbaseball:2, rotoprospects:3, prospect361:6, rotochamp:2 } },
-    { name:"JJ Wetherholt",         pos:"SS", team:"STL", age:23, eta:"2026", ranks:{ pipeline:5, ba:3, fangraphs:null, br:7, espn:null, justbaseball:9, rotoprospects:5, prospect361:4, rotochamp:5 } },
-    { name:"Jesus Made",            pos:"SS", team:"MIL", age:18, eta:"2026", ranks:{ pipeline:3, ba:4, fangraphs:null, br:3, espn:null, justbaseball:4, rotoprospects:2, prospect361:2, rotochamp:3 } },
-    { name:"Walker Jenkins",        pos:"OF", team:"MIN", age:20, eta:"2026", ranks:{ pipeline:14, ba:5, fangraphs:null, br:21, espn:null, justbaseball:16, rotoprospects:4, prospect361:5, rotochamp:14 } },
-    { name:"Max Clark",             pos:"OF", team:"DET", age:21, eta:"2026", ranks:{ pipeline:10, ba:6, fangraphs:null, br:17, espn:null, justbaseball:10, rotoprospects:11, prospect361:3, rotochamp:10 } },
-    { name:"Colt Emerson",          pos:"SS", team:"SEA", age:20, eta:"2026", ranks:{ pipeline:9, ba:7, fangraphs:null, br:12, espn:null, justbaseball:5, rotoprospects:13, prospect361:17, rotochamp:9 } },
-    { name:"Nolan McLean",          pos:"RHP", team:"NYM", age:24, eta:"2025", ranks:{ pipeline:6, ba:8, fangraphs:null, br:9, espn:null, justbaseball:3, rotoprospects:10, prospect361:23, rotochamp:6 } },
-    { name:"Samuel Basallo",        pos:"C", team:"BAL", age:21, eta:"2025", ranks:{ pipeline:8, ba:9, fangraphs:null, br:8, espn:null, justbaseball:8, rotoprospects:8, prospect361:7, rotochamp:8 } },
-    { name:"Trey Yesavage",         pos:"RHP", team:"TOR", age:22, eta:"2025", ranks:{ pipeline:12, ba:10, fangraphs:null, br:10, espn:null, justbaseball:6, rotoprospects:15, prospect361:28, rotochamp:12 } },
-    { name:"Carter Jensen",         pos:"C", team:"KC", age:22, eta:"2025", ranks:{ pipeline:18, ba:11, fangraphs:null, br:64, espn:null, justbaseball:14, rotoprospects:25, prospect361:59, rotochamp:18 } },
-    { name:"Leo De Vries",          pos:"SS", team:"ATH", age:19, eta:"2026", ranks:{ pipeline:4, ba:12, fangraphs:null, br:6, espn:null, justbaseball:7, rotoprospects:6, prospect361:12, rotochamp:4 } },
-    { name:"Thomas White",          pos:"LHP", team:"MIA", age:21, eta:"2026", ranks:{ pipeline:17, ba:13, fangraphs:null, br:13, espn:null, justbaseball:18, rotoprospects:16, prospect361:27, rotochamp:17 } },
-    { name:"Aidan Miller",          pos:"SS", team:"PHI", age:21, eta:"2026", ranks:{ pipeline:23, ba:14, fangraphs:null, br:36, espn:null, justbaseball:12, rotoprospects:12, prospect361:9, rotochamp:23 } },
-    { name:"Bubba Chandler",        pos:"RHP", team:"PIT", age:23, eta:"2025", ranks:{ pipeline:11, ba:15, fangraphs:null, br:4, espn:null, justbaseball:11, rotoprospects:14, prospect361:10, rotochamp:11 } },
-    { name:"Sebastian Walcott",     pos:"SS", team:"TEX", age:19, eta:"2026", ranks:{ pipeline:7, ba:16, fangraphs:null, br:5, espn:null, justbaseball:13, rotoprospects:7, prospect361:8, rotochamp:7 } },
-    { name:"Payton Tolle",          pos:"LHP", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:19, ba:17, fangraphs:null, br:32, espn:null, justbaseball:33, rotoprospects:33, prospect361:41, rotochamp:19 } },
-    { name:"Bryce Eldridge",        pos:"1B", team:"SF", age:21, eta:"2025", ranks:{ pipeline:25, ba:18, fangraphs:null, br:11, espn:null, justbaseball:23, rotoprospects:19, prospect361:18, rotochamp:25 } },
-    { name:"Carson Benge",          pos:"OF", team:"NYM", age:23, eta:"2026", ranks:{ pipeline:16, ba:19, fangraphs:null, br:29, espn:null, justbaseball:15, rotoprospects:17, prospect361:32, rotochamp:16 } },
-    { name:"Eduardo Quintero",      pos:"OF", team:"LAD", age:20, eta:"2027", ranks:{ pipeline:30, ba:20, fangraphs:null, br:48, espn:null, justbaseball:44, rotoprospects:21, prospect361:20, rotochamp:30 } },
-    { name:"Dylan Beavers",         pos:"OF", team:"BAL", age:24, eta:"2025", ranks:{ pipeline:69, ba:21, fangraphs:null, br:88, espn:null, justbaseball:63, rotoprospects:28, prospect361:null, rotochamp:69 } },
-    { name:"Travis Bazzana",        pos:"2B", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:20, ba:22, fangraphs:null, br:25, espn:null, justbaseball:48, rotoprospects:27, prospect361:73, rotochamp:20 } },
-    { name:"Sal Stewart",           pos:"3B", team:"CIN", age:22, eta:"2025", ranks:{ pipeline:22, ba:23, fangraphs:null, br:31, espn:null, justbaseball:28, rotoprospects:9, prospect361:44, rotochamp:22 } },
-    { name:"Josue De Paula",        pos:"OF", team:"LAD", age:20, eta:"2026", ranks:{ pipeline:15, ba:24, fangraphs:null, br:15, espn:null, justbaseball:20, rotoprospects:20, prospect361:11, rotochamp:15 } },
-    { name:"Kade Anderson",         pos:"LHP", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:21, ba:25, fangraphs:null, br:20, espn:null, justbaseball:31, rotoprospects:37, prospect361:21, rotochamp:21 } },
-    { name:"Noah Schultz",          pos:"LHP", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:49, ba:26, fangraphs:null, br:28, espn:null, justbaseball:58, rotoprospects:84, prospect361:74, rotochamp:49 } },
-    { name:"Caleb Bonemer",         pos:"SS", team:"CWS", age:20, eta:"2027", ranks:{ pipeline:61, ba:27, fangraphs:null, br:82, espn:null, justbaseball:79, rotoprospects:32, prospect361:null, rotochamp:61 } },
-    { name:"Edward Florentino",     pos:"OF", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:50, ba:28, fangraphs:null, br:92, espn:null, justbaseball:36, rotoprospects:22, prospect361:96, rotochamp:50 } },
-    { name:"Bryce Rainer",          pos:"SS", team:"DET", age:20, eta:"2027", ranks:{ pipeline:35, ba:29, fangraphs:null, br:26, espn:null, justbaseball:24, rotoprospects:23, prospect361:24, rotochamp:35 } },
-    { name:"Josuar Gonzalez",       pos:"SS", team:"SF", age:18, eta:"2027", ranks:{ pipeline:44, ba:30, fangraphs:null, br:86, espn:null, justbaseball:null, rotoprospects:48, prospect361:69, rotochamp:44 } },
-    { name:"Eli Willits",           pos:"SS", team:"WAS", age:18, eta:"2027", ranks:{ pipeline:13, ba:31, fangraphs:null, br:24, espn:null, justbaseball:25, rotoprospects:44, prospect361:66, rotochamp:13 } },
-    { name:"Andrew Painter",        pos:"RHP", team:"PHI", age:22, eta:"2025", ranks:{ pipeline:28, ba:32, fangraphs:null, br:14, espn:null, justbaseball:21, rotoprospects:39, prospect361:13, rotochamp:28 } },
-    { name:"Liam Doyle",            pos:"LHP", team:"STL", age:21, eta:"2026", ranks:{ pipeline:34, ba:33, fangraphs:null, br:37, espn:null, justbaseball:82, rotoprospects:70, prospect361:33, rotochamp:34 } },
-    { name:"Chase DeLauter",        pos:"OF", team:"CLE", age:24, eta:"2025", ranks:{ pipeline:46, ba:34, fangraphs:null, br:65, espn:null, justbaseball:34, rotoprospects:72, prospect361:86, rotochamp:46 } },
-    { name:"Rainiel Rodriguez",     pos:"C", team:"STL", age:19, eta:"2027", ranks:{ pipeline:74, ba:57, fangraphs:null, br:89, espn:null, justbaseball:46, rotoprospects:26, prospect361:83, rotochamp:74 } },
-    { name:"Moises Ballesteros",    pos:"C", team:"CHC", age:22, eta:"2025", ranks:{ pipeline:55, ba:36, fangraphs:null, br:30, espn:null, justbaseball:60, rotoprospects:38, prospect361:25, rotochamp:55 } },
-    { name:"Brody Hopkins",         pos:"RHP", team:"TB", age:24, eta:"2026", ranks:{ pipeline:85, ba:37, fangraphs:null, br:null, espn:null, justbaseball:75, rotoprospects:53, prospect361:null, rotochamp:85 } },
-    { name:"Seth Hernandez",        pos:"RHP", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:29, ba:38, fangraphs:null, br:23, espn:null, justbaseball:57, rotoprospects:61, prospect361:34, rotochamp:29 } },
-    { name:"Jamie Arnold",          pos:"LHP", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:41, ba:39, fangraphs:null, br:51, espn:null, justbaseball:null, rotoprospects:71, prospect361:null, rotochamp:41 } },
-    { name:"Gage Jump",             pos:"LHP", team:"ATH", age:22, eta:"2026", ranks:{ pipeline:57, ba:40, fangraphs:null, br:45, espn:null, justbaseball:59, rotoprospects:null, prospect361:48, rotochamp:57 } },
-    { name:"Robby Snelling",        pos:"LHP", team:"MIA", age:22, eta:"2026", ranks:{ pipeline:39, ba:41, fangraphs:null, br:71, espn:null, justbaseball:30, rotoprospects:34, prospect361:35, rotochamp:39 } },
-    { name:"Aiva Arquette",         pos:"SS", team:"MIA", age:22, eta:"2027", ranks:{ pipeline:47, ba:42, fangraphs:null, br:33, espn:null, justbaseball:55, rotoprospects:68, prospect361:67, rotochamp:47 } },
-    { name:"Owen Caissie",          pos:"OF", team:"CHC", age:23, eta:"2025", ranks:{ pipeline:42, ba:43, fangraphs:null, br:44, espn:null, justbaseball:41, rotoprospects:36, prospect361:null, rotochamp:42 } },
-    { name:"Jonah Tong",            pos:"RHP", team:"NYM", age:22, eta:"2025", ranks:{ pipeline:48, ba:44, fangraphs:null, br:34, espn:null, justbaseball:37, rotoprospects:24, prospect361:26, rotochamp:48 } },
-    { name:"Mike Sirota",           pos:"OF", team:"LAD", age:22, eta:"2026", ranks:{ pipeline:60, ba:45, fangraphs:null, br:47, espn:null, justbaseball:42, rotoprospects:45, prospect361:97, rotochamp:60 } },
-    { name:"George Lombard",        pos:"SS", team:"NYY", age:20, eta:"2026", ranks:{ pipeline:32, ba:46, fangraphs:null, br:27, espn:null, justbaseball:22, rotoprospects:55, prospect361:37, rotochamp:32 } },
-    { name:"Luis Pena",             pos:"SS", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:26, ba:47, fangraphs:null, br:19, espn:null, justbaseball:17, rotoprospects:31, prospect361:15, rotochamp:26 } },
-    { name:"Ryan Waldschmidt",      pos:"OF", team:"ARI", age:23, eta:"2026", ranks:{ pipeline:59, ba:48, fangraphs:null, br:74, espn:null, justbaseball:47, rotoprospects:29, prospect361:46, rotochamp:59 } },
-    { name:"Franklin Arias",        pos:"SS", team:"BOS", age:20, eta:"2027", ranks:{ pipeline:31, ba:49, fangraphs:null, br:35, espn:null, justbaseball:40, rotoprospects:75, prospect361:14, rotochamp:31 } },
-    { name:"Cooper Pratt",          pos:"SS", team:"MIL", age:21, eta:"2026", ranks:{ pipeline:64, ba:50, fangraphs:null, br:61, espn:null, justbaseball:71, rotoprospects:65, prospect361:58, rotochamp:64 } },
-    { name:"Tyler Bremner",         pos:"RHP", team:"LAA", age:20, eta:"2027", ranks:{ pipeline:81, ba:51, fangraphs:null, br:73, espn:null, justbaseball:null, rotoprospects:89, prospect361:null, rotochamp:81 } },
-    { name:"Connelly Early",        pos:"LHP", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:56, ba:52, fangraphs:null, br:null, espn:null, justbaseball:29, rotoprospects:35, prospect361:55, rotochamp:56 } },
-    { name:"Cam Caminiti",          pos:"LHP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:68, ba:53, fangraphs:null, br:87, espn:null, justbaseball:81, rotoprospects:86, prospect361:null, rotochamp:68 } },
-    { name:"Joshua Baez",           pos:"OF", team:"STL", age:23, eta:"2026", ranks:{ pipeline:87, ba:54, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:18, prospect361:61, rotochamp:87 } },
-    { name:"Joe Mack",              pos:"C", team:"MIA", age:23, eta:"2026", ranks:{ pipeline:62, ba:55, fangraphs:null, br:59, espn:null, justbaseball:26, rotoprospects:97, prospect361:null, rotochamp:62 } },
-    { name:"Ralphy Velazquez",      pos:"1B", team:"CLE", age:20, eta:"2027", ranks:{ pipeline:89, ba:56, fangraphs:null, br:null, espn:null, justbaseball:91, rotoprospects:null, prospect361:null, rotochamp:89 } },
-    { name:"Lazaro Montes",         pos:"OF", team:"SEA", age:21, eta:"2027", ranks:{ pipeline:43, ba:58, fangraphs:null, br:22, espn:null, justbaseball:61, rotoprospects:50, prospect361:45, rotochamp:43 } },
-    { name:"Ryan Sloan",            pos:"RHP", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:33, ba:60, fangraphs:null, br:80, espn:null, justbaseball:32, rotoprospects:40, prospect361:52, rotochamp:33 } },
-    { name:"Dax Kilby",             pos:"SS", team:"NYY", age:19, eta:"2027", ranks:{ pipeline:94, ba:61, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:56, prospect361:null, rotochamp:94 } },
-    { name:"Arjun Nimmala",         pos:"SS", team:"TOR", age:20, eta:"2027", ranks:{ pipeline:77, ba:62, fangraphs:null, br:57, espn:null, justbaseball:85, rotoprospects:66, prospect361:39, rotochamp:77 } },
-    { name:"Zyhir Hope",            pos:"OF", team:"LAD", age:21, eta:"2027", ranks:{ pipeline:27, ba:63, fangraphs:null, br:18, espn:null, justbaseball:19, rotoprospects:58, prospect361:16, rotochamp:27 } },
-    { name:"Theo Gillen",           pos:"OF", team:"TB", age:20, eta:"2027", ranks:{ pipeline:76, ba:64, fangraphs:null, br:49, espn:null, justbaseball:89, rotoprospects:null, prospect361:40, rotochamp:76 } },
-    { name:"Caden Scarborough",     pos:"RHP", team:"TEX", age:20, eta:"2027", ranks:{ pipeline:null, ba:65, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:95, prospect361:null, rotochamp:null } },
-    { name:"JoJo Parker",           pos:"SS", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:45, ba:66, fangraphs:null, br:53, espn:null, justbaseball:68, rotoprospects:69, prospect361:51, rotochamp:45 } },
-    { name:"Angel Genao",           pos:"SS", team:"CLE", age:21, eta:"2026", ranks:{ pipeline:66, ba:67, fangraphs:null, br:41, espn:null, justbaseball:56, rotoprospects:76, prospect361:57, rotochamp:66 } },
-    { name:"Jarlin Susana",         pos:"RHP", team:"WAS", age:21, eta:"2026", ranks:{ pipeline:80, ba:68, fangraphs:null, br:66, espn:null, justbaseball:35, rotoprospects:67, prospect361:null, rotochamp:80 } },
-    { name:"Kyson Witherspoon",     pos:"RHP", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:84, ba:69, fangraphs:null, br:55, espn:null, justbaseball:null, rotoprospects:88, prospect361:75, rotochamp:84 } },
-    { name:"Jacob Melton",          pos:"OF", team:"TB", age:25, eta:"2027", ranks:{ pipeline:null, ba:70, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:79, prospect361:89, rotochamp:null } },
-    { name:"Jett Williams",         pos:"SS", team:"NYM", age:22, eta:"2026", ranks:{ pipeline:63, ba:85, fangraphs:null, br:39, espn:null, justbaseball:69, rotoprospects:30, prospect361:50, rotochamp:63 } },
-    { name:"Trey Gibson",           pos:"RHP", team:"BAL", age:23, eta:"2026", ranks:{ pipeline:null, ba:72, fangraphs:null, br:null, espn:null, justbaseball:96, rotoprospects:96, prospect361:null, rotochamp:null } },
-    { name:"Braden Montgomery",     pos:"OF", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:36, ba:73, fangraphs:null, br:54, espn:null, justbaseball:73, rotoprospects:42, prospect361:49, rotochamp:36 } },
-    { name:"Kaelen Culpepper",      pos:"SS", team:"MIN", age:23, eta:"2026", ranks:{ pipeline:52, ba:74, fangraphs:null, br:81, espn:null, justbaseball:92, rotoprospects:49, prospect361:30, rotochamp:52 } },
-    { name:"Justin Crawford",       pos:"OF", team:"PHI", age:22, eta:"2026", ranks:{ pipeline:53, ba:75, fangraphs:null, br:40, espn:null, justbaseball:90, rotoprospects:78, prospect361:38, rotochamp:53 } },
-    { name:"Josue Briceno",         pos:"C", team:"DET", age:21, eta:"2026", ranks:{ pipeline:40, ba:76, fangraphs:null, br:38, espn:null, justbaseball:38, rotoprospects:54, prospect361:22, rotochamp:40 } },
-    { name:"Alfredo Duno",          pos:"C", team:"CIN", age:20, eta:"2027", ranks:{ pipeline:38, ba:77, fangraphs:null, br:46, espn:null, justbaseball:45, rotoprospects:47, prospect361:56, rotochamp:38 } },
-    { name:"Jaxon Wiggins",         pos:"RHP", team:"CHC", age:24, eta:"2026", ranks:{ pipeline:58, ba:78, fangraphs:null, br:94, espn:null, justbaseball:72, rotoprospects:80, prospect361:null, rotochamp:58 } },
-    { name:"Rhett Lowder",          pos:"RHP", team:"CIN", age:23, eta:"2024", ranks:{ pipeline:86, ba:79, fangraphs:null, br:69, espn:null, justbaseball:80, rotoprospects:null, prospect361:null, rotochamp:86 } },
-    { name:"Ethan Holliday",        pos:"SS", team:"COL", age:18, eta:"2027", ranks:{ pipeline:24, ba:80, fangraphs:null, br:16, espn:null, justbaseball:39, rotoprospects:57, prospect361:19, rotochamp:24 } },
-    { name:"Brandon Sproat",        pos:"RHP", team:"NYM", age:25, eta:"2025", ranks:{ pipeline:100, ba:81, fangraphs:null, br:90, espn:null, justbaseball:87, rotoprospects:62, prospect361:43, rotochamp:100 } },
-    { name:"Kendry Chourio",        pos:"RHP", team:"KC", age:19, eta:"2027", ranks:{ pipeline:null, ba:82, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:98, prospect361:null, rotochamp:null } },
-    { name:"A.J. Ewing",            pos:"OF", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:97, ba:83, fangraphs:null, br:null, espn:null, justbaseball:65, rotoprospects:83, prospect361:71, rotochamp:97 } },
-    { name:"JR Ritchie",            pos:"RHP", team:"ATL", age:22, eta:"2026", ranks:{ pipeline:90, ba:84, fangraphs:null, br:98, espn:null, justbaseball:94, rotoprospects:91, prospect361:84, rotochamp:90 } },
-    { name:"Nate George",           pos:"OF", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:93, ba:86, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:74, prospect361:null, rotochamp:93 } },
-    { name:"Bo Davidson",           pos:"OF", team:"SF", age:23, eta:"2027", ranks:{ pipeline:null, ba:87, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:82, prospect361:null, rotochamp:null } },
-    { name:"Parker Messick",        pos:"LHP", team:"CLE", age:24, eta:"2026", ranks:{ pipeline:95, ba:88, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:95 } },
-    { name:"Braylon Doughty",       pos:"RHP", team:"CLE", age:20, eta:"2027", ranks:{ pipeline:null, ba:89, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Ethan Salas",           pos:"C", team:"SD", age:19, eta:"2027", ranks:{ pipeline:null, ba:90, fangraphs:null, br:70, espn:null, justbaseball:83, rotoprospects:null, prospect361:79, rotochamp:null } },
-    { name:"Hagen Smith",           pos:"LHP", team:"CWS", age:21, eta:"2027", ranks:{ pipeline:72, ba:91, fangraphs:null, br:75, espn:null, justbaseball:null, rotoprospects:85, prospect361:null, rotochamp:72 } },
-    { name:"Billy Carlson",         pos:"SS", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:73, ba:92, fangraphs:null, br:72, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:73 } },
-    { name:"Carlos Lagrange",       pos:"RHP", team:"NYY", age:22, eta:"2026", ranks:{ pipeline:79, ba:93, fangraphs:null, br:null, espn:null, justbaseball:95, rotoprospects:81, prospect361:100, rotochamp:79 } },
-    { name:"Connor Prielipp",       pos:"LHP", team:"MIN", age:25, eta:"2027", ranks:{ pipeline:null, ba:94, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Luis De Leon",          pos:"LHP", team:"BAL", age:22, eta:"2027", ranks:{ pipeline:null, ba:95, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:100, prospect361:null, rotochamp:null } },
-    { name:"Logan Henderson",       pos:"RHP", team:"MIL", age:23, eta:"2025", ranks:{ pipeline:null, ba:96, fangraphs:null, br:83, espn:null, justbaseball:100, rotoprospects:90, prospect361:null, rotochamp:null } },
-    { name:"Kayson Cunningham",     pos:"SS", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:97, fangraphs:null, br:97, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Jhonny Level",          pos:"SS", team:"SF", age:19, eta:"2027", ranks:{ pipeline:null, ba:98, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:81, rotochamp:null } },
-    { name:"Harry Ford",            pos:"C", team:"SEA", age:22, eta:"2025", ranks:{ pipeline:71, ba:99, fangraphs:null, br:62, espn:null, justbaseball:64, rotoprospects:null, prospect361:42, rotochamp:71 } },
-    { name:"Tanner McDougal",       pos:"RHP", team:"CWS", age:22, eta:"2027", ranks:{ pipeline:null, ba:100, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Travis Sykora",         pos:"RHP", team:"WAS", age:21, eta:"2027", ranks:{ pipeline:54, ba:null, fangraphs:null, br:63, espn:null, justbaseball:78, rotoprospects:null, prospect361:64, rotochamp:54 } },
-    { name:"Eduardo Tait",          pos:"C", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:65, ba:null, fangraphs:null, br:60, espn:null, justbaseball:67, rotoprospects:null, prospect361:76, rotochamp:65 } },
-    { name:"Michael Arroyo",        pos:"2B", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:67, ba:null, fangraphs:null, br:56, espn:null, justbaseball:84, rotoprospects:87, prospect361:82, rotochamp:67 } },
-    { name:"Charlie Condon",        pos:"1B", team:"COL", age:22, eta:"2026", ranks:{ pipeline:70, ba:null, fangraphs:null, br:67, espn:null, justbaseball:62, rotoprospects:null, prospect361:60, rotochamp:70 } },
-    { name:"Blake Mitchell",        pos:"C", team:"KC", age:20, eta:"2027", ranks:{ pipeline:75, ba:null, fangraphs:null, br:76, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:75 } },
-    { name:"Jonny Farmelo",         pos:"OF", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:78, ba:null, fangraphs:null, br:50, espn:null, justbaseball:52, rotoprospects:93, prospect361:92, rotochamp:78 } },
-    { name:"Steele Hall",           pos:"SS", team:"CIN", age:19, eta:"2027", ranks:{ pipeline:83, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:60, prospect361:null, rotochamp:83 } },
-    { name:"Kruz Schoolcraft",      pos:"LHP", team:"SD", age:19, eta:"2027", ranks:{ pipeline:88, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:88 } },
-    { name:"Jurrangelo Cijntje",    pos:"RHP", team:"STL", age:21, eta:"2027", ranks:{ pipeline:91, ba:null, fangraphs:null, br:93, espn:null, justbaseball:null, rotoprospects:null, prospect361:70, rotochamp:91 } },
-    { name:"Emil Morales",          pos:"RHP", team:"ATH", age:23, eta:"2025", ranks:{ pipeline:92, ba:null, fangraphs:null, br:null, espn:null, justbaseball:27, rotoprospects:null, prospect361:null, rotochamp:92 } },
-    { name:"Hunter Barco",          pos:"LHP", team:"PIT", age:24, eta:"2026", ranks:{ pipeline:96, ba:null, fangraphs:null, br:77, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:96 } },
-    { name:"Leonardo Bernal",       pos:"C", team:"STL", age:20, eta:"2027", ranks:{ pipeline:98, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:98 } },
-    { name:"Cooper Ingle",          pos:"C", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:99, ba:null, fangraphs:null, br:null, espn:null, justbaseball:70, rotoprospects:null, prospect361:99, rotochamp:99 } },
-    { name:"Tatsuya Imai",          pos:"SP", team:"HOU", age:28, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:41, prospect361:31, rotochamp:null } },
-    { name:"Munetaka Murakami",     pos:"1B", team:"CHW", age:26, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:43, prospect361:null, rotochamp:null } },
-    { name:"Ralphy Velasquez",      pos:"C", team:"CLE", age:21, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:46, prospect361:null, rotochamp:null } },
-    { name:"Spencer Jones",         pos:"OF", team:"NYY", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:95, espn:null, justbaseball:null, rotoprospects:59, prospect361:85, rotochamp:null } },
-    { name:"Ryan Clifford",         pos:"1B", team:"NYM", age:22, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:99, rotoprospects:63, prospect361:null, rotochamp:null } },
-    { name:"Andrew Fischer",        pos:"3B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:73, prospect361:null, rotochamp:null } },
-    { name:"Brice Matthews",        pos:"SS", team:"HOU", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:96, espn:null, justbaseball:null, rotoprospects:77, prospect361:null, rotochamp:null } },
-    { name:"Jacob Reimer",          pos:"3B", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:93, rotoprospects:92, prospect361:null, rotochamp:null } },
-    { name:"Kazuma Okamoto",        pos:"1B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:null, rotochamp:null } },
-    { name:"Zach Cole",             pos:"OF", team:"HOU", age:25, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:99, prospect361:null, rotochamp:null } },
-    { name:"Felnin Celesten",       pos:"SS", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:36, rotochamp:null } },
-    { name:"Kazuma Okamota",        pos:"3B", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:47, rotochamp:null } },
-    { name:"Jeferson Quero",        pos:"C", team:"MIL", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:68, espn:null, justbaseball:50, rotoprospects:null, prospect361:53, rotochamp:null } },
-    { name:"Ike Irish",             pos:"C", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:42, espn:null, justbaseball:null, rotoprospects:null, prospect361:54, rotochamp:null } },
-    { name:"Elmer Rodriguez-Cruz",  pos:"RHP", team:"NYY", age:21, eta:"2027", ranks:{ pipeline:82, ba:59, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:52, prospect361:62, rotochamp:82 } },
-    { name:"Slade Caldwell",        pos:"OF", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:79, espn:null, justbaseball:88, rotoprospects:null, prospect361:63, rotochamp:null } },
-    { name:"Termarr Johnson",       pos:"SS", team:"PIT", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:65, rotochamp:null } },
-    { name:"Jhostynxon Garcia",     pos:"OF", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:84, espn:null, justbaseball:74, rotoprospects:null, prospect361:68, rotochamp:null } },
-    { name:"Aroon Escobar",         pos:"3B", team:"PHI", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:72, rotochamp:null } },
-    { name:"Jaden Hamm",            pos:"RHP", team:"DET", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:77, rotochamp:null } },
-    { name:"Staryln Caba",          pos:"SS", team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:78, rotochamp:null } },
-    { name:"Cole Carrigg",          pos:"OF", team:"COL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:80, rotochamp:null } },
-    { name:"River Ryan",            pos:"RHP", team:"LAD", age:27, eta:"2024", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:77, rotoprospects:null, prospect361:87, rotochamp:null } },
-    { name:"Wehiwa Aloy",           pos:"SS", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:88, rotochamp:null } },
-    { name:"Tink Hence",            pos:"RHP", team:"STL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:90, rotochamp:null } },
-    { name:"Welbyn Francisca",      pos:"SS", team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:91, rotochamp:null } },
-    { name:"Tommy Troy",            pos:"3B", team:"ARI", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:93, rotochamp:null } },
-    { name:"Ricky Tiedemann",       pos:"LHP", team:"TOR", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:94, rotochamp:null } },
-    { name:"Marek Houston",         pos:"SS", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:99, espn:null, justbaseball:null, rotoprospects:null, prospect361:95, rotochamp:null } },
-    { name:"Xavier Isaac",          pos:"1B", team:"TB", age:22, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:98, rotochamp:null } },
-    { name:"Thayron Liranzo", pos:"C", team:"DET", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:100, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Cam Collier",           pos:"1B", team:"CIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:85, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Jefferson Rojas",      pos:"SS", team:"CHC", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:78, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Alex Freeland",        pos:"SS", team:"LAD", age:24, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:58, espn:null, justbaseball:51, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Carson Williams",      pos:"SS", team:"TB", age:22, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:52, espn:null, justbaseball:49, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Emmanuel Rodríguez",   pos:"OF", team:"MIN", age:22, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:43, espn:null, justbaseball:53, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Luis Perales",          pos:"RHP", team:"BOS", age:22, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:43, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Jordan Lawlar",         pos:"SS", team:"ARI", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:54, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Josuar De Jesus",       pos:"SS", team:"SF", age:18, eta:"2028", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:66, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Demetrio Crisantes",    pos:"2B", team:"ARI", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:76, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"George Klassen",        pos:"RHP", team:"LAA", age:24, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:86, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Khal Stephen",          pos:"RHP", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:97, rotoprospects:null, prospect361:null, rotochamp:null } },
-    { name:"Charlee Soto",          pos:"RHP", team:"MIN", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:98, rotoprospects:null, prospect361:null, rotochamp:null } }
+var RAW_DATA = [
+    { name:"Konnor Griffin",        pos:"SS", team:"PIT", age:19, eta:"2026", ranks:{ pipeline:1, ba:1, fangraphs:null, br:2, espn:null, justbaseball:1, rotoprospects:1, prospect361:1, rotochamp:1, keithlaw:null, zips:1 } },
+    { name:"Kevin McGonigle",       pos:"SS", team:"DET", age:21, eta:"2026", ranks:{ pipeline:2, ba:2, fangraphs:null, br:1, espn:null, justbaseball:2, rotoprospects:3, prospect361:6, rotochamp:2, keithlaw:null, zips:2 } },
+    { name:"JJ Wetherholt",         pos:"SS", team:"STL", age:23, eta:"2026", ranks:{ pipeline:5, ba:3, fangraphs:null, br:7, espn:null, justbaseball:9, rotoprospects:5, prospect361:4, rotochamp:5, keithlaw:null, zips:14 } },
+    { name:"Jesús Made",            pos:"SS", team:"MIL", age:18, eta:"2026", ranks:{ pipeline:3, ba:4, fangraphs:null, br:3, espn:null, justbaseball:4, rotoprospects:2, prospect361:2, rotochamp:3, keithlaw:null, zips:8 } },
+    { name:"Walker Jenkins",        pos:"OF", team:"MIN", age:20, eta:"2026", ranks:{ pipeline:14, ba:5, fangraphs:null, br:21, espn:null, justbaseball:16, rotoprospects:4, prospect361:5, rotochamp:14, keithlaw:null, zips:null } },
+    { name:"Max Clark",             pos:"OF", team:"DET", age:21, eta:"2026", ranks:{ pipeline:10, ba:6, fangraphs:null, br:17, espn:null, justbaseball:10, rotoprospects:11, prospect361:3, rotochamp:10, keithlaw:null, zips:4 } },
+    { name:"Colt Emerson",          pos:"SS", team:"SEA", age:20, eta:"2026", ranks:{ pipeline:9, ba:7, fangraphs:null, br:12, espn:null, justbaseball:5, rotoprospects:13, prospect361:17, rotochamp:9, keithlaw:null, zips:3 } },
+    { name:"Nolan McLean",          pos:"RHP", team:"NYM", age:24, eta:"2025", ranks:{ pipeline:6, ba:8, fangraphs:null, br:9, espn:null, justbaseball:3, rotoprospects:10, prospect361:23, rotochamp:6, keithlaw:null, zips:13 } },
+    { name:"Samuel Basallo",        pos:"C", team:"BAL", age:21, eta:"2025", ranks:{ pipeline:8, ba:9, fangraphs:null, br:8, espn:null, justbaseball:8, rotoprospects:8, prospect361:7, rotochamp:8, keithlaw:null, zips:6 } },
+    { name:"Trey Yesavage",         pos:"RHP", team:"TOR", age:22, eta:"2025", ranks:{ pipeline:12, ba:10, fangraphs:null, br:10, espn:null, justbaseball:6, rotoprospects:15, prospect361:28, rotochamp:12, keithlaw:null, zips:9 } },
+    { name:"Carter Jensen",         pos:"C", team:"KC", age:22, eta:"2025", ranks:{ pipeline:18, ba:11, fangraphs:null, br:64, espn:null, justbaseball:14, rotoprospects:25, prospect361:59, rotochamp:18, keithlaw:null, zips:15 } },
+    { name:"Leo De Vries",          pos:"SS", team:"ATH", age:19, eta:"2026", ranks:{ pipeline:4, ba:12, fangraphs:null, br:6, espn:null, justbaseball:7, rotoprospects:6, prospect361:12, rotochamp:4, keithlaw:null, zips:5 } },
+    { name:"Thomas White",          pos:"LHP", team:"MIA", age:21, eta:"2026", ranks:{ pipeline:17, ba:13, fangraphs:null, br:13, espn:null, justbaseball:18, rotoprospects:16, prospect361:27, rotochamp:17, keithlaw:null, zips:27 } },
+    { name:"Aidan Miller",          pos:"SS", team:"PHI", age:21, eta:"2026", ranks:{ pipeline:23, ba:14, fangraphs:null, br:36, espn:null, justbaseball:12, rotoprospects:12, prospect361:9, rotochamp:23, keithlaw:null, zips:36 } },
+    { name:"Bubba Chandler",        pos:"RHP", team:"PIT", age:23, eta:"2025", ranks:{ pipeline:11, ba:15, fangraphs:null, br:4, espn:null, justbaseball:11, rotoprospects:14, prospect361:10, rotochamp:11, keithlaw:null, zips:16 } },
+    { name:"Sebastian Walcott",     pos:"SS", team:"TEX", age:19, eta:"2026", ranks:{ pipeline:7, ba:16, fangraphs:null, br:5, espn:null, justbaseball:13, rotoprospects:7, prospect361:8, rotochamp:7, keithlaw:null, zips:22 } },
+    { name:"Payton Tolle",          pos:"LHP", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:19, ba:17, fangraphs:null, br:32, espn:null, justbaseball:33, rotoprospects:33, prospect361:41, rotochamp:19, keithlaw:null, zips:72 } },
+    { name:"Bryce Eldridge",        pos:"1B", team:"SF", age:21, eta:"2025", ranks:{ pipeline:25, ba:18, fangraphs:null, br:11, espn:null, justbaseball:23, rotoprospects:19, prospect361:18, rotochamp:25, keithlaw:null, zips:23 } },
+    { name:"Carson Benge",          pos:"OF", team:"NYM", age:23, eta:"2026", ranks:{ pipeline:16, ba:19, fangraphs:null, br:29, espn:null, justbaseball:15, rotoprospects:17, prospect361:32, rotochamp:16, keithlaw:null, zips:61 } },
+    { name:"Eduardo Quintero",      pos:"OF", team:"LAD", age:20, eta:"2027", ranks:{ pipeline:30, ba:20, fangraphs:null, br:48, espn:null, justbaseball:44, rotoprospects:21, prospect361:20, rotochamp:30, keithlaw:null, zips:41 } },
+    { name:"Dylan Beavers",         pos:"OF", team:"BAL", age:24, eta:"2025", ranks:{ pipeline:69, ba:21, fangraphs:null, br:88, espn:null, justbaseball:63, rotoprospects:28, prospect361:null, rotochamp:69, keithlaw:null, zips:null } },
+    { name:"Travis Bazzana",        pos:"2B", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:20, ba:22, fangraphs:null, br:25, espn:null, justbaseball:48, rotoprospects:27, prospect361:73, rotochamp:20, keithlaw:null, zips:40 } },
+    { name:"Sal Stewart",           pos:"3B", team:"CIN", age:22, eta:"2025", ranks:{ pipeline:22, ba:23, fangraphs:null, br:31, espn:null, justbaseball:28, rotoprospects:9, prospect361:44, rotochamp:22, keithlaw:null, zips:7 } },
+    { name:"Josue De Paula",        pos:"OF", team:"LAD", age:20, eta:"2026", ranks:{ pipeline:15, ba:24, fangraphs:null, br:15, espn:null, justbaseball:20, rotoprospects:20, prospect361:11, rotochamp:15, keithlaw:null, zips:80 } },
+    { name:"Kade Anderson",         pos:"LHP", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:21, ba:25, fangraphs:null, br:20, espn:null, justbaseball:31, rotoprospects:37, prospect361:21, rotochamp:21, keithlaw:null, zips:65 } },
+    { name:"Noah Schultz",          pos:"LHP", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:49, ba:26, fangraphs:null, br:28, espn:null, justbaseball:58, rotoprospects:84, prospect361:74, rotochamp:49, keithlaw:null, zips:59 } },
+    { name:"Caleb Bonemer",         pos:"SS", team:"CWS", age:20, eta:"2027", ranks:{ pipeline:61, ba:27, fangraphs:null, br:82, espn:null, justbaseball:79, rotoprospects:32, prospect361:null, rotochamp:61, keithlaw:null, zips:null } },
+    { name:"Edward Florentino",     pos:"OF", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:50, ba:28, fangraphs:null, br:92, espn:null, justbaseball:36, rotoprospects:22, prospect361:96, rotochamp:50, keithlaw:null, zips:38 } },
+    { name:"Bryce Rainer",          pos:"SS", team:"DET", age:20, eta:"2027", ranks:{ pipeline:35, ba:29, fangraphs:null, br:26, espn:null, justbaseball:24, rotoprospects:23, prospect361:24, rotochamp:35, keithlaw:null, zips:null } },
+    { name:"Josuar Gonzalez",       pos:"SS", team:"SF", age:18, eta:"2027", ranks:{ pipeline:44, ba:30, fangraphs:null, br:86, espn:null, justbaseball:null, rotoprospects:48, prospect361:69, rotochamp:44, keithlaw:null, zips:null } },
+    { name:"Eli Willits",           pos:"SS", team:"WAS", age:18, eta:"2027", ranks:{ pipeline:13, ba:31, fangraphs:null, br:24, espn:null, justbaseball:25, rotoprospects:44, prospect361:66, rotochamp:13, keithlaw:null, zips:null } },
+    { name:"Andrew Painter",        pos:"RHP", team:"PHI", age:22, eta:"2025", ranks:{ pipeline:28, ba:32, fangraphs:null, br:14, espn:null, justbaseball:21, rotoprospects:39, prospect361:13, rotochamp:28, keithlaw:null, zips:70 } },
+    { name:"Liam Doyle",            pos:"LHP", team:"STL", age:21, eta:"2026", ranks:{ pipeline:34, ba:33, fangraphs:null, br:37, espn:null, justbaseball:82, rotoprospects:70, prospect361:33, rotochamp:34, keithlaw:null, zips:24 } },
+    { name:"Chase DeLauter",        pos:"OF", team:"CLE", age:24, eta:"2025", ranks:{ pipeline:46, ba:34, fangraphs:null, br:65, espn:null, justbaseball:34, rotoprospects:72, prospect361:86, rotochamp:46, keithlaw:null, zips:null } },
+    { name:"Rainiel Rodriguez",     pos:"C", team:"STL", age:19, eta:"2027", ranks:{ pipeline:74, ba:57, fangraphs:null, br:89, espn:null, justbaseball:46, rotoprospects:26, prospect361:83, rotochamp:74, keithlaw:null, zips:26 } },
+    { name:"Moisés Ballesteros",    pos:"C", team:"CHC", age:22, eta:"2025", ranks:{ pipeline:55, ba:36, fangraphs:null, br:30, espn:null, justbaseball:60, rotoprospects:38, prospect361:25, rotochamp:55, keithlaw:null, zips:35 } },
+    { name:"Brody Hopkins",         pos:"RHP", team:"TB", age:24, eta:"2026", ranks:{ pipeline:85, ba:37, fangraphs:null, br:null, espn:null, justbaseball:75, rotoprospects:53, prospect361:null, rotochamp:85, keithlaw:null, zips:null } },
+    { name:"Seth Hernandez",        pos:"RHP", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:29, ba:38, fangraphs:null, br:23, espn:null, justbaseball:57, rotoprospects:61, prospect361:34, rotochamp:29, keithlaw:null, zips:null } },
+    { name:"Jamie Arnold",          pos:"LHP", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:41, ba:39, fangraphs:null, br:51, espn:null, justbaseball:null, rotoprospects:71, prospect361:null, rotochamp:41, keithlaw:null, zips:null } },
+    { name:"Gage Jump",             pos:"LHP", team:"ATH", age:22, eta:"2026", ranks:{ pipeline:57, ba:40, fangraphs:null, br:45, espn:null, justbaseball:59, rotoprospects:null, prospect361:48, rotochamp:57, keithlaw:null, zips:64 } },
+    { name:"Robby Snelling",        pos:"LHP", team:"MIA", age:22, eta:"2026", ranks:{ pipeline:39, ba:41, fangraphs:null, br:71, espn:null, justbaseball:30, rotoprospects:34, prospect361:35, rotochamp:39, keithlaw:null, zips:25 } },
+    { name:"Aiva Arquette",         pos:"SS", team:"MIA", age:22, eta:"2027", ranks:{ pipeline:47, ba:42, fangraphs:null, br:33, espn:null, justbaseball:55, rotoprospects:68, prospect361:67, rotochamp:47, keithlaw:null, zips:null } },
+    { name:"Owen Caissie",          pos:"OF", team:"MIA", age:23, eta:"2025", ranks:{ pipeline:42, ba:43, fangraphs:null, br:44, espn:null, justbaseball:41, rotoprospects:36, prospect361:null, rotochamp:42, keithlaw:null, zips:49 } },
+    { name:"Jonah Tong",            pos:"RHP", team:"NYM", age:22, eta:"2025", ranks:{ pipeline:48, ba:44, fangraphs:null, br:34, espn:null, justbaseball:37, rotoprospects:24, prospect361:26, rotochamp:48, keithlaw:null, zips:20 } },
+    { name:"Mike Sirota",           pos:"OF", team:"LAD", age:22, eta:"2026", ranks:{ pipeline:60, ba:45, fangraphs:null, br:47, espn:null, justbaseball:42, rotoprospects:45, prospect361:97, rotochamp:60, keithlaw:null, zips:null } },
+    { name:"George Lombard Jr.",    pos:"SS", team:"NYY", age:20, eta:"2026", ranks:{ pipeline:32, ba:46, fangraphs:null, br:27, espn:null, justbaseball:22, rotoprospects:55, prospect361:37, rotochamp:32, keithlaw:null, zips:21 } },
+    { name:"Luis Peña",             pos:"SS", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:26, ba:47, fangraphs:null, br:19, espn:null, justbaseball:17, rotoprospects:31, prospect361:15, rotochamp:26, keithlaw:null, zips:51 } },
+    { name:"Ryan Waldschmidt",      pos:"OF", team:"ARI", age:23, eta:"2026", ranks:{ pipeline:59, ba:48, fangraphs:null, br:74, espn:null, justbaseball:47, rotoprospects:29, prospect361:46, rotochamp:59, keithlaw:null, zips:null } },
+    { name:"Franklin Arias",        pos:"SS", team:"BOS", age:20, eta:"2027", ranks:{ pipeline:31, ba:49, fangraphs:null, br:35, espn:null, justbaseball:40, rotoprospects:75, prospect361:14, rotochamp:31, keithlaw:null, zips:11 } },
+    { name:"Cooper Pratt",          pos:"SS", team:"MIL", age:21, eta:"2026", ranks:{ pipeline:64, ba:50, fangraphs:null, br:61, espn:null, justbaseball:71, rotoprospects:65, prospect361:58, rotochamp:64, keithlaw:null, zips:39 } },
+    { name:"Tyler Bremner",         pos:"SP", team:"LAA", age:20, eta:"2027", ranks:{ pipeline:81, ba:51, fangraphs:null, br:73, espn:null, justbaseball:null, rotoprospects:89, prospect361:null, rotochamp:81, keithlaw:null, zips:66 } },
+    { name:"Connelly Early",        pos:"LHP", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:56, ba:52, fangraphs:null, br:null, espn:null, justbaseball:29, rotoprospects:35, prospect361:55, rotochamp:56, keithlaw:null, zips:46 } },
+    { name:"Cam Caminiti",          pos:"LHP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:68, ba:53, fangraphs:null, br:87, espn:null, justbaseball:81, rotoprospects:86, prospect361:null, rotochamp:68, keithlaw:null, zips:null } },
+    { name:"Joshua Baez",           pos:"RF", team:"STL", age:23, eta:"2026", ranks:{ pipeline:87, ba:54, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:18, prospect361:61, rotochamp:87, keithlaw:null, zips:97 } },
+    { name:"Joe Mack",              pos:"C", team:"MIA", age:23, eta:"2026", ranks:{ pipeline:62, ba:55, fangraphs:null, br:59, espn:null, justbaseball:26, rotoprospects:97, prospect361:null, rotochamp:62, keithlaw:null, zips:null } },
+    { name:"Ralphy Velazquez",      pos:"1B", team:"CLE", age:20, eta:"2027", ranks:{ pipeline:89, ba:56, fangraphs:null, br:null, espn:null, justbaseball:91, rotoprospects:null, prospect361:null, rotochamp:89, keithlaw:null, zips:null } },
+    { name:"Lazaro Montes",         pos:"OF", team:"SEA", age:21, eta:"2027", ranks:{ pipeline:43, ba:58, fangraphs:null, br:22, espn:null, justbaseball:61, rotoprospects:50, prospect361:45, rotochamp:43, keithlaw:null, zips:60 } },
+    { name:"Ryan Sloan",            pos:"RHP", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:33, ba:60, fangraphs:null, br:80, espn:null, justbaseball:32, rotoprospects:40, prospect361:52, rotochamp:33, keithlaw:null, zips:19 } },
+    { name:"Dax Kilby",             pos:"SS", team:"NYY", age:19, eta:"2027", ranks:{ pipeline:94, ba:61, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:56, prospect361:null, rotochamp:94, keithlaw:null, zips:null } },
+    { name:"Arjun Nimmala",         pos:"SS", team:"TOR", age:20, eta:"2027", ranks:{ pipeline:77, ba:62, fangraphs:null, br:57, espn:null, justbaseball:85, rotoprospects:66, prospect361:39, rotochamp:77, keithlaw:null, zips:37 } },
+    { name:"Zyhir Hope",            pos:"OF", team:"LAD", age:21, eta:"2027", ranks:{ pipeline:27, ba:63, fangraphs:null, br:18, espn:null, justbaseball:19, rotoprospects:58, prospect361:16, rotochamp:27, keithlaw:null, zips:null } },
+    { name:"Theo Gillen",           pos:"OF", team:"TB", age:20, eta:"2027", ranks:{ pipeline:76, ba:64, fangraphs:null, br:49, espn:null, justbaseball:89, rotoprospects:null, prospect361:40, rotochamp:76, keithlaw:null, zips:45 } },
+    { name:"Caden Scarborough",     pos:"RHP", team:"TEX", age:20, eta:"2027", ranks:{ pipeline:null, ba:65, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:95, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"JoJo Parker",           pos:"SS", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:45, ba:66, fangraphs:null, br:53, espn:null, justbaseball:68, rotoprospects:69, prospect361:51, rotochamp:45, keithlaw:null, zips:null } },
+    { name:"Angel Genao",           pos:"SS", team:"CLE", age:21, eta:"2026", ranks:{ pipeline:66, ba:67, fangraphs:null, br:41, espn:null, justbaseball:56, rotoprospects:76, prospect361:57, rotochamp:66, keithlaw:null, zips:null } },
+    { name:"Jarlin Susana",         pos:"RHP", team:"WAS", age:21, eta:"2026", ranks:{ pipeline:80, ba:68, fangraphs:null, br:66, espn:null, justbaseball:35, rotoprospects:67, prospect361:null, rotochamp:80, keithlaw:null, zips:69 } },
+    { name:"Kyson Witherspoon",     pos:"RHP", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:84, ba:69, fangraphs:null, br:55, espn:null, justbaseball:null, rotoprospects:88, prospect361:75, rotochamp:84, keithlaw:null, zips:null } },
+    { name:"Jacob Melton",          pos:"OF", team:"TB", age:25, eta:"2027", ranks:{ pipeline:null, ba:70, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:79, prospect361:89, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Jett Williams",         pos:"SS", team:"MIL", age:22, eta:"2026", ranks:{ pipeline:63, ba:85, fangraphs:null, br:39, espn:null, justbaseball:69, rotoprospects:30, prospect361:50, rotochamp:63, keithlaw:null, zips:29 } },
+    { name:"Trey Gibson",           pos:"RHP", team:"BAL", age:23, eta:"2026", ranks:{ pipeline:null, ba:72, fangraphs:null, br:null, espn:null, justbaseball:96, rotoprospects:96, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Braden Montgomery",     pos:"OF", team:"CWS", age:22, eta:"2026", ranks:{ pipeline:36, ba:73, fangraphs:null, br:54, espn:null, justbaseball:73, rotoprospects:42, prospect361:49, rotochamp:36, keithlaw:null, zips:null } },
+    { name:"Kaelen Culpepper",      pos:"SS", team:"MIN", age:23, eta:"2026", ranks:{ pipeline:52, ba:74, fangraphs:null, br:81, espn:null, justbaseball:92, rotoprospects:49, prospect361:30, rotochamp:52, keithlaw:null, zips:67 } },
+    { name:"Justin Crawford",       pos:"OF", team:"PHI", age:22, eta:"2026", ranks:{ pipeline:53, ba:75, fangraphs:null, br:40, espn:null, justbaseball:90, rotoprospects:78, prospect361:38, rotochamp:53, keithlaw:null, zips:null } },
+    { name:"Josue Briceño",         pos:"C", team:"DET", age:21, eta:"2026", ranks:{ pipeline:40, ba:76, fangraphs:null, br:38, espn:null, justbaseball:38, rotoprospects:54, prospect361:22, rotochamp:40, keithlaw:null, zips:31 } },
+    { name:"Alfredo Duno",          pos:"C", team:"CIN", age:20, eta:"2027", ranks:{ pipeline:38, ba:77, fangraphs:null, br:46, espn:null, justbaseball:45, rotoprospects:47, prospect361:56, rotochamp:38, keithlaw:null, zips:18 } },
+    { name:"Jaxon Wiggins",         pos:"RHP", team:"CHC", age:24, eta:"2026", ranks:{ pipeline:58, ba:78, fangraphs:null, br:94, espn:null, justbaseball:72, rotoprospects:80, prospect361:null, rotochamp:58, keithlaw:null, zips:null } },
+    { name:"Rhett Lowder",          pos:"RHP", team:"CIN", age:23, eta:"2024", ranks:{ pipeline:86, ba:79, fangraphs:null, br:69, espn:null, justbaseball:80, rotoprospects:null, prospect361:null, rotochamp:86, keithlaw:null, zips:null } },
+    { name:"Ethan Holliday",        pos:"SS", team:"COL", age:18, eta:"2027", ranks:{ pipeline:24, ba:80, fangraphs:null, br:16, espn:null, justbaseball:39, rotoprospects:57, prospect361:19, rotochamp:24, keithlaw:null, zips:null } },
+    { name:"Brandon Sproat",        pos:"RHP", team:"MIL", age:25, eta:"2025", ranks:{ pipeline:100, ba:81, fangraphs:null, br:90, espn:null, justbaseball:87, rotoprospects:62, prospect361:43, rotochamp:100, keithlaw:null, zips:81 } },
+    { name:"Kendry Chourio",        pos:"RHP", team:"KC", age:19, eta:"2027", ranks:{ pipeline:null, ba:82, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:98, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"A.J. Ewing",            pos:"OF", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:97, ba:83, fangraphs:null, br:null, espn:null, justbaseball:65, rotoprospects:83, prospect361:71, rotochamp:97, keithlaw:null, zips:null } },
+    { name:"JR Ritchie",            pos:"RHP", team:"ATL", age:22, eta:"2026", ranks:{ pipeline:90, ba:84, fangraphs:null, br:98, espn:null, justbaseball:94, rotoprospects:91, prospect361:84, rotochamp:90, keithlaw:null, zips:null } },
+    { name:"Nate George",           pos:"OF", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:93, ba:86, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:74, prospect361:null, rotochamp:93, keithlaw:null, zips:null } },
+    { name:"Bo Davidson",           pos:"OF", team:"SF", age:23, eta:"2027", ranks:{ pipeline:null, ba:87, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:82, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Parker Messick",        pos:"SP", team:"CLE", age:24, eta:"2026", ranks:{ pipeline:95, ba:88, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:95, keithlaw:null, zips:86 } },
+    { name:"Braylon Doughty",       pos:"SP", team:"CLE", age:20, eta:"2027", ranks:{ pipeline:null, ba:89, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:32 } },
+    { name:"Ethan Salas",           pos:"C", team:"SD", age:19, eta:"2027", ranks:{ pipeline:null, ba:90, fangraphs:null, br:70, espn:null, justbaseball:83, rotoprospects:null, prospect361:79, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Hagen Smith",           pos:"SP", team:"CWS", age:21, eta:"2027", ranks:{ pipeline:72, ba:91, fangraphs:null, br:75, espn:null, justbaseball:null, rotoprospects:85, prospect361:null, rotochamp:72, keithlaw:null, zips:91 } },
+    { name:"Billy Carlson",         pos:"SS", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:73, ba:92, fangraphs:null, br:72, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:73, keithlaw:null, zips:null } },
+    { name:"Carlos Lagrange",       pos:"RHP", team:"NYY", age:22, eta:"2026", ranks:{ pipeline:79, ba:93, fangraphs:null, br:null, espn:null, justbaseball:95, rotoprospects:81, prospect361:100, rotochamp:79, keithlaw:null, zips:null } },
+    { name:"Connor Prielipp",       pos:"LHP", team:"MIN", age:25, eta:"2027", ranks:{ pipeline:null, ba:94, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Luis De Leon",          pos:"LHP", team:"BAL", age:22, eta:"2027", ranks:{ pipeline:null, ba:95, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:100, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Logan Henderson",       pos:"RHP", team:"MIL", age:23, eta:"2025", ranks:{ pipeline:null, ba:96, fangraphs:null, br:83, espn:null, justbaseball:100, rotoprospects:90, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Kayson Cunningham",     pos:"SS", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:97, fangraphs:null, br:97, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Jhonny Level",          pos:"2B", team:"SF", age:19, eta:"2027", ranks:{ pipeline:null, ba:98, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:81, rotochamp:null, keithlaw:null, zips:93 } },
+    { name:"Harry Ford",            pos:"C", team:"WAS", age:22, eta:"2025", ranks:{ pipeline:71, ba:99, fangraphs:null, br:62, espn:null, justbaseball:64, rotoprospects:null, prospect361:42, rotochamp:71, keithlaw:null, zips:50 } },
+    { name:"Tanner McDougal",       pos:"RHP", team:"CWS", age:22, eta:"2027", ranks:{ pipeline:null, ba:100, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Travis Sykora",         pos:"RHP", team:"WAS", age:21, eta:"2027", ranks:{ pipeline:54, ba:null, fangraphs:null, br:63, espn:null, justbaseball:78, rotoprospects:null, prospect361:64, rotochamp:54, keithlaw:null, zips:42 } },
+    { name:"Eduardo Tait",          pos:"C", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:65, ba:null, fangraphs:null, br:60, espn:null, justbaseball:67, rotoprospects:null, prospect361:76, rotochamp:65, keithlaw:null, zips:30 } },
+    { name:"Michael Arroyo",        pos:"2B", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:67, ba:null, fangraphs:null, br:56, espn:null, justbaseball:84, rotoprospects:87, prospect361:82, rotochamp:67, keithlaw:null, zips:12 } },
+    { name:"Charlie Condon",        pos:"1B", team:"COL", age:22, eta:"2026", ranks:{ pipeline:70, ba:null, fangraphs:null, br:67, espn:null, justbaseball:62, rotoprospects:null, prospect361:60, rotochamp:70, keithlaw:null, zips:null } },
+    { name:"Blake Mitchell",        pos:"C", team:"KC", age:20, eta:"2027", ranks:{ pipeline:75, ba:null, fangraphs:null, br:76, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:75, keithlaw:null, zips:96 } },
+    { name:"Jonny Farmelo",         pos:"OF", team:"SEA", age:21, eta:"2026", ranks:{ pipeline:78, ba:null, fangraphs:null, br:50, espn:null, justbaseball:52, rotoprospects:93, prospect361:92, rotochamp:78, keithlaw:null, zips:null } },
+    { name:"Steele Hall",           pos:"SS", team:"CIN", age:19, eta:"2027", ranks:{ pipeline:83, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:60, prospect361:null, rotochamp:83, keithlaw:null, zips:null } },
+    { name:"Kruz Schoolcraft",      pos:"LHP", team:"SD", age:19, eta:"2027", ranks:{ pipeline:88, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:88, keithlaw:null, zips:null } },
+    { name:"Jurrangelo Cijntje",    pos:"RHP", team:"STL", age:21, eta:"2027", ranks:{ pipeline:91, ba:null, fangraphs:null, br:93, espn:null, justbaseball:null, rotoprospects:null, prospect361:70, rotochamp:91, keithlaw:null, zips:null } },
+    { name:"Emil Morales",          pos:"SS", team:"LAD", age:23, eta:"2025", ranks:{ pipeline:92, ba:null, fangraphs:null, br:null, espn:null, justbaseball:27, rotoprospects:null, prospect361:null, rotochamp:92, keithlaw:null, zips:17 } },
+    { name:"Hunter Barco",          pos:"LHP", team:"PIT", age:24, eta:"2026", ranks:{ pipeline:96, ba:null, fangraphs:null, br:77, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:96, keithlaw:null, zips:null } },
+    { name:"Leonardo Bernal",       pos:"C", team:"STL", age:20, eta:"2027", ranks:{ pipeline:98, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:98, keithlaw:null, zips:33 } },
+    { name:"Cooper Ingle",          pos:"C", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:99, ba:null, fangraphs:null, br:null, espn:null, justbaseball:70, rotoprospects:null, prospect361:99, rotochamp:99, keithlaw:null, zips:null } },
+    { name:"Tatsuya Imai",          pos:"SP", team:"HOU", age:28, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:41, prospect361:31, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Munetaka Murakami",     pos:"1B", team:"CHW", age:26, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:43, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Ralphy Velasquez",      pos:"C", team:"CLE", age:21, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:46, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Spencer Jones",         pos:"OF", team:"NYY", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:95, espn:null, justbaseball:null, rotoprospects:59, prospect361:85, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Ryan Clifford",         pos:"1B", team:"NYM", age:22, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:99, rotoprospects:63, prospect361:null, rotochamp:null, keithlaw:null, zips:52 } },
+    { name:"Andrew Fischer",        pos:"3B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:73, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Brice Matthews",        pos:"2B", team:"HOU", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:96, espn:null, justbaseball:null, rotoprospects:77, prospect361:null, rotochamp:null, keithlaw:null, zips:58 } },
+    { name:"Jacob Reimer",          pos:"3B", team:"NYM", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:93, rotoprospects:92, prospect361:null, rotochamp:null, keithlaw:null, zips:28 } },
+    { name:"Kazuma Okamoto",        pos:"1B", team:"TOR", age:29, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:94, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Zach Cole",             pos:"OF", team:"HOU", age:25, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:99, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Felnin Celesten",       pos:"SS", team:"SEA", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:36, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Kazuma Okamota",        pos:"3B", team:"TOR", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:47, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Jeferson Quero",        pos:"C", team:"MIL", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:68, espn:null, justbaseball:50, rotoprospects:null, prospect361:53, rotochamp:null, keithlaw:null, zips:89 } },
+    { name:"Ike Irish",             pos:"C", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:42, espn:null, justbaseball:null, rotoprospects:null, prospect361:54, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Elmer Rodriguez-Cruz",  pos:"RHP", team:"NYY", age:21, eta:"2027", ranks:{ pipeline:82, ba:59, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:52, prospect361:62, rotochamp:82, keithlaw:null, zips:null } },
+    { name:"Slade Caldwell",        pos:"OF", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:79, espn:null, justbaseball:88, rotoprospects:null, prospect361:63, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Ryan Johnson",          pos:"SP", team:"LAA", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:65, rotochamp:null, keithlaw:null, zips:87 } },
+    { name:"Jhostynxon Garcia",     pos:"OF", team:"BOS", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:84, espn:null, justbaseball:74, rotoprospects:null, prospect361:68, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Aroon Escobar",         pos:"3B", team:"PHI", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:72, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Jaden Hamm",            pos:"RHP", team:"DET", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:77, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Staryln Caba",          pos:"SS", team:"MIA", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:78, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Cole Carrigg",          pos:"OF", team:"COL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:80, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"River Ryan",            pos:"RHP", team:"LAD", age:27, eta:"2024", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:77, rotoprospects:null, prospect361:87, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Wehiwa Aloy",           pos:"SS", team:"BAL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:88, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Tink Hence",            pos:"RHP", team:"STL", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:90, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Welbyn Francisca",      pos:"SS", team:"CLE", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:91, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Tommy Troy",            pos:"3B", team:"ARI", age:24, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:93, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Ricky Tiedemann",       pos:"LHP", team:"TOR", age:23, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:94, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Marek Houston",         pos:"SS", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:99, espn:null, justbaseball:null, rotoprospects:null, prospect361:95, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Xavier Isaac",          pos:"1B", team:"TB", age:22, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:98, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"C Thayron Liranzo, DET", pos:"SS", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:100, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"1B Cam Collier, CIN",   pos:"SS", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:85, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"SS Jefferson Rojas, CHC", pos:"SS", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:78, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Alex Freeland",         pos:"SS", team:"LAD", age:24, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:58, espn:null, justbaseball:51, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:43 } },
+    { name:"Carson Williams",       pos:"SS", team:"TB", age:22, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:52, espn:null, justbaseball:49, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:10 } },
+    { name:"Emmanuel Rodriguez",    pos:"OF", team:"MIN", age:22, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:43, espn:null, justbaseball:53, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:34 } },
+    { name:"Luis Perales",          pos:"RHP", team:"BOS", age:22, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:43, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Jordan Lawlar",         pos:"SS", team:"ARI", age:23, eta:"2025", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:54, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Josuar De Jesus",       pos:"SS", team:"SF", age:18, eta:"2028", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:66, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Demetrio Crisantes",    pos:"2B", team:"ARI", age:21, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:76, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"George Klassen",        pos:"RHP", team:"LAA", age:24, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:86, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Khal Stephen",          pos:"RHP", team:"CLE", age:23, eta:"2026", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:97, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:79 } },
+    { name:"Charlee Soto",          pos:"RHP", team:"MIN", age:20, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:98, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:null } },
+    { name:"Wei-En Lin",            pos:"SP", team:"ATH", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:44 } },
+    { name:"Didier Fuentes",        pos:"SP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:47 } },
+    { name:"Jadher Areinamo",       pos:"2B", team:"TB", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:48 } },
+    { name:"Sammy Stafura",         pos:"SS", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:53 } },
+    { name:"Yeremy Cabrera",        pos:"CF", team:"WAS", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:54 } },
+    { name:"Dasan Hill",            pos:"SP", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:55 } },
+    { name:"Mitch Bratt",           pos:"SP", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:56 } },
+    { name:"Alex Clemmey",          pos:"SP", team:"WAS", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:62 } },
+    { name:"Owen Murphy",           pos:"SP", team:"ATL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:63 } },
+    { name:"Luke Adams",            pos:"1B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:68 } },
+    { name:"Eric Bitonti",          pos:"1B", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:71 } },
+    { name:"Kash Mayfield",         pos:"SP", team:"SD", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:73 } },
+    { name:"Santiago Suarez",       pos:"SP", team:"TB", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:74 } },
+    { name:"Cristian Mena",         pos:"SP", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:75 } },
+    { name:"Bishop Letson",         pos:"SP", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:76 } },
+    { name:"Antwone Kelly",         pos:"SP", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:77 } },
+    { name:"Mikey Romero",          pos:"3B", team:"BOS", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:78 } },
+    { name:"Trey Gregory-Alford",   pos:"SP", team:"LAA", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:83 } },
+    { name:"Griffin Herring",       pos:"SP", team:"COL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:84 } },
+    { name:"Esmerlyn Valdez",       pos:"RF", team:"PIT", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:85 } },
+    { name:"Jimmy Crooks",          pos:"C", team:"STL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:88 } },
+    { name:"Braylon Payne",         pos:"CF", team:"MIL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:90 } },
+    { name:"Kendry Rojas",          pos:"SP", team:"MIN", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:92 } },
+    { name:"Daniel Eagen",          pos:"SP", team:"ARI", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:94 } },
+    { name:"Jackson Ferris",        pos:"SP", team:"LAD", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:95 } },
+    { name:"Jedixson Paez",         pos:"SP", team:"CWS", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:98 } },
+    { name:"Ethan Pecko",           pos:"SP", team:"HOU", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:99 } },
+    { name:"Brody Brecht",          pos:"SP", team:"COL", age:19, eta:"2027", ranks:{ pipeline:null, ba:null, fangraphs:null, br:null, espn:null, justbaseball:null, rotoprospects:null, prospect361:null, rotochamp:null, keithlaw:null, zips:100 } }
 ];
 
-const LAST_UPDATED = {
+var LAST_UPDATED = {
     rotoprospects: "2026-02-09T19:18:55.043Z",
     rotochamp: "2026-02-03T19:55:01.549Z",
     pipeline: "2026-02-09T18:48:33.121Z",
     ba: "2026-02-09T19:07:33.616Z",
     br: "2026-02-09T19:12:03.888Z",
-    justbaseball: "2026-02-10T03:32:45.039Z"
+    justbaseball: "2026-02-10T03:32:45.039Z",
+    zips: "2026-02-21T11:55:04.461Z"
 };
+
+// Prefer data from admin (same folder = same origin): no file linking needed
+var INCLUDED_SOURCE_KEYS = null;  // only these sources count; null = use all that have data
+(function() {
+    try {
+        var raw = localStorage.getItem('rankle-index-data');
+        if (raw) {
+            var p = JSON.parse(raw);
+            if (p && p.SOURCES && Array.isArray(p.RAW_DATA)) {
+                SOURCES = p.SOURCES;
+                RAW_DATA = p.RAW_DATA;
+                LAST_UPDATED = p.LAST_UPDATED || {};
+                if (p.includedSourceKeys && Array.isArray(p.includedSourceKeys) && p.includedSourceKeys.length > 0)
+                    INCLUDED_SOURCE_KEYS = p.includedSourceKeys;
+            }
+        }
+    } catch (e) {}
+})();
+
+// Show which sources are used in ranking (included list from admin, or all with data)
+(function updateSourcesInData() {
+    const allowed = INCLUDED_SOURCE_KEYS && INCLUDED_SOURCE_KEYS.length > 0 ? new Set(INCLUDED_SOURCE_KEYS) : null;
+    const sourcesInData = new Set();
+    (RAW_DATA || []).forEach(row => {
+        if (row.ranks && typeof row.ranks === 'object')
+            Object.entries(row.ranks).forEach(([k, v]) => {
+                if (v != null && SOURCES[k] && (!allowed || allowed.has(k))) sourcesInData.add(k);
+            });
+    });
+    const el = document.getElementById('sources-in-data');
+    if (el) {
+        const n = sourcesInData.size;
+        const labels = [...sourcesInData].sort().map(k => SOURCES[k].label).join(', ');
+        el.textContent = 'Rankings from ' + n + ' source' + (n === 1 ? '' : 's') + (labels ? ': ' + labels : '');
+    }
+})();
 
 // ============================================================
 // BUILD + SORT
 // ============================================================
+function sanitizeProspectAge(age) {
+    if (age == null || typeof age !== 'number' || isNaN(age)) return null;
+    const a = Math.round(age);
+    return (a >= 16 && a <= 40) ? a : null;
+}
 function buildProspects() {
+    const allowed = INCLUDED_SOURCE_KEYS && INCLUDED_SOURCE_KEYS.length > 0 ? new Set(INCLUDED_SOURCE_KEYS) : null;
     return RAW_DATA.map(row => {
         const sourceRankings = [];
         for (const [key, val] of Object.entries(row.ranks)) {
-            if (val !== null && SOURCES[key]) {
+            if (val !== null && SOURCES[key] && (!allowed || allowed.has(key))) {
                 sourceRankings.push({ source: key, rank: val, listLength: SOURCES[key].listLength });
             }
         }
         return computeProspect(
-            { name: row.name, pos: row.pos, team: row.team, age: row.age, eta: row.eta },
+            { name: row.name, pos: row.pos, team: row.team, age: sanitizeProspectAge(row.age), eta: row.eta },
             sourceRankings
         );
     })
@@ -1348,7 +1303,8 @@ function buildProspects() {
 // Non-parametric, interpretable, tunable.
 // ============================================================
 const TIER_PERCENTILE = 85;   // 85th percentile = largest 15% of gaps trigger breaks
-const TIER_MIN_SPACING = 0;   // minimum players between breaks (allow single prospects if statistically different)
+const TIER_MIN_SPACING = 1;   // minimum players between breaks (avoids back-to-back breaks)
+const TIER_MIN_SIZE = 2;      // merge any tier with fewer than this into the next tier
 const MAX_TIER_SIZE = 15;     // maximum prospects per tier; auto-split larger tiers
 
 function percentile(arr, p) {
@@ -1429,28 +1385,98 @@ function calculateTalentCliffs(prospects) {
         }
     }
 
+    // Merge any tier with only 1 player into an adjacent tier; repeat until none left
+    const minSize = Math.max(1, TIER_MIN_SIZE);
+    let merged = true;
+    while (merged) {
+        merged = false;
+        const tierCounts = {};
+        tierAssignments.forEach(p => {
+            tierCounts[p.tier] = (tierCounts[p.tier] || 0) + 1;
+        });
+        const tiers = [...new Set(tierAssignments.map(p => p.tier))].sort((a, b) => a - b);
+        for (const t of tiers) {
+            if ((tierCounts[t] || 0) !== 1) continue;
+            const isLast = t === tiers[tiers.length - 1];
+            const targetTier = isLast ? (tiers[tiers.length - 2] ?? t) : (tiers[tiers.indexOf(t) + 1] ?? t);
+            tierAssignments.forEach(p => {
+                if (p.tier === t) { p.tier = targetTier; merged = true; }
+            });
+            break;
+        }
+    }
+
+    // Renumber tiers to 1, 2, 3, ... with no gaps
+    const ordered = [...new Set(tierAssignments.map(p => p.tier))].sort((a, b) => a - b);
+    const tierMap = {};
+    ordered.forEach((t, i) => { tierMap[t] = i + 1; });
+    tierAssignments.forEach(p => { p.tier = tierMap[p.tier]; });
+
     return tierAssignments;
 }
 
-// Load previous display ranks (from last page view) for change arrows
+// Baseline for trend arrows. User baseline is FROZEN until you click "Set trend baseline" again.
+// Arrows compare current order (after each import/refresh) to that frozen baseline.
+const RANK_TREND_KEY = 'rankle-prev-display-rank';
+const RANK_TREND_SIG_KEY = 'rankle-prev-display-sig';
+const RANK_BASELINE_KEY = 'rankle-baseline-ranks';
+const RANK_BASELINE_DATE_KEY = 'rankle-baseline-date';
+const RANK_SET_BASELINE_REQUEST = 'rankle-set-baseline-request';
 let PREV_RANK_MAP = {};
-try { PREV_RANK_MAP = JSON.parse(localStorage.getItem('rankle-prev-display-rank') || '{}'); } catch(e) {}
+try {
+    var userBaselineRaw = localStorage.getItem(RANK_BASELINE_KEY);
+    if (userBaselineRaw && userBaselineRaw.length > 0) {
+        try {
+            var parsed = JSON.parse(userBaselineRaw);
+            if (parsed && typeof parsed.ranks === 'object' && parsed.ranks !== null) {
+                PREV_RANK_MAP = parsed.ranks;
+            } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
+                PREV_RANK_MAP = parsed;
+            }
+        } catch(_) {}
+    }
+    if (Object.keys(PREV_RANK_MAP).length === 0) {
+        var stored = JSON.parse(localStorage.getItem(RANK_TREND_KEY) || '{}');
+        PREV_RANK_MAP = (stored && typeof stored.ranks === 'object') ? stored.ranks : (stored && typeof stored === 'object' ? stored : {});
+    }
+} catch(e) {}
 
 const ALL_PROSPECTS = (() => {
     const built = buildProspects();
-    // Include all prospects (single- and multi-source) so every position appears on the master list
     const withDisplayRank = built.map((p, i) => ({ ...p, displayRank: i + 1 }));
     return calculateTalentCliffs(withDisplayRank);
 })();
 
-// Persist current display ranks for next visit (so we can show up/down arrows)
+// Only place we ever WRITE the user baseline: when admin set the flag and index loads.
+// This snapshot is frozen; arrows will show movement vs it until you click "Set trend baseline" again.
 try {
-    const nextPrev = {};
-    ALL_PROSPECTS.forEach(p => { nextPrev[p.name] = p.displayRank; });
-    localStorage.setItem('rankle-prev-display-rank', JSON.stringify(nextPrev));
+    if (localStorage.getItem(RANK_SET_BASELINE_REQUEST) === '1') {
+        localStorage.removeItem(RANK_SET_BASELINE_REQUEST);
+        var baseline = {};
+        ALL_PROSPECTS.forEach(p => { baseline[p.name] = p.displayRank; });
+        localStorage.setItem(RANK_BASELINE_KEY, JSON.stringify({ ranks: baseline, date: new Date().toISOString() }));
+        localStorage.setItem(RANK_BASELINE_DATE_KEY, new Date().toISOString());
+    }
 } catch(e) {}
 
-const RANK_CHANGE_THRESHOLD = 1;  // min spots moved to show arrow (1 = any change)
+// Auto baseline: only when there is NO user baseline. Never overwrite rankle-baseline-ranks.
+function rankBaselineSignature() {
+    return ALL_PROSPECTS.map(p => p.name + ':' + p.displayRank).join('|');
+}
+try {
+    if (!localStorage.getItem(RANK_BASELINE_KEY) || localStorage.getItem(RANK_BASELINE_KEY).length === 0) {
+        const currentSig = rankBaselineSignature();
+        const lastSig = localStorage.getItem(RANK_TREND_SIG_KEY);
+        if (lastSig !== currentSig) {
+            const nextPrev = {};
+            ALL_PROSPECTS.forEach(p => { nextPrev[p.name] = p.displayRank; });
+            localStorage.setItem(RANK_TREND_KEY, JSON.stringify({ ranks: nextPrev, sig: currentSig }));
+            localStorage.setItem(RANK_TREND_SIG_KEY, currentSig);
+        }
+    }
+} catch(e) {}
+
+const RANK_CHANGE_THRESHOLD = 3;  // min spots moved to show arrow (3+ up or down from baseline)
 const FREE_LIMIT    = 999;  // ← no paywall during development
 
 // ============================================================
@@ -1896,8 +1922,8 @@ function getTeamShortName(abbr) {
 // POPULATE FILTER DROPDOWNS
 // ============================================================
 (function populateFilters() {
-    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(p => p.pos))];
-    const rawTeams = [...new Set(ALL_PROSPECTS.map(p => p.team))];
+    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(p => (p.pos === 'SP' ? 'RHP' : p.pos)))];
+    const rawTeams = [...new Set(ALL_PROSPECTS.map(p => p.team).filter(Boolean))].filter(t => TEAM_MAP[t]);
     const teams = ['ALL', ...new Set(rawTeams.map(t => getTeamName(t)))].sort();
 
     const posEl  = document.getElementById('posFilter');
@@ -1940,7 +1966,8 @@ function volClass(v) {
 
 function posClass(pos) {
     const p = (pos || '').toLowerCase();
-    if (/^sp$|^rhp$|^lhp$|^p$/.test(p)) return 'pos-sp';
+    if (p === 'lhp') return 'pos-lhp';
+    if (/^sp$|^rhp$|^p$/.test(p)) return 'pos-rhp';
     if (p === 'c') return 'pos-c';
     if (p === '1b') return 'pos-1b';
     if (p === '2b') return 'pos-2b';
@@ -1969,7 +1996,8 @@ function render() {
 
     const filtered = ALL_PROSPECTS.filter(p => {
         if (search && !p.name.toLowerCase().includes(search)) return false;
-        if (pos  !== 'ALL' && p.pos  !== pos)  return false;
+        const pPos = p.pos === 'SP' ? 'RHP' : p.pos;
+        if (pos  !== 'ALL' && pPos !== pos)  return false;
         if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
         if (vol  !== 'ALL' && p.volatility !== vol) return false;
         return true;
@@ -2026,27 +2054,39 @@ function render() {
             `<div class="cons-dot ${i <= p.consensusAgreement ? 'on' : ''}"></div>`
         ).join('');
         
-        // Tooltip for consensus dots
-        const consensusTooltip = p.consensusAgreement === 0 
-            ? 'No expert sources agree on this prospect\'s position.'
-            : p.consensusAgreement === 1
-            ? 'One expert source agrees on this prospect\'s position.'
-            : `${p.consensusAgreement} expert sources agree on this prospect's position.`;
+        // Tooltip for consensus dots: X of Y sources within ±10% of median rank
+        const Y = p.sourceCount;
+        const X = p.consensusAgreement;
+        const consensusTooltip = Y === 0
+            ? 'No sources rank this prospect.'
+            : X === 0
+            ? `None of the ${Y} sources that rank this prospect agree on position (within ±10% band).`
+            : X === Y
+            ? `All ${Y} sources that rank this prospect agree on position.`
+            : `${X} of ${Y} sources that rank this prospect agree on position.`;
 
         // 2-source flag (lower confidence than 3+ sources)
         const warnHtml = p.sourceCount === 2
             ? `<span class="warn-badge">⚠ 2 sources</span>`
             : '';
 
-        // Rank change arrow (vs previous view): positive change = moved up, negative = moved down
-        // Prefer exact name match; fallback to any key that contains or is contained in current name (handles renames)
+        const at1 = p.sourcesAt1 != null ? p.sourcesAt1 : p.sourceCount;
+        const notAt1List = (p.notAt1 || []).map(x => (typeof SOURCES !== 'undefined' && SOURCES[x.source] ? SOURCES[x.source].label : x.source) + ' (#' + x.rank + ')').join(', ');
+        const scoreTooltip = notAt1List
+            ? `#1 on ${at1}/${p.sourceCount} sources. Not #1: ${notAt1List}`
+            : `#1 on all ${p.sourceCount} sources`;
+
+        // Rank change arrow (vs baseline): positive change = moved up, negative = moved down
+        // Exact name match first. Fuzzy: only when current name contains baseline key (e.g. "Jacob Reimer Jr" now vs "Jacob Reimer" then).
+        // Do NOT match when baseline key contains current name (e.g. "Jacob Reimer" would wrongly get "Jacob Reimer Jr"'s baseline rank).
         let prevRank = PREV_RANK_MAP[p.name];
         if (prevRank == null && p.name) {
             const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
             const n = norm(p.name);
             for (const [k, v] of Object.entries(PREV_RANK_MAP)) {
                 const kNorm = norm(k);
-                if (kNorm === n || kNorm.includes(n) || n.includes(kNorm)) { prevRank = v; break; }
+                if (kNorm === n) { prevRank = v; break; }
+                if (n.includes(kNorm) && n.length > kNorm.length) { prevRank = v; break; }  // same person, longer name now
             }
         }
         const rankChange = prevRank != null ? prevRank - p.displayRank : null;
@@ -2061,11 +2101,11 @@ function render() {
         tr.innerHTML = `
             <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
-            <td><span class="pos-badge ${posClass(p.pos)}">${p.pos}</span></td>
+            <td><span class="pos-badge ${posClass(p.pos)}">${p.pos === 'SP' ? 'RHP' : (p.pos || '')}</span></td>
             <td class="team-col">${getTeamShortName(p.team)}</td>
-            <td class="num-col">${p.age}</td>
+            <td class="num-col">${p.age != null ? p.age : '—'}</td>
             <td class="num-col">${p.eta}</td>
-            <td class="borda-col">${p.rankleScore.toFixed(1)}</td>
+            <td class="borda-col" title="${scoreTooltip}">${p.rankleScore.toFixed(1)}</td>
             <td>
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>
             </td>
