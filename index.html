@@ -800,9 +800,116 @@ footer {
     .method-item h4 { font-size: 0.75rem; }
     .method-item p { font-size: 0.75rem; }
 }
+
+/* Welcome Modal */
+.welcome-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.welcome-modal {
+    background: #1e3a3a;
+    border: 1px solid #334155;
+    border-top: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+.welcome-modal h2 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    color: var(--text-hi);
+    margin-bottom: 0.25rem;
+}
+.welcome-modal .welcome-tagline {
+    font-family: 'Playfair Display', serif;
+    color: var(--accent-hi);
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+}
+.welcome-modal .welcome-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.welcome-modal .welcome-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    line-height: 1.5;
+}
+.welcome-modal .welcome-item strong {
+    color: var(--text-hi);
+}
+.welcome-item-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+.welcome-modal .btn-got-it {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.welcome-modal .btn-got-it:hover {
+    background: var(--accent-hi);
+}
+.welcome-beta-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-lo);
+    margin-top: 0.75rem;
+}
 </style>
 </head>
 <body>
+
+<!-- Welcome Modal -->
+<div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-modal">
+        <h2>Welcome to Rankle</h2>
+        <p class="welcome-tagline">"Like Rotten Tomatoes, but for baseball prospects."</p>
+        <div class="welcome-items">
+            <div class="welcome-item">
+                <span class="welcome-item-icon">📊</span>
+                <span><strong>Rankle Score (0–100)</strong> — We pull rankings from 11 expert sources and calculate a consensus score. Higher = stronger agreement that this prospect is elite.</span>
+            </div>
+            <div class="welcome-item">
+                <span class="welcome-item-icon">🎯</span>
+                <span><strong>Consensus dots</strong> — Lit dots show how many sources place a prospect in roughly the same tier. More dots = more agreement on where they belong.</span>
+            </div>
+            <div class="welcome-item">
+                <span class="welcome-item-icon">⚡</span>
+                <span><strong>Volatility</strong> — How much the experts disagree. Low = everyone's on the same page. High = polarizing prospect worth watching closely.</span>
+            </div>
+            <div class="welcome-item">
+                <span class="welcome-item-icon">⚾</span>
+                <span><strong>Fantasy roster upload</strong> — Import your league roster to instantly highlight which top prospects are still available.</span>
+            </div>
+        </div>
+        <button class="btn-got-it" id="welcomeDismiss">Got it — show me the rankings</button>
+        <p class="welcome-beta-note">You're using the Rankle beta. Things may change. We'd love your feedback.</p>
+    </div>
+</div>
 
 <header>
     <div class="header-spacer"></div>
@@ -810,9 +917,7 @@ footer {
         <img src="new_logo.png" alt="Rankle logo" />
         <span class="beta-badge" aria-label="Beta">BETA</span>
     </a>
-    <div class="header-right">
-        <button class="btn-pro">⭐ Upgrade to Pro</button>
-    </div>
+    <div class="header-right"></div>
 </header>
 
 <div class="main-content" id="mainContent">
@@ -2139,6 +2244,27 @@ document.getElementById('posFilter').addEventListener('change',  render);
 document.getElementById('teamFilter').addEventListener('change', render);
 document.getElementById('volFilter').addEventListener('change',  render);
 render();
+
+// Sync --header-height to actual header height
+function syncHeaderHeight() {
+    const h = document.querySelector('header').getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', h + 'px');
+}
+syncHeaderHeight();
+window.addEventListener('resize', syncHeaderHeight);
+
+// Welcome modal
+(function() {
+    const overlay = document.getElementById('welcomeOverlay');
+    if (localStorage.getItem('rankle-welcome-seen')) {
+        overlay.style.display = 'none';
+    } else {
+        document.getElementById('welcomeDismiss').addEventListener('click', function() {
+            overlay.style.display = 'none';
+            localStorage.setItem('rankle-welcome-seen', '1');
+        });
+    }
+})();
 
 </script>
 </body>
