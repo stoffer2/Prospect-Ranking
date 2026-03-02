@@ -966,11 +966,12 @@ footer {
 <!-- ROSTER UPLOAD SECTION -->
 <div class="fantasy-section" id="fantasySection" style="display: block;">
     <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
+        <input type="file" id="fantasyFileInput" accept=".csv,.txt" style="display:none;">
         <div class="fantasy-drop-content">
             <div class="fantasy-drop-placeholder">
                 <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">📋</div>
-                <strong>Upload your league's roster CSV file for player availability.</strong>
-                <div style="font-size: 0.85rem; color: var(--text-lo); margin-top: 0.35rem;">Fantrax, ESPN, or your own list</div>
+                <strong>Upload your league's roster CSV file to see player availability.</strong>
+                <div style="font-size: 0.85rem; color: var(--text-lo); margin-top: 0.35rem;">Tap or click to browse, or drag and drop</div>
             </div>
             <div class="fantasy-drop-processing">
                 <span>Processing…</span>
@@ -1957,6 +1958,18 @@ function processAndApplyCsv(text) {
         e.preventDefault();
         const text = e.clipboardData?.getData('text/plain') || '';
         if (text.trim()) processAndApplyCsv(text);
+    });
+
+    // Tap/click to open file picker
+    const fileInput = document.getElementById('fantasyFileInput');
+    zone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => processAndApplyCsv(reader.result);
+        reader.readAsText(file);
+        fileInput.value = '';
     });
 })();
 
