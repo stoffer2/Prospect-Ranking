@@ -2053,8 +2053,9 @@ function getTeamShortName(abbr) {
 // POPULATE FILTER DROPDOWNS
 // ============================================================
 (function populateFilters() {
-    const normPos = p => (p.pos === 'SP' || p.pos === 'LHP') ? 'RHP' : p.pos;
-    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(normPos))];
+    const hasLHP = ALL_PROSPECTS.some(p => p.pos === 'LHP');
+    const normPos = p => (p.pos === 'SP' || p.pos === 'LHP' || p.pos === 'RHP') ? 'SP' : p.pos;
+    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(normPos)), ...(hasLHP ? ['LHP'] : [])];
     const rawTeams = [...new Set(ALL_PROSPECTS.map(p => p.team).filter(Boolean))].filter(t => TEAM_MAP[t]);
     const teams = ['ALL', ...new Set(rawTeams.map(t => getTeamName(t)))].sort();
 
@@ -2128,8 +2129,10 @@ function render() {
 
     const filtered = ALL_PROSPECTS.filter(p => {
         if (search && !p.name.toLowerCase().includes(search)) return false;
-        const pPos = (p.pos === 'SP' || p.pos === 'LHP') ? 'RHP' : p.pos;
-        if (pos  !== 'ALL' && pPos !== pos)  return false;
+        const isPitcher = p.pos === 'SP' || p.pos === 'LHP' || p.pos === 'RHP';
+        if (pos === 'SP'  && !isPitcher)      return false;
+        if (pos === 'LHP' && p.pos !== 'LHP') return false;
+        if (pos !== 'ALL' && pos !== 'SP' && pos !== 'LHP' && p.pos !== pos) return false;
         if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
         if (vol  !== 'ALL' && p.volatility !== vol) return false;
         return true;
@@ -2232,7 +2235,7 @@ function render() {
         tr.innerHTML = `
             <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
-            <td><span class="pos-badge ${posClass(p.pos)}">${p.pos === 'SP' ? 'RHP' : (p.pos || '')}</span></td>
+            <td><span class="pos-badge ${posClass(p.pos)}">${p.pos || ''}</span></td>
             <td class="team-col">${getTeamShortName(p.team)}</td>
             <td class="num-col">${calcAge(p) != null ? calcAge(p) : '—'}</td>
             <td class="num-col">${parseInt(p.eta) < new Date().getFullYear() ? 'Debuted' : p.eta}</td>
