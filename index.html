@@ -158,9 +158,9 @@ header {
 /* ── HERO ── */
 .hero {
     position: relative;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hi) 100%);
+    background: var(--bg-deep);
     border-bottom: 1px solid var(--border);
-    padding: 1.5rem 2rem 1.5rem;
+    padding: 0.6rem 2rem;
     margin-bottom: 0.5rem;
     overflow: hidden;
     animation: fadeInUp 0.8s ease-out;
@@ -176,8 +176,8 @@ header {
 .hero-inner {
     position: relative; z-index: 1;
     max-width: 1200px; margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr auto;
+    display: flex;
+    flex-direction: column;;
     gap: 1rem;
     align-items: center;
     text-align: left;
@@ -564,7 +564,7 @@ footer {
 .btn-upload-roster.loaded:hover { box-shadow: 0 4px 14px rgba(52,211,153,.4); }
 .fantasy-section {
     display: block;
-    padding: 2.5rem 2rem;
+    padding: 1rem 2rem;
     background: linear-gradient(135deg, #1e3a3a 0%, rgba(30, 58, 58, 0.7) 100%);
     border-bottom: 1px solid var(--border);
     margin-bottom: 1rem;
@@ -606,7 +606,7 @@ footer {
     box-shadow: 0 4px 16px rgba(52,211,153,.15);
 }
 .fantasy-drop-content {
-    padding: 3rem 2rem;
+    padding: 1rem 2rem;
     text-align: center;
     position: relative;
     min-height: 120px;
@@ -959,41 +959,7 @@ footer {
 <!-- HERO -->
 <div class="hero">
     <div class="hero-inner">
-        <div class="hero-tagline">
-            <p class="hero-desc" style="margin: 0; font-size: 1.15rem; font-family: 'Playfair Display', serif;">"Like Rotten Tomatoes, but for baseball prospects."</p>
-        </div>
-        <div class="hero-content">
-            <h1><span class="hero-highlight">Consensus Prospect Rankings</span>, Powered by Data</h1>
-            <div class="hero-pills">
-                <span class="hero-pill">Data-Driven</span>
-                <span class="hero-pill">Aggregated Rankings</span>
-                <span class="hero-pill">Volatility Scoring</span>
-            </div>
-        </div>
-        <div class="hero-preview">
-                <div class="hero-legend">
-                    <div class="hero-legend-item" id="sources-in-data-wrap" style="margin-bottom:0.5rem;">
-                        <span class="hero-legend-note" id="sources-in-data">Rankings from — sources</span>
-                    </div>
-                    <div class="hero-legend-item">
-                        <strong>Score</strong> — 0–100, higher = better consensus rank
-                    </div>
-                    <div class="hero-legend-item">
-                        <strong>Consensus</strong> <div class="cons-dots"><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot"></div><div class="cons-dot"></div><div class="cons-dot"></div></div>
-                        <span class="hero-legend-note">Lit dots = how many lists put this prospect in roughly the same spot</span>
-                    </div>
-                    <div class="hero-legend-item">
-                        <strong>Volatility</strong>
-                        <div class="hero-legend-vols">
-                            <span class="vol-badge vol-low">Low</span>
-                            <span class="vol-badge vol-mod">Mod</span>
-                            <span class="vol-badge vol-high">High</span>
-                            <span class="vol-badge vol-extreme">Ext</span>
-                        </div>
-                        <span class="hero-legend-note">Low = lists mostly agree on rank; High = lists are all over the map</span>
-                    </div>
-                </div>
-            </div>
+        <p class="hero-desc" style="margin: 0; font-size: 1rem; font-family: 'Playfair Display', serif; font-style: italic; color: var(--text-lo);">"Like Rotten Tomatoes, but for baseball prospects."</p>
     </div>
 </div>
 
@@ -1002,7 +968,7 @@ footer {
     <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
         <div class="fantasy-drop-content">
             <div class="fantasy-drop-placeholder">
-                <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📋</div>
+                <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">📋</div>
                 <strong>Upload your league's roster CSV file for player availability.</strong>
                 <div style="font-size: 0.85rem; color: var(--text-lo); margin-top: 0.35rem;">Fantrax, ESPN, or your own list</div>
             </div>
