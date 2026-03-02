@@ -801,6 +801,41 @@ footer {
     .method-item p { font-size: 0.75rem; }
 }
 
+/* Feedback Button */
+.feedback-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1500;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.65rem 1.25rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    transition: background 0.2s, transform 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.feedback-btn:hover {
+    background: var(--accent-hi);
+    transform: translateY(-2px);
+}
+@media (max-width: 480px) {
+    .feedback-btn {
+        bottom: 1rem;
+        right: 1rem;
+        font-size: 0.8rem;
+        padding: 0.55rem 1rem;
+    }
+}
+
 /* Welcome Modal */
 .welcome-overlay {
     position: fixed;
@@ -2267,5 +2302,12 @@ window.addEventListener('resize', syncHeaderHeight);
 })();
 
 </script>
+
+<!-- Typeform -->
+<script src="//embed.typeform.com/next/embed.js"></script>
+<button class="feedback-btn" data-tf-popup="q5ZEhTe4" data-tf-opacity="100" data-tf-iframe-props="title=Rankle Feedback" data-tf-transitive-search-params data-tf-medium="snippet">
+    💬 Feedback
+</button>
+
 </body>
 </html>
