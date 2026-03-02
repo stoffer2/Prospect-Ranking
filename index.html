@@ -2053,7 +2053,8 @@ function getTeamShortName(abbr) {
 // POPULATE FILTER DROPDOWNS
 // ============================================================
 (function populateFilters() {
-    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(p => (p.pos === 'SP' ? 'RHP' : p.pos)))];
+    const normPos = p => (p.pos === 'SP' || p.pos === 'LHP') ? 'RHP' : p.pos;
+    const positions = ['ALL', ...new Set(ALL_PROSPECTS.map(normPos))];
     const rawTeams = [...new Set(ALL_PROSPECTS.map(p => p.team).filter(Boolean))].filter(t => TEAM_MAP[t]);
     const teams = ['ALL', ...new Set(rawTeams.map(t => getTeamName(t)))].sort();
 
@@ -2127,7 +2128,7 @@ function render() {
 
     const filtered = ALL_PROSPECTS.filter(p => {
         if (search && !p.name.toLowerCase().includes(search)) return false;
-        const pPos = p.pos === 'SP' ? 'RHP' : p.pos;
+        const pPos = (p.pos === 'SP' || p.pos === 'LHP') ? 'RHP' : p.pos;
         if (pos  !== 'ALL' && pPos !== pos)  return false;
         if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
         if (vol  !== 'ALL' && p.volatility !== vol) return false;
