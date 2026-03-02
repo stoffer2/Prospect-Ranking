@@ -1405,8 +1405,7 @@ var INCLUDED_SOURCE_KEYS = null;  // only these sources count; null = use all th
     const el = document.getElementById('sources-in-data');
     if (el) {
         const n = sourcesInData.size;
-        const labels = [...sourcesInData].sort().map(k => SOURCES[k].label).join(', ');
-        el.textContent = 'Rankings from ' + n + ' source' + (n === 1 ? '' : 's') + (labels ? ': ' + labels : '');
+        el.textContent = 'Aggregated from ' + n + ' industry-leading ranking sources';
     }
 })();
 
@@ -2211,10 +2210,9 @@ function render() {
             : '';
 
         const at1 = p.sourcesAt1 != null ? p.sourcesAt1 : p.sourceCount;
-        const notAt1List = (p.notAt1 || []).map(x => (typeof SOURCES !== 'undefined' && SOURCES[x.source] ? SOURCES[x.source].label : x.source) + ' (#' + x.rank + ')').join(', ');
-        const scoreTooltip = notAt1List
-            ? `#1 on ${at1}/${p.sourceCount} sources. Not #1: ${notAt1List}`
-            : `#1 on all ${p.sourceCount} sources`;
+        const scoreTooltip = at1 === p.sourceCount
+            ? `#1 on all ${p.sourceCount} sources`
+            : `#1 on ${at1} of ${p.sourceCount} sources`;
 
         // Rank change arrow (vs baseline): positive change = moved up, negative = moved down
         // Exact name match first. Fuzzy: only when current name contains baseline key (e.g. "Jacob Reimer Jr" now vs "Jacob Reimer" then).
