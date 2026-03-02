@@ -384,6 +384,7 @@ header {
             </div>
             <div style="margin-top:.75rem; display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" id="fillAgesBtn" onclick="fillAgesFromMLB()">Fill ages from MLB</button>
+                <button class="btn btn-ghost btn-sm" id="refreshAllAgesBtn" onclick="refreshAllAges()">Refresh all ages</button>
                 <button class="btn btn-ghost btn-sm" onclick="bulkUpdateAges()">Update ages (paste)</button>
                 <span id="ageResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             </div>
@@ -1578,10 +1579,17 @@ async function fillAgesFromMLB() {
     await doFetchAges(null, needAgeOrId);
 }
 
+async function refreshAllAges() {
+    // Re-fetch birthYear + age for every prospect regardless of current value
+    await doFetchAges(null, prospects.map((p, i) => [i, p]));
+}
+
 async function doFetchAges(onlyIfAge, indicesToFetch) {
     const btn = document.getElementById('fillAgesBtn');
+    const refreshBtn = document.getElementById('refreshAllAgesBtn');
     const resultEl = document.getElementById('ageResult');
     if (btn) btn.disabled = true;
+    if (refreshBtn) refreshBtn.disabled = true;
     let toFetch;
     if (indicesToFetch && indicesToFetch.length > 0) {
         toFetch = indicesToFetch;
@@ -1615,8 +1623,13 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
                 try { r = await fetch(personUrl(p.mlbId)); } catch (e) { r = await fetch(proxy(personUrl(p.mlbId))); }
                 const data = await r.json();
                 const person = data.people?.[0];
-                if (person && isValidProspectAge(person.currentAge)) {
-                    prospects[i].age = Math.round(person.currentAge);
+                if (person) {
+                    if (person.birthDate) {
+                        prospects[i].birthYear = parseInt(person.birthDate.substring(0, 4));
+                    }
+                    if (isValidProspectAge(person.currentAge)) {
+                        prospects[i].age = Math.round(person.currentAge);
+                    }
                     updated++;
                     found = true;
                 }
@@ -1630,8 +1643,13 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
                     try { r = await fetch(search(qName)); } catch (e) { r = await fetch(proxy(search(qName))); }
                     const data = await r.json();
                     const person = data.people?.[0];
-                    if (person && isValidProspectAge(person.currentAge)) {
-                        prospects[i].age = Math.round(person.currentAge);
+                    if (person) {
+                        if (person.birthDate) {
+                            prospects[i].birthYear = parseInt(person.birthDate.substring(0, 4));
+                        }
+                        if (isValidProspectAge(person.currentAge)) {
+                            prospects[i].age = Math.round(person.currentAge);
+                        }
                         prospects[i].mlbId = person.id;
                         updated++;
                         idsAssigned++;
@@ -1674,6 +1692,7 @@ async function doFetchAges(onlyIfAge, indicesToFetch) {
     }
     resultEl.innerHTML = msg;
     if (btn) btn.disabled = false;
+    if (refreshBtn) refreshBtn.disabled = false;
     updateAgeStatus();
 }
 
@@ -1853,7 +1872,8 @@ function generateExportCode() {
         const namePad = ' '.repeat(Math.max(1, 22 - p.name.length));
         const mlbPart = p.mlbId ? ` mlbId:${p.mlbId},` : '';
         const ageExport = isValidProspectAge(p.age) ? Math.round(p.age) : 19;
-        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${ageExport}, eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
+        const birthYearPart = p.birthYear ? ` birthYear:${p.birthYear},` : '';
+        lines.push(`    { name:"${p.name}",${namePad}pos:"${p.pos}", team:"${p.team}", age:${ageExport},${birthYearPart} eta:"${p.eta}",${mlbPart} ranks:{ ${rankParts.join(', ')} } }${comma}`);
     });
     lines.push('];');
     lines.push('');

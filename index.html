@@ -1384,6 +1384,14 @@ function sanitizeProspectAge(age) {
     const a = Math.round(age);
     return (a >= 16 && a <= 40) ? a : null;
 }
+function calcAge(row) {
+    if (row.birthYear) {
+        const today = new Date();
+        const age = today.getFullYear() - row.birthYear;
+        return (age >= 16 && age <= 40) ? age : null;
+    }
+    return sanitizeProspectAge(row.age);
+}
 function buildProspects() {
     const allowed = INCLUDED_SOURCE_KEYS && INCLUDED_SOURCE_KEYS.length > 0 ? new Set(INCLUDED_SOURCE_KEYS) : null;
     return RAW_DATA.map(row => {
@@ -1394,7 +1402,7 @@ function buildProspects() {
             }
         }
         return computeProspect(
-            { name: row.name, pos: row.pos, team: row.team, age: sanitizeProspectAge(row.age), eta: row.eta },
+            { name: row.name, pos: row.pos, team: row.team, age: calcAge(row), eta: row.eta },
             sourceRankings
         );
     })
@@ -2220,7 +2228,7 @@ function render() {
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos === 'SP' ? 'RHP' : (p.pos || '')}</span></td>
             <td class="team-col">${getTeamShortName(p.team)}</td>
-            <td class="num-col">${p.age != null ? p.age : '—'}</td>
+            <td class="num-col">${calcAge(p) != null ? calcAge(p) : '—'}</td>
             <td class="num-col">${p.eta}</td>
             <td class="borda-col" title="${scoreTooltip}">${p.rankleScore.toFixed(1)}</td>
             <td>
