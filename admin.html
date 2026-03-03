@@ -1734,13 +1734,8 @@ function bulkUpdateAges() {
         if (idx === null) return;
         if (isValidProspectAge(age)) { prospects[idx].age = Math.round(age); agesUpdated++; }
         if (eta && eta.length === 4 && parseInt(eta) >= 2024 && parseInt(eta) <= 2030) {
-            const current = prospects[idx].eta || '';
-            const currentYear = parseInt(String(current).replace(/\D/g, '').slice(0, 4), 10);
-            const newYear = parseInt(eta, 10);
-            if (isNaN(currentYear) || newYear <= currentYear) {
-                prospects[idx].eta = eta;
-                etasUpdated++;
-            }
+            prospects[idx].eta = eta;
+            etasUpdated++;
         }
     });
     saveToStorage();
