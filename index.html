@@ -2256,7 +2256,7 @@ function render() {
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos || ''}</span></td>
             <td class="team-col">${getTeamShortName(p.team)}</td>
             <td class="num-col">${calcAge(p) != null ? calcAge(p) : '—'}</td>
-            <td class="num-col">${parseInt(p.eta) < new Date().getFullYear() ? 'Debuted' : p.eta}</td>
+            <td class="num-col">${p.eta && parseInt(p.eta) < new Date().getFullYear() ? 'Debuted' : (p.eta || '—')}</td>
             <td class="borda-col" title="${scoreTooltip}">${p.rankleScore.toFixed(1)}</td>
             <td>
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>

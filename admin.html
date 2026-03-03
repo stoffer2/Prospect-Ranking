@@ -386,6 +386,7 @@ header {
                 <button class="btn btn-primary btn-sm" id="fillAgesBtn" onclick="fillAgesFromMLB()">Fill ages from MLB</button>
                 <button class="btn btn-ghost btn-sm" id="refreshAllAgesBtn" onclick="refreshAllAges()">Refresh all ages</button>
                 <button class="btn btn-ghost btn-sm" onclick="bulkUpdateAges()">Update ages (paste)</button>
+                <button class="btn btn-ghost btn-sm" onclick="clearAllETAs()" style="color:var(--gold);">Clear all ETAs</button>
                 <span id="ageResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             </div>
         </div>
@@ -1568,6 +1569,15 @@ function copyAge19NamesToClipboard() {
     navigator.clipboard.writeText(text).then(() => { if (typeof showToast === 'function') showToast('Copied ' + at19.length + ' names', '📋'); });
 }
 
+function clearAllETAs() {
+    if (!confirm('Clear all ETAs? Re-paste your source lists to repopulate them from source data only.')) return;
+    prospects.forEach(p => { p.eta = ''; });
+    saveToStorage();
+    renderProspects();
+    renderExport();
+    document.getElementById('ageResult').innerHTML = '<span style="color:var(--gold);">All ETAs cleared — re-paste your source lists to repopulate.</span>';
+}
+
 async function fillAgesFromMLB() {
     // Fetch for anyone at default age (19) OR missing MLB ID — one button fills ages and assigns IDs
     const needAgeOrId = prospects.map((p, i) => [i, p]).filter(([i, p]) => p.age === 19 || !p.mlbId);
@@ -1790,14 +1800,13 @@ function importPasted() {
             if (isValidProspectAge(p.age)) prospects[idx].age = Math.round(p.age);
             if (p.eta) {
                 const newYear = parseInt(String(p.eta).replace(/\D/g, '').slice(0, 4), 10);
-                const curYear = parseInt(String(prospects[idx].eta || '').replace(/\D/g, '').slice(0, 4), 10);
-                if (!isNaN(newYear) && newYear >= 2024 && newYear <= 2030 && (isNaN(curYear) || newYear <= curYear)) {
+                if (!isNaN(newYear) && newYear >= 2024 && newYear <= 2030) {
                     prospects[idx].eta = String(newYear);
                 }
             }
         } else {
             const ageVal = isValidProspectAge(p.age) ? Math.round(p.age) : 19;
-            const etaVal = (p.eta && /20\d{2}/.test(String(p.eta))) ? String(p.eta).replace(/\D/g, '').slice(0, 4) : "2027";
+            const etaVal = (p.eta && /20\d{2}/.test(String(p.eta))) ? String(p.eta).replace(/\D/g, '').slice(0, 4) : "";
             const blank = { name: p.name, pos: firstPos, team: p.team || "ATH", age: ageVal, eta: etaVal, ranks: {}, positions: { [source]: firstPos } };
             Object.keys(SOURCES).forEach(s => blank.ranks[s] = null);
             blank.ranks[source] = p.rank;
