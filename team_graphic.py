@@ -422,24 +422,27 @@ def generate_team_graphic(team_code: str) -> BytesIO:
                 draw.rectangle([54, sy, W - 54, sy + 1], fill=(255, 255, 255, 8))
 
     # ── Footer / legend ───────────────────────────────────────────────────────
-    FY = ROW_Y0 + n_rows * ROW_H + PAD
+    # Extra gap above legend so the divider line breathes
+    FY = ROW_Y0 + n_rows * ROW_H + PAD + 10
 
-    # Legend: two groups — Volatility | Consensus
-    LEG_H  = 72
+    LEG_H  = 76
     LBL_F  = _fd(13)
     HINT_F = _fd(12)
-    LBL_C  = (210, 218, 228)    # bright enough to read clearly
-    HINT_C = (160, 174, 192)    # TEXT_MID
+    LBL_C  = (210, 218, 228)
+    HINT_C = (160, 174, 192)
 
     draw.rectangle([0, FY, W, FY + LEG_H], fill=(16, 22, 34))
-    draw.rectangle([0, FY, W, FY + 1], fill=(255, 255, 255, 22))
+    # Prominent top border
+    draw.rectangle([0, FY, W, FY + 2], fill=(255, 255, 255, 30))
 
-    GX  = 52
-    TOP = FY + 10
-    MID = FY + 37
-    BOT = FY + 57
+    # Fixed separator at canvas midpoint — never overlaps content
+    SEP_X = W // 2
+    TOP   = FY + 14
+    MID   = FY + 40
+    BOT   = FY + 62
 
-    # ── Group 1: Volatility ───────────────────────────────────────────────────
+    # ── Group 1: Volatility (left half, x=56 … SEP_X-20) ─────────────────────
+    GX = 56
     draw.text((GX, TOP), "Volatility", font=LBL_F, fill=LBL_C, anchor="lm")
     draw.text((GX, BOT), "How much experts disagree on ranking position",
               font=HINT_F, fill=HINT_C, anchor="lm")
@@ -457,16 +460,16 @@ def generate_team_graphic(team_code: str) -> BytesIO:
         draw.text((bx + bw // 2, MID), label, font=_fd(13), fill=fg, anchor="mm")
         bx += bw + 6
 
-    # ── Separator ─────────────────────────────────────────────────────────────
-    SEP = bx + 16
-    draw.rectangle([SEP, FY + 10, SEP + 1, FY + LEG_H - 10], fill=(255, 255, 255, 22))
+    # ── Separator at midpoint ─────────────────────────────────────────────────
+    draw.rectangle([SEP_X, FY + 12, SEP_X + 1, FY + LEG_H - 12],
+                   fill=(255, 255, 255, 25))
 
-    # ── Group 2: Consensus ────────────────────────────────────────────────────
-    GX2 = SEP + 20
+    # ── Group 2: Consensus (right half, x=SEP_X+24 …) ────────────────────────
+    GX2 = SEP_X + 24
     draw.text((GX2, TOP), "Consensus", font=LBL_F, fill=LBL_C, anchor="lm")
     draw.text((GX2, BOT), "Pips show how many sources agree on position",
               font=HINT_F, fill=HINT_C, anchor="lm")
-    _draw_consensus_dots(draw, GX2, MID, filled=6)   # all filled as example
+    _draw_consensus_dots(draw, GX2, MID, filled=6)
 
     # ── Branding strip ────────────────────────────────────────────────────────
     BRAND_H = 48
@@ -474,7 +477,7 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     draw.text((W // 2, FY + LEG_H + BRAND_H // 2),
               "RANKLE.DEV", font=_fb(32), fill=TEAL, anchor="mm")
 
-    FOOTER_H = LEG_H + BRAND_H
+    FOOTER_H = LEG_H + BRAND_H + 10
 
     # ── Crop and return ───────────────────────────────────────────────────────
     content_h = FY + FOOTER_H
