@@ -2271,7 +2271,7 @@ function render() {
     tbody.innerHTML = '';
 
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr class="empty-state-row"><td colspan="9"><div class="empty-state"><span class="empty-icon">🔍</span>No prospects match your filters. Try adjusting search, position, team, or volatility.</div></td></tr>';
+        tbody.innerHTML = '<tr class="empty-state-row"><td colspan="11"><div class="empty-state"><span class="empty-icon">🔍</span>No prospects match your filters. Try adjusting search, position, team, or volatility.</div></td></tr>';
         return;
     }
 
@@ -2285,7 +2285,7 @@ function render() {
         if (isFirstInTier) {
             const breakerRow = document.createElement('tr');
             breakerRow.className = 'tier-breaker';
-            breakerRow.innerHTML = `<td colspan="9"><div class="tier-breaker-line"><span class="tier-breaker-label">Tier ${displayTier(p.tier)}</span></div></td>`;
+            breakerRow.innerHTML = `<td colspan="11"><div class="tier-breaker-line"><span class="tier-breaker-label">Tier ${displayTier(p.tier)}</span></div></td>`;
             tbody.appendChild(breakerRow);
         }
         prevTier = p.tier;
@@ -2296,7 +2296,7 @@ function render() {
             const lockRow = document.createElement('tr');
             lockRow.className = 'lock-row';
             lockRow.innerHTML = `
-                <td colspan="9">
+                <td colspan="11">
                     <div class="lock-box">
                         <div class="lock-icon">🔒</div>
                         <div class="lock-title">Unlock Full Rankings</div>
@@ -2387,7 +2387,7 @@ function render() {
         const lockRow = document.createElement('tr');
         lockRow.className = 'lock-row';
         lockRow.innerHTML = `
-            <td colspan="9">
+            <td colspan="11">
                 <div class="lock-box">
                     <div class="lock-icon">🔒</div>
                     <div class="lock-title">Unlock Full Rankings</div>
