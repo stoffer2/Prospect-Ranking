@@ -331,19 +331,7 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     draw.text((W - 52, 80),  "PROSPECTS",  font=_fb(50), fill=TEAL,      anchor="rt")
     draw.text((W - 52, 138), "RANKLE.DEV", font=_fb(26), fill=TEAL,      anchor="rt")
 
-    # ── Column headers ────────────────────────────────────────────────────────
-    COL_Y = HEADER_H + 12
-    hf = _fd(13)
-    # Columns: # | PLAYER | POS | SCORE | VOLATILITY | CONSENSUS
-    draw.text(( 52, COL_Y), "#",          font=hf, fill=TEXT_LO)
-    draw.text((162, COL_Y), "PLAYER",     font=hf, fill=TEXT_LO)
-    draw.text((580, COL_Y), "POS",        font=hf, fill=TEXT_LO)
-    draw.text((654, COL_Y), "SCORE",      font=hf, fill=TEXT_LO)
-    draw.text((748, COL_Y), "VOLATILITY", font=hf, fill=TEXT_LO)
-    draw.text((876, COL_Y), "CONSENSUS",  font=hf, fill=TEXT_LO)
-    draw.rectangle([38, COL_Y + 20, W - 38, COL_Y + 21], fill=(255, 255, 255, 10))
-
-    # ── Measure rank column width (handles up to 3-digit ranks) ──────────────
+    # ── Measure rank column width first (needed for header alignment) ─────────
     rank_font = _fb(50)
     tmp_d = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     max_rw = max(
@@ -352,6 +340,26 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     )
     RANK_RIGHT = 52 + int(max_rw) + 8
     NAME_LEFT  = RANK_RIGHT + 16
+
+    # Data column centers (used for both headers and row data)
+    C_RANK = (46 + RANK_RIGHT) // 2          # center of rank pill zone
+    C_POS  = 607
+    C_SCR  = 676
+    C_VOL  = 800
+    DOT_W  = 6 * 10 + 5 * 8                 # dots block width = 100px
+    C_CONS = 876 + DOT_W // 2               # center of dots block
+
+    # ── Column headers ────────────────────────────────────────────────────────
+    COL_Y = HEADER_H + 12
+    hf = _fd(13)
+    HDR_COLOR = (190, 200, 215)              # brighter than TEXT_LO, below WHITE_HI
+    draw.text((C_RANK,  COL_Y), "#",          font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((NAME_LEFT, COL_Y), "PLAYER",   font=hf, fill=HDR_COLOR, anchor="lm")
+    draw.text((C_POS,   COL_Y), "POS",        font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_SCR,   COL_Y), "SCORE",      font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_VOL,   COL_Y), "VOLATILITY", font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_CONS,  COL_Y), "CONSENSUS",  font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.rectangle([38, COL_Y + 10, W - 38, COL_Y + 11], fill=(255, 255, 255, 18))
 
     # ── Prospect rows ─────────────────────────────────────────────────────────
     ROW_Y0 = COL_Y + 28
@@ -394,18 +402,17 @@ def generate_team_graphic(team_code: str) -> BytesIO:
                       font=_fd(17), fill=TEXT_MID)
 
             # POS badge
-            _draw_pos_badge(draw, 607, mid_y - 2, p["pos"])
+            _draw_pos_badge(draw, C_POS, mid_y - 2, p["pos"])
 
             # Rankle Score
-            draw.text((676, mid_y - 2), f"{p['rankleScore']:.1f}",
+            draw.text((C_SCR, mid_y - 2), f"{p['rankleScore']:.1f}",
                       font=_fd(22), fill=WHITE_HI, anchor="mm")
 
             # Volatility badge
-            _draw_vol_badge(draw, 800, mid_y - 2, p["volatility"])
+            _draw_vol_badge(draw, C_VOL, mid_y - 2, p["volatility"])
 
-            # Consensus dots (centered block)
-            dot_block_w = 6 * 10 + 5 * 8   # 6 dots × 10px + 5 gaps × 8px
-            dots_left   = 876 + (104 - dot_block_w) // 2
+            # Consensus dots — centered on C_CONS
+            dots_left = C_CONS - DOT_W // 2
             _draw_consensus_dots(draw, dots_left, mid_y - 2,
                                  filled=p["consensusAgreement"])
 
@@ -415,61 +422,59 @@ def generate_team_graphic(team_code: str) -> BytesIO:
                 draw.rectangle([54, sy, W - 54, sy + 1], fill=(255, 255, 255, 8))
 
     # ── Footer / legend ───────────────────────────────────────────────────────
-    # Mirrors the site's metrics-legend bar: Score | Volatility badges | Consensus dots
     FY = ROW_Y0 + n_rows * ROW_H + PAD
 
-    # Legend background strip
-    LEG_H = 58
+    # Legend: two groups — Volatility | Consensus
+    LEG_H  = 72
+    LBL_F  = _fd(13)
+    HINT_F = _fd(12)
+    LBL_C  = (210, 218, 228)    # bright enough to read clearly
+    HINT_C = (160, 174, 192)    # TEXT_MID
+
     draw.rectangle([0, FY, W, FY + LEG_H], fill=(16, 22, 34))
-    draw.rectangle([0, FY,     W, FY + 1],      fill=(255, 255, 255, 18))
-    draw.rectangle([0, FY + LEG_H - 1, W, FY + LEG_H], fill=(255, 255, 255, 10))
+    draw.rectangle([0, FY, W, FY + 1], fill=(255, 255, 255, 22))
 
-    lbl_f  = _fd(13)   # group label (e.g. "Score")
-    hint_f = _fd(12)   # hint text
+    GX  = 52
+    TOP = FY + 10
+    MID = FY + 37
+    BOT = FY + 57
 
-    LY = FY + LEG_H // 2   # vertical centre of legend
+    # ── Group 1: Volatility ───────────────────────────────────────────────────
+    draw.text((GX, TOP), "Volatility", font=LBL_F, fill=LBL_C, anchor="lm")
+    draw.text((GX, BOT), "How much experts disagree on ranking position",
+              font=HINT_F, fill=HINT_C, anchor="lm")
 
-    # ── Group 1: Score ────────────────────────────────────────────────────────
-    GX = 52
-    draw.text((GX, LY - 10), "Score",              font=lbl_f,  fill=TEXT_MID, anchor="lm")
-    draw.text((GX, LY + 9),  "0–100 consensus rank", font=hint_f, fill=TEXT_LO,  anchor="lm")
-
-    # ── Separator 1 ───────────────────────────────────────────────────────────
-    SEP1 = 230
-    draw.rectangle([SEP1, FY + 10, SEP1 + 1, FY + LEG_H - 10], fill=(255, 255, 255, 18))
-
-    # ── Group 2: Volatility ───────────────────────────────────────────────────
-    GX = SEP1 + 16
-    draw.text((GX, LY - 10), "Volatility", font=lbl_f, fill=TEXT_MID, anchor="lm")
     bx = GX
-    vol_items = [("Low", "Low"), ("Moderate", "Moderate"), ("High", "High"), ("Extreme", "Extreme")]
-    for label, vol_key in vol_items:
+    for label, vol_key in [("Low","Low"),("Moderate","Moderate"),("High","High"),("Extreme","Extreme")]:
         bg_c, fg = VOL_COLORS[vol_key]
-        bw = int(_fd(12).getlength(label)) + 14
-        bh = 20
-        by = LY + 6 - bh // 2
+        bw = int(_fd(13).getlength(label)) + 16
+        bh = 22
+        by = MID - bh // 2
         draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4,
                                 fill=(bg_c[0]//5, bg_c[1]//5, bg_c[2]//5))
         draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4,
                                 outline=fg, width=1)
-        draw.text((bx + bw // 2, by + bh // 2), label, font=_fd(12), fill=fg, anchor="mm")
-        bx += bw + 5
+        draw.text((bx + bw // 2, MID), label, font=_fd(13), fill=fg, anchor="mm")
+        bx += bw + 6
 
-    # ── Separator 2 ───────────────────────────────────────────────────────────
-    SEP2 = bx + 6
-    draw.rectangle([SEP2, FY + 10, SEP2 + 1, FY + LEG_H - 10], fill=(255, 255, 255, 18))
+    # ── Separator ─────────────────────────────────────────────────────────────
+    SEP = bx + 16
+    draw.rectangle([SEP, FY + 10, SEP + 1, FY + LEG_H - 10], fill=(255, 255, 255, 22))
 
-    # ── Group 3: Consensus ────────────────────────────────────────────────────
-    GX = SEP2 + 16
-    draw.text((GX, LY - 10), "Consensus", font=lbl_f, fill=TEXT_MID, anchor="lm")
-    draw.text((GX, LY + 9),  "pips = sources in agreement", font=hint_f, fill=TEXT_LO, anchor="lm")
+    # ── Group 2: Consensus ────────────────────────────────────────────────────
+    GX2 = SEP + 20
+    draw.text((GX2, TOP), "Consensus", font=LBL_F, fill=LBL_C, anchor="lm")
+    draw.text((GX2, BOT), "Pips show how many sources agree on position",
+              font=HINT_F, fill=HINT_C, anchor="lm")
+    _draw_consensus_dots(draw, GX2, MID, filled=6)   # all filled as example
 
     # ── Branding strip ────────────────────────────────────────────────────────
-    draw.rectangle([0, FY + LEG_H, W, FY + LEG_H + 52], fill=(10, 14, 22))
-    draw.text((W // 2, FY + LEG_H + 26), "RANKLE.DEV",
-              font=_fb(34), fill=TEAL, anchor="mm")
+    BRAND_H = 48
+    draw.rectangle([0, FY + LEG_H, W, FY + LEG_H + BRAND_H], fill=(10, 14, 22))
+    draw.text((W // 2, FY + LEG_H + BRAND_H // 2),
+              "RANKLE.DEV", font=_fb(32), fill=TEAL, anchor="mm")
 
-    FOOTER_H = LEG_H + 52
+    FOOTER_H = LEG_H + BRAND_H
 
     # ── Crop and return ───────────────────────────────────────────────────────
     content_h = FY + FOOTER_H
