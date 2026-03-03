@@ -1005,6 +1005,14 @@ footer {
         <select id="posFilter"></select>
     </div>
     <div class="filter-group">
+        <label>League</label>
+        <select id="leagueFilter">
+            <option value="ALL">All Leagues</option>
+            <option value="AL">American League</option>
+            <option value="NL">National League</option>
+        </select>
+    </div>
+    <div class="filter-group">
         <label>Team</label>
         <select id="teamFilter"></select>
     </div>
@@ -2033,6 +2041,16 @@ const TEAM_MAP = {
     'WSH': 'Washington Nationals'
 };
 
+const LEAGUE_MAP = {
+    // American League
+    'BAL':'AL','BOS':'AL','NYY':'AL','TB':'AL','TOR':'AL',
+    'CWS':'AL','CHW':'AL','CLE':'AL','DET':'AL','KC':'AL','MIN':'AL',
+    'HOU':'AL','LAA':'AL','ATH':'AL','OAK':'AL','SEA':'AL','TEX':'AL',
+    // National League
+    'ATL':'NL','MIA':'NL','NYM':'NL','PHI':'NL','WAS':'NL','WSH':'NL',
+    'CHC':'NL','CIN':'NL','MIL':'NL','PIT':'NL','STL':'NL',
+    'ARI':'NL','COL':'NL','LAD':'NL','SD':'NL','SF':'NL'
+};
 function getTeamName(abbr) {
     return TEAM_MAP[abbr] || abbr;
 }
@@ -2122,10 +2140,11 @@ function displayName(p) {
 
 function render() {
     updateFaLegendVisibility();
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const pos    = document.getElementById('posFilter').value;
-    const team   = document.getElementById('teamFilter').value;
-    const vol    = document.getElementById('volFilter').value;
+    const search  = document.getElementById('searchInput').value.toLowerCase();
+    const pos     = document.getElementById('posFilter').value;
+    const league  = document.getElementById('leagueFilter').value;
+    const team    = document.getElementById('teamFilter').value;
+    const vol     = document.getElementById('volFilter').value;
 
     const filtered = ALL_PROSPECTS.filter(p => {
         if (search && !p.name.toLowerCase().includes(search)) return false;
@@ -2133,6 +2152,7 @@ function render() {
         if (pos === 'SP'  && !isPitcher)      return false;
         if (pos === 'LHP' && p.pos !== 'LHP') return false;
         if (pos !== 'ALL' && pos !== 'SP' && pos !== 'LHP' && p.pos !== pos) return false;
+        if (league !== 'ALL' && LEAGUE_MAP[p.team] !== league) return false;
         if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
         if (vol  !== 'ALL' && p.volatility !== vol) return false;
         return true;
@@ -2270,6 +2290,7 @@ function render() {
 // ── Wire up filters & initial render ──
 document.getElementById('searchInput').addEventListener('input',  render);
 document.getElementById('posFilter').addEventListener('change',  render);
+document.getElementById('leagueFilter').addEventListener('change', render);
 document.getElementById('teamFilter').addEventListener('change', render);
 document.getElementById('volFilter').addEventListener('change',  render);
 render();
