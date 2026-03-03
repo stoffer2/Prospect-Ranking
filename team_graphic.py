@@ -328,8 +328,7 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     # "TOP PROSPECTS" — always legible: white on dark
     draw.text((W - 52, 32),  "TOP",        font=_fb(50), fill=WHITE_HI,  anchor="rt")
     draw.text((W - 52, 80),  "PROSPECTS",  font=_fb(50), fill=TEAL,      anchor="rt")
-    draw.text((W - 52, 138), "Ranked by",  font=_fd(16), fill=TEXT_LO,   anchor="rt")
-    draw.text((W - 52, 153), "RANKLE.DEV", font=_fb(22), fill=TEAL,      anchor="rt")
+    draw.text((W - 52, 138), "RANKLE.DEV", font=_fb(26), fill=TEAL,      anchor="rt")
 
     # ── Column headers ────────────────────────────────────────────────────────
     COL_Y = HEADER_H + 12
@@ -371,8 +370,17 @@ def generate_team_graphic(team_code: str) -> BytesIO:
             draw.rounded_rectangle([38, y, 46, y + ROW_H - 6],
                                    radius=4, fill=TEAL_DIM)
 
-            # Overall rank number
-            draw.text((RANK_RIGHT, mid_y - 6), str(p["displayRank"]),
+            # Overall rank number — on a dark pill for contrast
+            rank_str = str(p["displayRank"])
+            rank_w   = int(tmp_d.textlength(rank_str, font=rank_font))
+            pill_pad = 10
+            pill_x0  = RANK_RIGHT - rank_w - pill_pad
+            pill_x1  = RANK_RIGHT + pill_pad
+            pill_y0  = mid_y - 34
+            pill_y1  = mid_y + 22
+            draw.rounded_rectangle([pill_x0, pill_y0, pill_x1, pill_y1],
+                                   radius=8, fill=(6, 10, 18))
+            draw.text((RANK_RIGHT, mid_y - 6), rank_str,
                       font=rank_font, fill=RANK_COLOR, anchor="rm")
 
             # Name
@@ -405,17 +413,50 @@ def generate_team_graphic(team_code: str) -> BytesIO:
                 sy = y + ROW_H - 4
                 draw.rectangle([54, sy, W - 54, sy + 1], fill=(255, 255, 255, 8))
 
-    # ── Footer ────────────────────────────────────────────────────────────────
+    # ── Footer / legend ───────────────────────────────────────────────────────
     FY = ROW_Y0 + n_rows * ROW_H + PAD
     draw.rectangle([38, FY, W - 38, FY + 1], fill=(255, 255, 255, 16))
-    draw.text((W // 2, FY + 18),
-              "Consensus rankings aggregated from top prospect analysts.",
-              font=_fd(17), fill=TEXT_LO, anchor="mm")
-    draw.text((W // 2, FY + 46), "RANKLE.DEV",
-              font=_fb(38), fill=TEAL, anchor="mm")
-    draw.text((W // 2, FY + 78),
-              "Full rankings • Volatility scores • Consensus metrics",
-              font=_fd(17), fill=TEXT_LO, anchor="mm")
+
+    # Legend row — Score | Volatility | Consensus dots
+    LY     = FY + 22
+    lf_key = _fd(14)
+    lf_val = _fd(13)
+
+    # Score
+    draw.text((56, LY), "SCORE", font=lf_key, fill=TEXT_LO)
+    draw.text((56, LY + 18), "0–100 consensus", font=lf_val, fill=(80, 90, 105))
+
+    # Volatility swatches
+    vx = 230
+    draw.text((vx, LY), "VOLATILITY", font=lf_key, fill=TEXT_LO)
+    vol_items = [("Low", "Low"), ("Mod", "Moderate"), ("High", "High"), ("Xtr", "Extreme")]
+    bx = vx
+    for label, vol_key in vol_items:
+        _, fg = VOL_COLORS[vol_key]
+        bg_c, _ = VOL_COLORS[vol_key]
+        bw, bh = 42, 18
+        draw.rounded_rectangle([bx, LY + 16, bx + bw, LY + 16 + bh], radius=4,
+                                fill=(bg_c[0]//5, bg_c[1]//5, bg_c[2]//5))
+        draw.rounded_rectangle([bx, LY + 16, bx + bw, LY + 16 + bh], radius=4,
+                                outline=fg, width=1)
+        draw.text((bx + bw // 2, LY + 25), label, font=_fd(11), fill=fg, anchor="mm")
+        bx += bw + 6
+
+    # Consensus dots explanation
+    dx = 620
+    draw.text((dx, LY), "CONSENSUS", font=lf_key, fill=TEXT_LO)
+    draw.text((dx, LY + 18), "analyst agreement", font=lf_val, fill=(80, 90, 105))
+    _draw_consensus_dots(draw, dx, LY + 36, filled=5)
+
+    # Divider + branding
+    draw.rectangle([38, FY + 68, W - 38, FY + 69], fill=(255, 255, 255, 8))
+    draw.text((W // 2, FY + 84), "RANKLE.DEV",
+              font=_fb(32), fill=TEAL, anchor="mm")
+    draw.text((W // 2, FY + 108),
+              "Consensus MLB prospect rankings",
+              font=_fd(16), fill=TEXT_LO, anchor="mm")
+
+    FOOTER_H = 120
 
     # ── Crop and return ───────────────────────────────────────────────────────
     content_h = FY + FOOTER_H
