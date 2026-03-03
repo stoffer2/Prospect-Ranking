@@ -558,14 +558,57 @@ td:first-child { padding-left:1rem; }
 .method-item h4 { font-size:.82rem; color:var(--accent-hi); font-weight:600; margin-bottom:.35rem; text-transform:uppercase; letter-spacing:0.8px; }
 .method-item p  { font-size:.8rem; color:var(--text-mid); line-height:1.65; }
 
+/* ── METRICS LEGEND ── */
+.metrics-legend {
+    max-width: 1100px;
+    margin: 0 auto 0.75rem;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+.ml-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+.ml-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-mid);
+    margin-right: 0.1rem;
+}
+.ml-hint {
+    font-size: 0.7rem;
+    color: var(--text-lo);
+}
+.ml-hint-divider {
+    opacity: 0.4;
+    margin: 0 0.1rem;
+}
+.ml-sep {
+    width: 1px;
+    height: 14px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+@media (max-width: 768px) {
+    .metrics-legend { padding: 0.5rem 1rem; gap: 0.5rem 1rem; }
+    .ml-sep { display: none; }
+}
+
 /* ── FOOTER ── */
 footer {
     border-top: 1px solid var(--border);
-    padding: 2.5rem 1.5rem;
+    padding: 2rem 1.5rem;
     text-align: center;
     color: var(--text-lo); font-size: 0.75rem;
     margin-top: 2rem;
-    transition: border-color .3s, color .3s;
 }
 
 /* ── ROSTER UPLOAD ── */
@@ -1062,6 +1105,32 @@ footer {
     <span class="fa-legend-text">Free agents in your league</span>
 </div>
 
+<!-- METRICS LEGEND -->
+<div class="metrics-legend">
+    <div class="ml-group">
+        <span class="ml-label">Score</span>
+        <span class="ml-hint">0–100 consensus rank</span>
+    </div>
+    <div class="ml-sep"></div>
+    <div class="ml-group">
+        <span class="ml-label">Volatility</span>
+        <span class="vol-badge vol-low">Low</span>
+        <span class="vol-badge vol-mod">Moderate</span>
+        <span class="vol-badge vol-high">High</span>
+        <span class="vol-badge vol-extreme">Extreme</span>
+        <span class="ml-hint">— skew of rankings across sources (e.g. ranked 22, 24, 27, 89 = <strong>High</strong>)</span>
+    </div>
+    <div class="ml-sep"></div>
+    <div class="ml-group">
+        <span class="ml-label">Consensus</span>
+        <div class="cons-dots">
+            <div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot on"></div>
+            <div class="cons-dot on"></div><div class="cons-dot on"></div><div class="cons-dot on"></div>
+        </div>
+        <span class="ml-hint">— pips show how many sources ranked the prospect in a similar position</span>
+    </div>
+</div>
+
 <!-- TABLE -->
 <div class="table-wrap">
     <table>
@@ -1084,6 +1153,10 @@ footer {
 
 
 </div><!-- /.main-content -->
+
+<footer>
+    <p>© 2026 Rankle &nbsp;·&nbsp; All prospect rankings are aggregated from publicly available expert sources. Rankle is not affiliated with MLB or any ranking publication.</p>
+</footer>
 
 <div class="fantasy-toast" id="fantasyToast"></div>
 
@@ -2251,10 +2324,12 @@ function render() {
             ? `<span class="warn-badge">⚠ 2 sources</span>`
             : '';
 
-        const at1 = p.sourcesAt1 != null ? p.sourcesAt1 : p.sourceCount;
-        const scoreTooltip = at1 === p.sourceCount
-            ? `#1 on all ${p.sourceCount} sources`
-            : `#1 on ${at1} of ${p.sourceCount} sources`;
+        const at1 = p.sourcesAt1 != null ? p.sourcesAt1 : 0;
+        const scoreTooltip = at1 > 0
+            ? (at1 === p.sourceCount
+                ? `#1 on all ${p.sourceCount} sources`
+                : `#1 on ${at1} of ${p.sourceCount} sources`)
+            : `Ranked by ${p.sourceCount} source${p.sourceCount === 1 ? '' : 's'}`;
 
         // Rank change arrow (vs baseline): positive change = moved up, negative = moved down
         // Exact name match first. Fuzzy: only when current name contains baseline key (e.g. "Jacob Reimer Jr" now vs "Jacob Reimer" then).
