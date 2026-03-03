@@ -471,6 +471,7 @@ td:first-child { padding-left:1rem; }
 
 .team-col { font-weight:600; font-size:.85rem; color:var(--text-mid); }
 .num-col  { font-size:.85rem; color:var(--text-mid); }
+.num-tip  { display: inline-block; padding: 0.4rem 0.6rem; cursor: default; }
 
 /* borda score */
 .borda-col { font-weight:700; font-size:.9rem; color:var(--accent-hi); }
@@ -1143,6 +1144,8 @@ footer {
                 <th>Age</th>
                 <th>ETA</th>
                 <th>Score</th>
+                <th>Best</th>
+                <th>Worst</th>
                 <th>Volatility</th>
                 <th>Consensus</th>
             </tr>
@@ -1185,7 +1188,7 @@ function sourceStats(listLength) {
 // return the full computed prospect object.
 function computeProspect(meta, sourceRankings) {
     const n = sourceRankings.length;
-    if (n === 0) return { ...meta, sourceCount: 0, consensusAgreement: 0, rankleScore: 0, sd: null, volatility: "N/A" };
+    if (n === 0) return { ...meta, sourceCount: 0, consensusAgreement: 0, rankleScore: 0, sd: null, volatility: "N/A", minRank: null, maxRank: null };
 
     // Cap rank at listLength so bad data (e.g. rank 91 on a 50-item list) doesn't blow up volatility
     const capped = sourceRankings.map(s => ({ ...s, rank: Math.min(s.rank, s.listLength) }));
@@ -1242,7 +1245,14 @@ function computeProspect(meta, sourceRankings) {
     const sourcesAt1 = capped.filter(s => s.rank === 1).length;
     const notAt1 = capped.filter(s => s.rank > 1).map(s => ({ source: s.source, rank: s.rank }));
 
-    return { ...meta, sourceCount: n, consensusAgreement, rankleScore: Math.round(penalizedScore * 10) / 10, sd, volatility, sourcesAt1, notAt1 };
+    const minRank = Math.min(...rawRanks);
+    const maxRank = Math.max(...rawRanks);
+    const minEntry = capped.find(s => s.rank === minRank);
+    const maxEntry = capped.find(s => s.rank === maxRank);
+    const minSource = minEntry ? ((SOURCES[minEntry.source] || {}).label || minEntry.source) : null;
+    const maxSource = maxEntry ? ((SOURCES[maxEntry.source] || {}).label || maxEntry.source) : null;
+
+    return { ...meta, sourceCount: n, consensusAgreement, rankleScore: Math.round(penalizedScore * 10) / 10, sd, volatility, sourcesAt1, notAt1, minRank, maxRank, minSource, maxSource };
 }
 
 // ============================================================
@@ -2361,6 +2371,8 @@ function render() {
             <td class="num-col">${calcAge(p) != null ? calcAge(p) : '—'}</td>
             <td class="num-col">${p.eta || '—'}</td>
             <td class="borda-col" title="${scoreTooltip}">${p.rankleScore.toFixed(1)}</td>
+            <td class="num-col"><span class="num-tip" title="${p.minRank != null ? `#${p.minRank} — ${p.minSource}` : 'No data'}">${p.minRank != null ? p.minRank : '—'}</span></td>
+            <td class="num-col"><span class="num-tip" title="${p.maxRank != null ? `#${p.maxRank} — ${p.maxSource}` : 'No data'}">${p.maxRank != null ? p.maxRank : '—'}</span></td>
             <td>
                 <span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span>
             </td>
