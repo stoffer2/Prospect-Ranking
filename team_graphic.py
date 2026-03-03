@@ -1,12 +1,12 @@
 """
-team_graphic.py — Generate a shareable MLB team prospects graphic.
+team_graphic.py — Shareable MLB team prospects graphic using the real Rankle algorithm.
 
 Usage:
     from team_graphic import generate_team_graphic
-    img_bytes = generate_team_graphic("CHW")  # returns BytesIO
+    buf = generate_team_graphic("CHW")   # returns BytesIO (PNG)
 
-Standalone:
-    python3 team_graphic.py CHW
+CLI:
+    python3 team_graphic.py CHW          # saves chw_prospects.png
 """
 
 import json
@@ -20,7 +20,7 @@ from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 BEBAS_PATH = os.path.join(BASE_DIR, "BebasNeue.ttf")
 DM_PATH    = os.path.join(BASE_DIR, "DMSans.ttf")
 
@@ -32,36 +32,36 @@ RANKINGS_FILES = [
 
 # ── Team metadata ─────────────────────────────────────────────────────────────
 TEAMS = {
-    "ARI": ("Arizona Diamondbacks",   (167, 25,  48)),
-    "ATL": ("Atlanta Braves",         (206, 17,  65)),
-    "BAL": ("Baltimore Orioles",      (223, 70,   1)),
-    "BOS": ("Boston Red Sox",         (189, 48,  57)),
-    "CHC": ("Chicago Cubs",           (14,  51, 134)),
-    "CHW": ("Chicago White Sox",      (39,  37,  31)),
-    "CIN": ("Cincinnati Reds",        (198,  1,  31)),
-    "CLE": ("Cleveland Guardians",    (0,   56,  93)),
-    "COL": ("Colorado Rockies",       (51,  51, 102)),
-    "DET": ("Detroit Tigers",         (12,  35,  64)),
-    "HOU": ("Houston Astros",         (0,   45, 98)),
-    "KC":  ("Kansas City Royals",     (0,   70, 135)),
-    "LAA": ("Los Angeles Angels",     (186,  0,  33)),
-    "LAD": ("Los Angeles Dodgers",    (0,   90, 156)),
-    "MIA": ("Miami Marlins",          (0,  163, 224)),
-    "MIL": ("Milwaukee Brewers",      (18,  40,  75)),
-    "MIN": ("Minnesota Twins",        (0,   43, 92)),
-    "NYM": ("New York Mets",          (0,   45, 114)),
-    "NYY": ("New York Yankees",       (12,  35,  64)),
-    "ATH": ("Oakland Athletics",      (0,   56,  49)),
-    "PHI": ("Philadelphia Phillies",  (232, 24,  40)),
-    "PIT": ("Pittsburgh Pirates",     (39,  37,  31)),
-    "SD":  ("San Diego Padres",       (47,  36,  29)),
-    "SF":  ("San Francisco Giants",   (253, 90,  30)),
-    "SEA": ("Seattle Mariners",       (0,   92,  92)),
-    "STL": ("St. Louis Cardinals",    (196, 30,  58)),
-    "TB":  ("Tampa Bay Rays",         (9,   44,  92)),
-    "TEX": ("Texas Rangers",          (0,   50, 120)),
-    "TOR": ("Toronto Blue Jays",      (19, 74, 142)),
-    "WAS": ("Washington Nationals",   (171,  0,  3)),
+    "ARI": ("Arizona Diamondbacks",    (167,  25,  48)),
+    "ATL": ("Atlanta Braves",          (206,  17,  65)),
+    "BAL": ("Baltimore Orioles",       (223,  70,   1)),
+    "BOS": ("Boston Red Sox",          (189,  48,  57)),
+    "CHC": ("Chicago Cubs",            ( 14,  51, 134)),
+    "CHW": ("Chicago White Sox",       ( 80,  80,  90)),   # near-black → use neutral silver
+    "CIN": ("Cincinnati Reds",         (198,   1,  31)),
+    "CLE": ("Cleveland Guardians",     (  0,  56,  93)),
+    "COL": ("Colorado Rockies",        ( 51,  51, 102)),
+    "DET": ("Detroit Tigers",          ( 12,  35,  64)),
+    "HOU": ("Houston Astros",          (  0,  45,  98)),
+    "KC":  ("Kansas City Royals",      (  0,  70, 135)),
+    "LAA": ("Los Angeles Angels",      (186,   0,  33)),
+    "LAD": ("Los Angeles Dodgers",     (  0,  90, 156)),
+    "MIA": ("Miami Marlins",           (  0, 163, 224)),
+    "MIL": ("Milwaukee Brewers",       ( 18,  40,  75)),
+    "MIN": ("Minnesota Twins",         (  0,  43,  92)),
+    "NYM": ("New York Mets",           (  0,  45, 114)),
+    "NYY": ("New York Yankees",        ( 12,  35,  64)),
+    "ATH": ("Oakland Athletics",       (  0,  56,  49)),
+    "PHI": ("Philadelphia Phillies",   (232,  24,  40)),
+    "PIT": ("Pittsburgh Pirates",      (255, 198,  30)),
+    "SD":  ("San Diego Padres",        ( 47,  36,  29)),
+    "SF":  ("San Francisco Giants",    (253,  90,  30)),
+    "SEA": ("Seattle Mariners",        (  0,  92,  92)),
+    "STL": ("St. Louis Cardinals",     (196,  30,  58)),
+    "TB":  ("Tampa Bay Rays",          (  9,  44,  92)),
+    "TEX": ("Texas Rangers",           (  0,  50, 120)),
+    "TOR": ("Toronto Blue Jays",       ( 19,  74, 142)),
+    "WAS": ("Washington Nationals",    (171,   0,   3)),
 }
 
 # ── Font helpers ──────────────────────────────────────────────────────────────
@@ -71,24 +71,91 @@ def _ensure_fonts():
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req) as r, open(path, "wb") as f:
                 f.write(r.read())
-
     dl("https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXooxW5rygbi49c.ttf", BEBAS_PATH)
     dl("https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriCZa4ET-DNl0.ttf", DM_PATH)
 
+def _fb(size): return ImageFont.truetype(BEBAS_PATH, size)
+def _fd(size): return ImageFont.truetype(DM_PATH, size)
 
-def _fb(size):
-    return ImageFont.truetype(BEBAS_PATH, size)
+# ── Rankle scoring algorithm (mirrors index.html JS exactly) ─────────────────
+def _source_stats(list_length):
+    mean = (list_length + 1) / 2
+    sd   = math.sqrt((list_length ** 2 - 1) / 12)
+    return mean, sd
+
+def _compute_prospect(meta, source_rankings):
+    """
+    source_rankings: list of {"rank": int, "list_length": int}
+    Returns dict with rankleScore, volatility, consensusAgreement, sourceCount, minRank, maxRank.
+    """
+    n = len(source_rankings)
+    if n == 0:
+        return {**meta, "sourceCount": 0, "rankleScore": 0,
+                "volatility": "N/A", "consensusAgreement": 0,
+                "minRank": None, "maxRank": None}
+
+    # Cap rank at list_length
+    capped = [{"rank": min(s["rank"], s["list_length"]),
+               "list_length": s["list_length"]} for s in source_rankings]
+
+    # Z-scores (negated: rank 1 = highest Z)
+    z_scores = []
+    for s in capped:
+        mean, sd = _source_stats(s["list_length"])
+        z_scores.append(-(s["rank"] - mean) / sd)
+
+    raw_ranks = [s["rank"] for s in capped]
+    z_avg = sum(z_scores) / n
+
+    # Rankle Score 0–100
+    rankle = max(0.0, min(100.0, 50 + z_avg * 29.4))
+    if not all(r == 1 for r in raw_ranks) and rankle >= 99.95:
+        rankle = 99.9
+
+    # Volatility (sample stddev of Z-scores)
+    volatility = "N/A"
+    if n >= 2:
+        variance = sum((z - z_avg) ** 2 for z in z_scores) / (n - 1)
+        sd_val = math.sqrt(variance)
+        if   sd_val < 0.30: volatility = "Low"
+        elif sd_val < 0.70: volatility = "Moderate"
+        elif sd_val < 0.85: volatility = "High"
+        else:               volatility = "Extreme"
+
+    # Consensus agreement: sources within ±10% of median percentile
+    percentiles = [100 * (1 - (s["rank"] - 1) / max(s["list_length"] - 1, 1))
+                   for s in capped]
+    sorted_p = sorted(percentiles)
+    mid = len(sorted_p) // 2
+    if len(sorted_p) % 2 != 0:
+        median_p = sorted_p[mid]
+    else:
+        median_p = (sorted_p[mid - 1] + sorted_p[mid]) / 2
+    consensus = sum(1 for p in percentiles if abs(p - median_p) <= 10)
+
+    # Bayesian shrinkage (single-source only; multi-source filtered out anyway)
+    K = 2
+    penalized = (rankle + K * 50) / (1 + K) if n == 1 else rankle
+
+    return {
+        **meta,
+        "sourceCount":        n,
+        "rankleScore":        round(penalized * 10) / 10,
+        "volatility":         volatility,
+        "consensusAgreement": min(consensus, 6),
+        "minRank":            min(raw_ranks),
+        "maxRank":            max(raw_ranks),
+    }
 
 
-def _fd(size):
-    return ImageFont.truetype(DM_PATH, size)
-
-
-# ── Data loading ──────────────────────────────────────────────────────────────
-def _load_team_prospects(team_code):
-    """Aggregate prospect data for a team across all ranking sources."""
-    player_data = defaultdict(lambda: {"ranks": [], "positions": [], "ages": [], "etas": []})
-    source_count = 0
+def _load_all_prospects():
+    """
+    Load every player from all ranking sources, compute Rankle metrics,
+    filter to sourceCount > 1, sort by rankleScore desc, assign displayRank.
+    Returns list of prospect dicts with .team, .displayRank, etc.
+    """
+    # Aggregate raw rankings per player
+    player_sources = defaultdict(list)   # name → [{rank, list_length, pos, age, eta, team}]
 
     for filename in RANKINGS_FILES:
         path = os.path.join(BASE_DIR, filename)
@@ -98,40 +165,43 @@ def _load_team_prospects(team_code):
             data = json.load(f)
         if "list" not in data:
             continue
-        source_count += 1
-        for p in data["list"]:
-            if p.get("team") == team_code:
-                name = p["player_name"]
-                player_data[name]["ranks"].append(p["rank"])
-                player_data[name]["positions"].append(p.get("position", "?"))
-                player_data[name]["ages"].append(p.get("age", 0))
-                player_data[name]["etas"].append(p.get("ETA", "—"))
+        src_list  = data["list"]
+        list_len  = len(src_list)
+        for p in src_list:
+            name = p["player_name"]
+            player_sources[name].append({
+                "rank":        p["rank"],
+                "list_length": list_len,
+                "pos":         p.get("position", "?"),
+                "age":         p.get("age", 0),
+                "eta":         p.get("ETA", "—"),
+                "team":        p.get("team", ""),
+            })
 
-    results = []
-    for name, d in player_data.items():
-        avg_rank = sum(d["ranks"]) / len(d["ranks"])
-        pos = max(set(d["positions"]), key=d["positions"].count)
-        age = max(set(d["ages"]), key=d["ages"].count)
-        eta = max(set(d["etas"]), key=d["etas"].count)
-        results.append({
-            "name": name,
-            "avg_rank": avg_rank,
-            "n_lists": len(d["ranks"]),
-            "best": min(d["ranks"]),
-            "worst": max(d["ranks"]),
-            "pos": pos,
-            "age": age,
-            "eta": eta,
-        })
+    prospects = []
+    for name, sources in player_sources.items():
+        # Derive meta fields from most-common values across sources
+        pos  = max(set(s["pos"]  for s in sources), key=[s["pos"]  for s in sources].count)
+        age  = max(set(s["age"]  for s in sources), key=[s["age"]  for s in sources].count)
+        eta  = max(set(s["eta"]  for s in sources), key=[s["eta"]  for s in sources].count)
+        team = max(set(s["team"] for s in sources), key=[s["team"] for s in sources].count)
+        meta = {"name": name, "pos": pos, "age": age, "eta": eta, "team": team}
+        ranking_inputs = [{"rank": s["rank"], "list_length": s["list_length"]} for s in sources]
+        prospects.append(_compute_prospect(meta, ranking_inputs))
 
-    results.sort(key=lambda x: x["avg_rank"])
-    return results, source_count
+    # Mirror site: filter single-source, sort by Rankle Score desc, assign display rank
+    prospects = [p for p in prospects if p["sourceCount"] > 1]
+    prospects.sort(key=lambda p: p["rankleScore"], reverse=True)
+    for i, p in enumerate(prospects):
+        p["displayRank"] = i + 1
+
+    return prospects
 
 
-# ── Badge colors ──────────────────────────────────────────────────────────────
+# ── Position badge colors ─────────────────────────────────────────────────────
 POS_COLORS = {
-    "SP": ((14, 165, 160), (94, 234, 212)),
-    "RP": ((20, 148, 142), (80, 220, 200)),
+    "SP": ((14, 165, 160), (94,  234, 212)),
+    "RP": ((20, 148, 142), (80,  220, 200)),
     "OF": ((37,  99, 235), (129, 176, 255)),
     "CF": ((37,  99, 235), (129, 176, 255)),
     "RF": ((37,  99, 235), (129, 176, 255)),
@@ -141,41 +211,54 @@ POS_COLORS = {
     "3B": ((160,  80,  0), (245, 160,  20)),
     "1B": ((124,  58, 237), (196, 181, 253)),
     "C":  ((107,  33, 168), (216, 180, 254)),
-    "DH": ((80,   80,  80), (180, 180, 180)),
+    "DH": (( 80,  80,  80), (180, 180, 180)),
 }
 
+VOL_COLORS = {
+    "Low":      ((14, 165, 160), (94,  234, 212)),
+    "Moderate": ((180, 120,  0), (252, 200,  40)),
+    "High":     ((180,  30,  30), (252, 130, 130)),
+    "Extreme":  ((100,  40, 200), (196, 160, 255)),
+    "N/A":      (( 60,  60,  60), (140, 140, 140)),
+}
 
-def _badge(draw, cx, cy, pos):
+GOLD_FULL  = (212, 164,  23)
+GOLD_EMPTY = ( 45,  40,  25)
+
+
+def _draw_pos_badge(draw, cx, cy, pos):
     bg, fg = POS_COLORS.get(pos, ((80, 80, 80), (200, 200, 200)))
-    bw, bh = 58, 28
+    bw, bh = 54, 26
     bx, by = int(cx - bw / 2), int(cy - bh / 2)
-    draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=6,
-                            fill=(bg[0] // 5, bg[1] // 5, bg[2] // 5))
-    draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=6,
-                            outline=fg, width=1)
-    draw.text((cx, cy), pos, font=_fd(15), fill=fg, anchor="mm")
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5,
+                            fill=(bg[0]//5, bg[1]//5, bg[2]//5))
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5, outline=fg, width=1)
+    draw.text((cx, cy), pos, font=_fd(14), fill=fg, anchor="mm")
 
 
-# ── Coverage label ────────────────────────────────────────────────────────────
-def _coverage(n):
-    if n >= 7:
-        return "Very high coverage"
-    if n >= 5:
-        return "High coverage"
-    if n >= 3:
-        return "Good coverage"
-    if n == 2:
-        return "Moderate coverage"
-    return "Limited coverage"
+def _draw_vol_badge(draw, cx, cy, vol):
+    bg, fg = VOL_COLORS.get(vol, VOL_COLORS["N/A"])
+    label  = vol if vol != "N/A" else "—"
+    bw     = {"Low": 54, "Moderate": 90, "High": 60, "Extreme": 80, "N/A": 30}.get(vol, 70)
+    bh     = 26
+    bx, by = int(cx - bw / 2), int(cy - bh / 2)
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5,
+                            fill=(bg[0]//5, bg[1]//5, bg[2]//5))
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5, outline=fg, width=1)
+    draw.text((cx, cy), label, font=_fd(13), fill=fg, anchor="mm")
 
 
-# ── Graphic renderer ──────────────────────────────────────────────────────────
+def _draw_consensus_dots(draw, left_x, cy, filled, total=6):
+    dot_r  = 5
+    gap    = 8
+    for i in range(total):
+        cx = left_x + i * (dot_r * 2 + gap) + dot_r
+        color = GOLD_FULL if i < filled else GOLD_EMPTY
+        draw.ellipse([cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r], fill=color)
+
+
+# ── Main generator ────────────────────────────────────────────────────────────
 def generate_team_graphic(team_code: str) -> BytesIO:
-    """
-    Generate a shareable prospects graphic for the given team code.
-    Returns a BytesIO containing the PNG image.
-    Raises ValueError if team_code is not recognised.
-    """
     team_code = team_code.upper()
     if team_code not in TEAMS:
         raise ValueError(f"Unknown team code: {team_code}")
@@ -183,143 +266,156 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     _ensure_fonts()
 
     team_name, team_rgb = TEAMS[team_code]
-    prospects, _n_sources = _load_team_prospects(team_code)
 
-    # Clamp display list to top 10
-    prospects = prospects[:10]
+    # Compute full global prospect list, filter to this team
+    all_prospects = _load_all_prospects()
+    team_prospects = [p for p in all_prospects if p["team"] == team_code][:10]
 
-    # ── Layout constants ──────────────────────────────────────────────────────
-    W         = 1080
-    HEADER_H  = 168
-    COL_H     = 48       # column-header area height
-    ROW_H     = 140 if len(prospects) <= 6 else 118
-    FOOTER_H  = 108
-    PADDING   = 16
-    n_rows    = max(len(prospects), 1)
-    H         = HEADER_H + COL_H + n_rows * ROW_H + FOOTER_H + PADDING * 2
+    # ── Layout ────────────────────────────────────────────────────────────────
+    W        = 1080
+    HEADER_H = 162
+    COL_H    = 46
+    ROW_H    = 126
+    FOOTER_H = 102
+    PAD      = 14
+    n_rows   = max(len(team_prospects), 1)
+    H        = HEADER_H + COL_H + n_rows * ROW_H + FOOTER_H + PAD * 2
 
-    img  = Image.new("RGB", (W, H), (10, 14, 22))
+    img = Image.new("RGB", (W, H), (10, 14, 22))
 
-    # Gradient bg
+    # Subtle gradient bg
     try:
         import numpy as np
         arr = np.full((H, W, 3), [10, 14, 22], dtype=np.uint8)
         for y in range(H // 2):
-            frac = 1 - y / (H // 2)
-            arr[y, :, 0] = min(255, 10 + int(frac * 20))
-            arr[y, :, 1] = min(255, 14 + int(frac * 26))
-            arr[y, :, 2] = min(255, 22 + int(frac * 48))
+            f = 1 - y / (H // 2)
+            arr[y, :, 0] = min(255, 10 + int(f * 18))
+            arr[y, :, 1] = min(255, 14 + int(f * 24))
+            arr[y, :, 2] = min(255, 22 + int(f * 44))
         img.paste(Image.fromarray(arr), (0, 0))
     except ImportError:
-        pass  # numpy optional; fall back to flat bg
+        pass
 
     draw = ImageDraw.Draw(img)
 
-    # ── Colors ────────────────────────────────────────────────────────────────
-    TEAL      = (14, 165, 160)
-    ACCENT    = team_rgb          # team color for rank numbers + top bar
-    WHITE_HI  = (230, 237, 243)
-    TEXT_MID  = (160, 174, 192)
-    TEXT_LO   = (107, 122, 141)
-    SOX_BLACK = (10,  12,  16)
-    TEAL_DIM  = (10, 110, 106)
+    # ── Palette ───────────────────────────────────────────────────────────────
+    TEAL     = (14, 165, 160)
+    ACCENT   = team_rgb
+    WHITE_HI = (230, 237, 243)
+    TEXT_MID = (160, 174, 192)
+    TEXT_LO  = (107, 122, 141)
+    HDR_BG   = (10,  12,  16)
+    TEAL_DIM = (10, 110, 106)
 
-    # ── Top accent bar (team color) ────────────────────────────────────────────
-    draw.rectangle([0, 0, W, 7], fill=ACCENT)
+    # Ensure accent is visible on dark bg (min luminance guard)
+    acc_lum = 0.299*ACCENT[0] + 0.587*ACCENT[1] + 0.114*ACCENT[2]
+    RANK_COLOR = ACCENT if acc_lum > 60 else TEAL
+
+    # ── Top accent bar ────────────────────────────────────────────────────────
+    draw.rectangle([0, 0, W, 7], fill=ACCENT if acc_lum > 60 else TEAL)
 
     # ── Header ────────────────────────────────────────────────────────────────
-    draw.rectangle([0, 7, W, HEADER_H], fill=SOX_BLACK)
+    draw.rectangle([0, 7, W, HEADER_H], fill=HDR_BG)
 
-    abbr_font = _fb(104)
-    draw.text((52, 16), team_code, font=abbr_font, fill=(240, 240, 240))
-    draw.rectangle([52, 126, min(52 + len(team_code) * 62, 420), 128], fill=ACCENT)
-    draw.text((52, 136), team_name, font=_fd(21), fill=TEXT_MID)
+    abbr_font = _fb(100)
+    draw.text((52, 14), team_code, font=abbr_font, fill=(240, 240, 240))
 
-    draw.text((W - 52, 36),  "TOP",        font=_fb(50), fill=ACCENT,    anchor="rt")
-    draw.text((W - 52, 84),  "PROSPECTS",  font=_fb(50), fill=WHITE_HI,  anchor="rt")
-    draw.text((W - 52, 140), "Ranked by",  font=_fd(17), fill=TEXT_LO,   anchor="rt")
-    draw.text((W - 52, 155), "RANKLE.DEV", font=_fb(24), fill=TEAL,      anchor="rt")
+    # Underline accent below abbr
+    abbr_w = int(draw.textlength(team_code, font=abbr_font))
+    draw.rectangle([52, 120, 52 + abbr_w, 122], fill=ACCENT if acc_lum > 60 else TEAL)
+    draw.text((52, 132), team_name, font=_fd(20), fill=TEXT_MID)
+
+    # "TOP PROSPECTS" — always legible: white on dark
+    draw.text((W - 52, 32),  "TOP",        font=_fb(50), fill=WHITE_HI,  anchor="rt")
+    draw.text((W - 52, 80),  "PROSPECTS",  font=_fb(50), fill=TEAL,      anchor="rt")
+    draw.text((W - 52, 138), "Ranked by",  font=_fd(16), fill=TEXT_LO,   anchor="rt")
+    draw.text((W - 52, 153), "RANKLE.DEV", font=_fb(22), fill=TEAL,      anchor="rt")
 
     # ── Column headers ────────────────────────────────────────────────────────
-    COL_Y = HEADER_H + 14
-    hf = _fd(15)
-    draw.text((52,  COL_Y), "#",      font=hf, fill=TEXT_LO)
-    draw.text((162, COL_Y), "PLAYER", font=hf, fill=TEXT_LO)
-    draw.text((622, COL_Y), "POS",    font=hf, fill=TEXT_LO)
-    draw.text((714, COL_Y), "AGE",    font=hf, fill=TEXT_LO)
-    draw.text((812, COL_Y), "ETA",    font=hf, fill=TEXT_LO)
-    draw.rectangle([38, COL_Y + 22, W - 38, COL_Y + 23], fill=(255, 255, 255, 12))
+    COL_Y = HEADER_H + 12
+    hf = _fd(13)
+    # Columns: # | PLAYER | POS | SCORE | VOLATILITY | CONSENSUS
+    draw.text(( 52, COL_Y), "#",          font=hf, fill=TEXT_LO)
+    draw.text((162, COL_Y), "PLAYER",     font=hf, fill=TEXT_LO)
+    draw.text((580, COL_Y), "POS",        font=hf, fill=TEXT_LO)
+    draw.text((654, COL_Y), "SCORE",      font=hf, fill=TEXT_LO)
+    draw.text((748, COL_Y), "VOLATILITY", font=hf, fill=TEXT_LO)
+    draw.text((876, COL_Y), "CONSENSUS",  font=hf, fill=TEXT_LO)
+    draw.rectangle([38, COL_Y + 20, W - 38, COL_Y + 21], fill=(255, 255, 255, 10))
 
-    # ── Measure rank column width ─────────────────────────────────────────────
-    rank_font = _fb(56 if ROW_H >= 140 else 48)
-    tmp = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    # ── Measure rank column width (handles up to 3-digit ranks) ──────────────
+    rank_font = _fb(50)
+    tmp_d = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     max_rw = max(
-        (tmp.textlength(str(p["best"]), font=rank_font) for p in prospects),
-        default=60,
+        (tmp_d.textlength(str(p["displayRank"]), font=rank_font) for p in team_prospects),
+        default=50,
     )
-    RANK_RIGHT = 52 + int(max_rw) + 10
-    NAME_LEFT  = RANK_RIGHT + 18
+    RANK_RIGHT = 52 + int(max_rw) + 8
+    NAME_LEFT  = RANK_RIGHT + 16
 
-    # ── Rows ──────────────────────────────────────────────────────────────────
-    ROW_Y0 = COL_Y + 30
+    # ── Prospect rows ─────────────────────────────────────────────────────────
+    ROW_Y0 = COL_Y + 28
 
-    if not prospects:
+    if not team_prospects:
         draw.text((W // 2, ROW_Y0 + 60),
-                  "No prospects found in the consensus rankings.",
-                  font=_fd(22), fill=TEXT_LO, anchor="mm")
+                  "No prospects in the consensus rankings.",
+                  font=_fd(20), fill=TEXT_LO, anchor="mm")
     else:
-        for i, p in enumerate(prospects):
-            y = ROW_Y0 + i * ROW_H
-            row_fill = (14, 20, 33) if i % 2 == 0 else (18, 26, 42)
-            draw.rounded_rectangle([38, y, W - 38, y + ROW_H - 8],
+        for i, p in enumerate(team_prospects):
+            y         = ROW_Y0 + i * ROW_H
+            row_fill  = (14, 20, 33) if i % 2 == 0 else (18, 26, 42)
+            mid_y     = y + ROW_H // 2
+
+            draw.rounded_rectangle([38, y, W - 38, y + ROW_H - 6],
                                    radius=10, fill=row_fill)
-            draw.rounded_rectangle([38, y, 46, y + ROW_H - 8],
+            draw.rounded_rectangle([38, y, 46, y + ROW_H - 6],
                                    radius=4, fill=TEAL_DIM)
 
-            # Rank (use best rank = highest placement)
-            draw.text((RANK_RIGHT, y + ROW_H // 2 - 8),
-                      str(p["best"]), font=rank_font, fill=ACCENT, anchor="rm")
+            # Overall rank number
+            draw.text((RANK_RIGHT, mid_y - 6), str(p["displayRank"]),
+                      font=rank_font, fill=RANK_COLOR, anchor="rm")
 
-            # Player info
-            name_y_offset = 22 if ROW_H >= 140 else 16
-            draw.text((NAME_LEFT, y + name_y_offset), p["name"],
-                      font=_fd(28 if ROW_H >= 140 else 24), fill=WHITE_HI)
+            # Name
+            draw.text((NAME_LEFT, y + 20), p["name"],
+                      font=_fd(26), fill=WHITE_HI)
 
-            detail_y = name_y_offset + 36 if ROW_H >= 140 else name_y_offset + 30
-            cov_y    = detail_y + 28 if ROW_H >= 140 else detail_y + 24
+            # Range subtext
+            draw.text((NAME_LEFT, y + 56),
+                      f"Range: #{p['minRank']}–#{p['maxRank']}",
+                      font=_fd(17), fill=TEXT_LO)
 
-            draw.text((NAME_LEFT, y + detail_y),
-                      f"Consensus range: #{p['best']}–#{p['worst']}",
-                      font=_fd(19 if ROW_H >= 140 else 16), fill=TEXT_LO)
+            # POS badge
+            _draw_pos_badge(draw, 607, mid_y - 2, p["pos"])
 
-            if ROW_H >= 140:
-                draw.text((NAME_LEFT, y + cov_y),
-                          _coverage(p["n_lists"]),
-                          font=_fd(19), fill=TEXT_MID)
+            # Rankle Score
+            draw.text((676, mid_y - 2), f"{p['rankleScore']:.1f}",
+                      font=_fd(22), fill=WHITE_HI, anchor="mm")
 
-            # Badge / age / eta
-            mid_y = y + ROW_H // 2 - 4
-            _badge(draw, 648, mid_y, p["pos"])
-            draw.text((726, mid_y), str(p["age"]),
-                      font=_fd(26 if ROW_H >= 140 else 22), fill=TEXT_MID, anchor="mm")
-            draw.text((826, mid_y), p["eta"],
-                      font=_fd(26 if ROW_H >= 140 else 22), fill=TEXT_MID, anchor="mm")
+            # Volatility badge
+            _draw_vol_badge(draw, 800, mid_y - 2, p["volatility"])
 
-            if i < len(prospects) - 1:
-                sy = y + ROW_H - 6
+            # Consensus dots (centered block)
+            dot_block_w = 6 * 10 + 5 * 8   # 6 dots × 10px + 5 gaps × 8px
+            dots_left   = 876 + (104 - dot_block_w) // 2
+            _draw_consensus_dots(draw, dots_left, mid_y - 2,
+                                 filled=p["consensusAgreement"])
+
+            # Row separator
+            if i < len(team_prospects) - 1:
+                sy = y + ROW_H - 4
                 draw.rectangle([54, sy, W - 54, sy + 1], fill=(255, 255, 255, 8))
 
     # ── Footer ────────────────────────────────────────────────────────────────
-    FY = ROW_Y0 + n_rows * ROW_H + PADDING
+    FY = ROW_Y0 + n_rows * ROW_H + PAD
     draw.rectangle([38, FY, W - 38, FY + 1], fill=(255, 255, 255, 16))
-    draw.text((W // 2, FY + 20),
+    draw.text((W // 2, FY + 18),
               "Consensus rankings aggregated from top prospect analysts.",
-              font=_fd(18), fill=TEXT_LO, anchor="mm")
-    draw.text((W // 2, FY + 50), "RANKLE.DEV",
-              font=_fb(40), fill=TEAL, anchor="mm")
-    draw.text((W // 2, FY + 84),
+              font=_fd(17), fill=TEXT_LO, anchor="mm")
+    draw.text((W // 2, FY + 46), "RANKLE.DEV",
+              font=_fb(38), fill=TEAL, anchor="mm")
+    draw.text((W // 2, FY + 78),
               "Full rankings • Volatility scores • Consensus metrics",
-              font=_fd(18), fill=TEXT_LO, anchor="mm")
+              font=_fd(17), fill=TEXT_LO, anchor="mm")
 
     # ── Crop and return ───────────────────────────────────────────────────────
     content_h = FY + FOOTER_H
@@ -333,7 +429,7 @@ def generate_team_graphic(team_code: str) -> BytesIO:
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    code = sys.argv[1].upper() if len(sys.argv) > 1 else "CHW"
+    code     = sys.argv[1].upper() if len(sys.argv) > 1 else "CHW"
     out_path = os.path.join(BASE_DIR, f"{code.lower()}_prospects.png")
     buf = generate_team_graphic(code)
     with open(out_path, "wb") as f:
