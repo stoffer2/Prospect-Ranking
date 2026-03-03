@@ -1656,22 +1656,32 @@ const RANK_TREND_SIG_KEY = 'rankle-prev-display-sig';
 const RANK_BASELINE_KEY = 'rankle-baseline-ranks';
 const RANK_BASELINE_DATE_KEY = 'rankle-baseline-date';
 const RANK_SET_BASELINE_REQUEST = 'rankle-set-baseline-request';
+
+// ── BAKED BASELINE ──────────────────────────────────────────
+// Populated via admin.html "Generate baseline code" → paste here → push.
+// When non-empty, ALL visitors see rank-change arrows vs this snapshot.
+// Reset arrows for everyone: clear this object and push.
+// ────────────────────────────────────────────────────────────
+var BAKED_BASELINE = {};
+
 let PREV_RANK_MAP = {};
 try {
-    var userBaselineRaw = localStorage.getItem(RANK_BASELINE_KEY);
-    if (userBaselineRaw && userBaselineRaw.length > 0) {
-        try {
-            var parsed = JSON.parse(userBaselineRaw);
-            if (parsed && typeof parsed.ranks === 'object' && parsed.ranks !== null) {
-                PREV_RANK_MAP = parsed.ranks;
-            } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
-                PREV_RANK_MAP = parsed;
-            }
-        } catch(_) {}
-    }
-    if (Object.keys(PREV_RANK_MAP).length === 0) {
-        var stored = JSON.parse(localStorage.getItem(RANK_TREND_KEY) || '{}');
-        PREV_RANK_MAP = (stored && typeof stored.ranks === 'object') ? stored.ranks : (stored && typeof stored === 'object' ? stored : {});
+    if (Object.keys(BAKED_BASELINE).length > 0) {
+        // Hardcoded baseline: consistent for all users on all browsers
+        PREV_RANK_MAP = BAKED_BASELINE;
+    } else {
+        // Fallback: per-browser localStorage (admin's local use only)
+        var userBaselineRaw = localStorage.getItem(RANK_BASELINE_KEY);
+        if (userBaselineRaw && userBaselineRaw.length > 0) {
+            try {
+                var parsed = JSON.parse(userBaselineRaw);
+                if (parsed && typeof parsed.ranks === 'object' && parsed.ranks !== null) {
+                    PREV_RANK_MAP = parsed.ranks;
+                } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed !== null) {
+                    PREV_RANK_MAP = parsed;
+                }
+            } catch(_) {}
+        }
     }
 } catch(e) {}
 
@@ -1693,22 +1703,9 @@ try {
     }
 } catch(e) {}
 
-// Auto baseline: only when there is NO user baseline. Never overwrite rankle-baseline-ranks.
 function rankBaselineSignature() {
     return ALL_PROSPECTS.map(p => p.name + ':' + p.displayRank).join('|');
 }
-try {
-    if (!localStorage.getItem(RANK_BASELINE_KEY) || localStorage.getItem(RANK_BASELINE_KEY).length === 0) {
-        const currentSig = rankBaselineSignature();
-        const lastSig = localStorage.getItem(RANK_TREND_SIG_KEY);
-        if (lastSig !== currentSig) {
-            const nextPrev = {};
-            ALL_PROSPECTS.forEach(p => { nextPrev[p.name] = p.displayRank; });
-            localStorage.setItem(RANK_TREND_KEY, JSON.stringify({ ranks: nextPrev, sig: currentSig }));
-            localStorage.setItem(RANK_TREND_SIG_KEY, currentSig);
-        }
-    }
-} catch(e) {}
 
 const RANK_CHANGE_THRESHOLD = 3;  // min spots moved to show arrow (3+ up or down from baseline)
 const FREE_LIMIT    = 999;  // ← no paywall during development

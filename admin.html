@@ -348,7 +348,8 @@ header {
                 <button class="btn btn-ghost btn-sm" onclick="copyPasteDebugToClipboard()" title="Copy exact paste info so we can fix the parser">📋 Copy for debugging</button>
                 <button class="btn btn-ghost btn-sm" onclick="showPasteDebug()" title="See why parser might return 0">🔍 Debug paste</button>
                 <button class="btn btn-ghost btn-sm" onclick="loadPasteSample()" title="Load a small sample for the selected source">📋 Load sample</button>
-                <button class="btn btn-ghost btn-sm" onclick="setTrendBaseline()" title="Capture current ranking order as the baseline for ↑/↓ trend arrows (3+ spots)">📌 Set trend baseline</button>
+                <button class="btn btn-ghost btn-sm" onclick="setTrendBaseline()" title="Step 1: flag the current rankings for capture. Then open index.html once, then come back and click Generate.">📌 Step 1: Capture baseline</button>
+                <button class="btn btn-ghost btn-sm" onclick="generateBaselineCode()" title="Step 2: after visiting index.html, click here to get the JS code to paste into index.html">📋 Step 2: Generate code</button>
                 <span id="pasteResult" style="font-size:.78rem; color:var(--text-lo);"></span>
             <p style="margin-top:.5rem; font-size:.75rem; color:var(--text-lo);">If Just Baseball won’t parse: click <strong>📋 Copy for debugging</strong> (above), then paste the copied block in chat so we can fix it.</p>
             </div>
@@ -1906,12 +1907,51 @@ function setTrendBaseline() {
         localStorage.setItem('rankle-set-baseline-request', '1');
         const el = document.getElementById('pasteResult');
         if (el) {
-            el.textContent = 'Open the ranking page (index.html) once to freeze this baseline. Arrows will then show movement vs it until you click Set trend baseline again.';
+            el.textContent = 'Step 1 done. Now open index.html once to freeze the baseline, then come back and click Step 2.';
             el.style.color = 'var(--green, #22c55e)';
-            setTimeout(() => { el.textContent = ''; }, 8000);
+            setTimeout(() => { el.textContent = ''; }, 10000);
         }
     } catch (e) {
         console.error('setTrendBaseline', e);
+    }
+}
+
+function generateBaselineCode() {
+    try {
+        const raw = localStorage.getItem('rankle-baseline-ranks');
+        if (!raw) {
+            alert('No baseline found in localStorage.\nMake sure you:\n1. Clicked "Step 1: Capture baseline"\n2. Opened index.html at least once\n3. Came back here and clicked Step 2.');
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        const ranks = (parsed && parsed.ranks) ? parsed.ranks : parsed;
+        if (!ranks || Object.keys(ranks).length === 0) {
+            alert('Baseline is empty. Try Step 1 again.');
+            return;
+        }
+        const entries = Object.entries(ranks)
+            .sort((a, b) => a[1] - b[1])
+            .map(([name, rank]) => `    ${JSON.stringify(name)}: ${rank}`)
+            .join(',\n');
+        const code = `var BAKED_BASELINE = {\n${entries}\n};`;
+        // Show in a copyable dialog
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+        modal.innerHTML = `
+            <div style="background:#141d2b;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:1.5rem;max-width:700px;width:100%;max-height:80vh;display:flex;flex-direction:column;gap:1rem;">
+                <div style="font-size:.85rem;font-weight:600;color:#e6edf3;">Baseline code generated — ${Object.keys(ranks).length} players</div>
+                <div style="font-size:.75rem;color:#a0aec0;line-height:1.5;">Copy the code below and paste it over the <code style="color:#2dd4bf;">var BAKED_BASELINE = {};</code> line in index.html, then push to GitHub.</div>
+                <textarea id="baselineCodeBox" style="flex:1;min-height:220px;background:#0c1220;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:.75rem;font-family:monospace;font-size:.72rem;color:#e6edf3;resize:vertical;" readonly>${code}</textarea>
+                <div style="display:flex;gap:.6rem;">
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('baselineCodeBox').value).then(()=>{this.textContent='✓ Copied!';setTimeout(()=>{this.textContent='📋 Copy code'},2000)})" style="background:rgba(14,165,160,.15);color:#2dd4bf;border:1px solid rgba(14,165,160,.3);border-radius:6px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;">📋 Copy code</button>
+                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:rgba(255,255,255,.07);color:#a0aec0;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:.45rem 1rem;font-size:.82rem;cursor:pointer;">Close</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    } catch(e) {
+        console.error('generateBaselineCode', e);
+        alert('Error: ' + e.message);
     }
 }
 
