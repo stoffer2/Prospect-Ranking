@@ -37,6 +37,16 @@
     --red:        #fb7185;
     --purple:     #d8b4fe;
     --header-height: 190px;  /* fixed site header height; main-content padding-top */
+
+    /* design tokens */
+    --radius-sm:      4px;
+    --radius-md:      8px;
+    --radius-lg:      12px;
+    --radius-pill:    999px;
+    --shadow-sm:      0 1px 4px rgba(0,0,0,.4);
+    --shadow-md:      0 2px 12px rgba(0,0,0,.5);
+    --shadow-lg:      0 4px 24px rgba(0,0,0,.5);
+    --shadow-overlay: 0 8px 32px rgba(0,0,0,.7);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -111,7 +121,7 @@ header {
     white-space: nowrap;
     background: linear-gradient(135deg, var(--gold), #d97706);
     padding: 0.3rem 0.8rem;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
     animation: badge-pulse 2s ease-in-out infinite;
 }
@@ -137,7 +147,7 @@ header {
     color:#fff;
     border: 2px solid rgba(47, 127, 99, 0.7);
     padding: 0.5rem 1.15rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -155,7 +165,7 @@ header {
     color: #1a1a1a;
     border: 2px solid rgba(217, 119, 6, 0.7);
     padding: 0.5rem 1.15rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
@@ -217,14 +227,22 @@ header {
     display: none;
 }
 .hero-desc {
-    color: rgba(255,255,255,0.9);
-    font-size: 1.1rem;
+    color: var(--text-lo);
+    font-size: 1rem;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
     line-height: 1.45;
-    font-style: normal;
     font-weight: 500;
-    margin-top: 0.75rem;
-    margin-bottom: 2rem;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    margin: 0;
+}
+.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
 }
 .hero-pills {
     display: flex;
@@ -246,7 +264,7 @@ header {
     font-weight: 700;
     letter-spacing: 0.4px;
     padding: 0.6rem 1.25rem;
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     border: 2px solid var(--accent);
     color: var(--accent);
     background: rgba(255,255,255,0.95);
@@ -260,7 +278,7 @@ header {
 .hero-preview {
     background: rgba(30, 58, 58, 0.85);
     border: 1px solid rgba(59, 179, 138, 0.3);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     padding: 0.75rem 1rem;
     min-width: 220px;
     position: relative;
@@ -309,7 +327,7 @@ header {
 .filter-group select {
     background: #1e3a3a;
     border: 1px solid #334155;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 0.5rem 0.75rem;
     color: var(--text-hi);
     font-size: 0.85rem;
@@ -331,8 +349,8 @@ header {
 .table-wrap {
     max-width: 1100px; margin: 0 auto 2.5rem;
     padding: 0 1.5rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,.5);
-    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-lg);
     overflow: visible;
     animation: fadeInUp 0.8s ease-out 0.3s both;
 }
@@ -355,18 +373,13 @@ thead th {
 tbody tr {
     border-bottom: 1px solid var(--border);
     transition: background .2s ease;
+    animation: fadeInUp 0.5s ease-out both;
 }
 tbody tr:nth-child(odd)  { background: var(--bg-row); }
 tbody tr:nth-child(even) { background: var(--bg-row-alt); }
 thead th { text-align: center; }
 /* Center specific numeric/stat columns */
 td:nth-child(n+3) { text-align: center; }
-
-tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background .2s ease;
-    animation: fadeInUp 0.5s ease-out both;
-}
 tbody tr:nth-child(1) { animation-delay: 0.35s; }
 tbody tr:nth-child(2) { animation-delay: 0.37s; }
 tbody tr:nth-child(3) { animation-delay: 0.39s; }
@@ -396,15 +409,15 @@ td:first-child { padding-left:1rem; }
 /* rank pill */
 .rank-pill {
     display:inline-flex; align-items:center; justify-content:center;
-    width:38px; height:38px; border-radius:8px;
+    width:38px; height:38px; border-radius: var(--radius-md);
     font-weight:700; font-size:.88rem;
 }
-.rank-tier1 { background: linear-gradient(135deg,#fde047,#facc15); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 0 1px rgba(250,204,21,.4), 0 4px 14px rgba(250,204,21,.45); }
-.rank-gold   { background: linear-gradient(135deg,#a8c5d1,#7aa4b8); color:#1a1a1a; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 8px rgba(122,164,184,.3); }
-.rank-silver { background: linear-gradient(135deg,#f97316,#ea580c); color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 2px 6px rgba(249,115,22,.35); }
-.rank-bronze { background: #d1d5db; color: #6b7280; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.05); }
-.rank-tier4 { background: #d1d5db; color: #6b7280; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.05); }
-.rank-steel { background: #d1d5db; color: #6b7280; border: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.05); }
+.rank-tier1 { background: linear-gradient(135deg,#fde047,#facc15); color:#1a1a1a; box-shadow: 0 0 0 1px rgba(250,204,21,.4), 0 2px 10px rgba(250,204,21,.4); }
+.rank-gold   { background: linear-gradient(135deg,#a8c5d1,#7aa4b8); color:#1a1a1a; box-shadow: 0 2px 8px rgba(122,164,184,.3); }
+.rank-silver { background: linear-gradient(135deg,#f97316,#ea580c); color:#fff; box-shadow: 0 2px 6px rgba(249,115,22,.35); }
+.rank-bronze { background: #d1d5db; color: #6b7280; box-shadow: var(--shadow-sm); }
+.rank-tier4  { background: #d1d5db; color: #6b7280; box-shadow: var(--shadow-sm); }
+.rank-steel  { background: #d1d5db; color: #6b7280; border: none; box-shadow: var(--shadow-sm); }
 
 .empty-state-row td { padding: 2rem !important; border: none !important; }
 .empty-state { text-align: center; color: var(--text-mid); font-size: 0.9rem; }
@@ -442,7 +455,7 @@ td:first-child { padding-left:1rem; }
 .pos-badge {
     display:inline-block;
     padding:.2rem .6rem;
-    border-radius:20px;
+    border-radius: var(--radius-pill);
     font-size:.72rem;
     font-weight:600;
 }
@@ -467,7 +480,7 @@ td:first-child { padding-left:1rem; }
 .vol-num  { font-size:.78rem; color:var(--text-mid); font-weight:500; }
 .vol-badge {
     font-size:.72rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; padding:.25rem .6rem; border-radius:999px;
+    letter-spacing:.06em; padding:.25rem .6rem; border-radius: var(--radius-pill);
     -webkit-font-smoothing: antialiased;
     text-shadow: 0 1px 1px rgba(0,0,0,.25);
 }
@@ -498,7 +511,7 @@ td:first-child { padding-left:1rem; }
 .warn-badge {
     display:inline-flex; align-items:center; gap:.25rem;
     font-size:.68rem; color:#fbbf24; font-weight:600;
-    background:rgba(251,191,36,.1); padding:.12rem .4rem; border-radius:4px;
+    background:rgba(251,191,36,.1); padding:.12rem .4rem; border-radius: var(--radius-sm);
     margin-left:.4rem;
 }
 
@@ -507,7 +520,7 @@ td:first-child { padding-left:1rem; }
 .lock-box {
     background: linear-gradient(135deg, #1e3a3a, #1a2f2f);
     border: 1px solid #334155;
-    border-radius:14px;
+    border-radius: var(--radius-lg);
     padding:2.5rem 2rem;
     text-align:center;
     max-width:420px; margin:1.8rem auto;
@@ -518,7 +531,7 @@ td:first-child { padding-left:1rem; }
 .btn-unlock {
     background: linear-gradient(135deg,#1b4d3e,#2f7f63);
     color:#fff; border:none; padding:.6rem 1.6rem;
-    border-radius:8px; font-size:.92rem; font-weight:700;
+    border-radius: var(--radius-md); font-size:.92rem; font-weight:700;
     cursor:pointer; transition: transform .15s, box-shadow .15s;
     box-shadow: 0 3px 16px rgba(28,92,71,.6);
 }
@@ -536,9 +549,9 @@ td:first-child { padding-left:1rem; }
 .method-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     padding: 2rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+    box-shadow: var(--shadow-lg);
 }
 .method-card h3 { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:2px; margin-bottom:1rem; color: var(--text-hi); }
 .method-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
@@ -560,7 +573,7 @@ footer {
     background: linear-gradient(135deg, #a855f7, #c084fc);
     color: #fff;
     border: 2px solid rgba(192, 132, 252, 0.8);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 0.5rem 1.15rem;
     font-size: 0.85rem;
     font-weight: 700;
@@ -601,7 +614,7 @@ footer {
 .fantasy-drop-zone {
     position: relative;
     border: 2px dashed var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     transition: border-color .2s, background .2s, box-shadow .2s;
     max-width: 1100px;
     margin: 0 auto;
@@ -671,7 +684,7 @@ footer {
     right: 0;
     height: 4px;
     background: var(--border);
-    border-radius: 0 0 6px 6px;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
     overflow: hidden;
 }
 .fantasy-drop-zone.processing .fantasy-progress-wrap { display: block; }
@@ -691,8 +704,8 @@ footer {
     transform: translateX(-50%) translateY(100px);
     background: var(--bg-card);
     border: 1px solid var(--border);
-    box-shadow: 0 8px 24px rgba(0,0,0,.7);
-    border-radius: 10px;
+    box-shadow: var(--shadow-overlay);
+    border-radius: var(--radius-lg);
     padding: 1rem 1.5rem;
     z-index: 9999;
     opacity: 0;
@@ -721,7 +734,7 @@ footer {
     display: inline-block;
     width: 16px;
     height: 16px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     background: linear-gradient(135deg, var(--gold), #d97706);
     flex-shrink: 0;
 }
@@ -817,9 +830,9 @@ footer {
 
 /* Feedback Button */
 @keyframes feedback-pulse {
-    0%   { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 0 rgba(59,130,246,0.6); }
-    70%  { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 12px rgba(59,130,246,0); }
-    100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 0 rgba(59,130,246,0); }
+    0%   { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 0 rgba(47,127,99,0.6); }
+    70%  { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 12px rgba(47,127,99,0); }
+    100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 0 rgba(47,127,99,0); }
 }
 .feedback-btn {
     position: fixed;
@@ -829,7 +842,7 @@ footer {
     background: var(--accent);
     color: #fff;
     border: none;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     padding: 0.75rem 1.5rem;
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
@@ -846,7 +859,7 @@ footer {
     background: var(--accent-hi);
     transform: translateY(-2px);
     animation: none;
-    box-shadow: 0 6px 24px rgba(59,130,246,0.5);
+    box-shadow: 0 6px 24px rgba(47,127,99,0.5);
 }
 @media (max-width: 480px) {
     .feedback-btn {
@@ -872,11 +885,11 @@ footer {
     background: #1e3a3a;
     border: 1px solid #334155;
     border-top: 3px solid var(--accent);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     padding: 2rem;
     max-width: 480px;
     width: 100%;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    box-shadow: var(--shadow-overlay);
 }
 .welcome-modal h2 {
     font-family: 'Bebas Neue', cursive;
@@ -918,7 +931,7 @@ footer {
     background: var(--accent);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 0.75rem;
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
@@ -980,12 +993,13 @@ footer {
 <!-- HERO -->
 <div class="hero">
     <div class="hero-inner">
-        <p class="hero-desc" style="margin: 0; font-size: 1rem; font-family: 'Playfair Display', serif; font-style: italic; color: var(--text-lo);">"Like Rotten Tomatoes, but for baseball prospects."</p>
+        <h1 class="sr-only">Consensus MLB Prospect Rankings</h1>
+        <p class="hero-desc">"Like Rotten Tomatoes, but for baseball prospects."</p>
     </div>
 </div>
 
 <!-- ROSTER UPLOAD SECTION -->
-<div class="fantasy-section" id="fantasySection" style="display: block;">
+<div class="fantasy-section" id="fantasySection">
     <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
         <input type="file" id="fantasyFileInput" accept=".csv,.txt" style="display:none;">
         <div class="fantasy-drop-content">
