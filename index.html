@@ -190,6 +190,26 @@ header {
 .btn-fa-filter:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 16px rgba(217, 119, 6, .7); }
 .btn-fa-filter:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gold); }
 .btn-fa-filter.active { background: linear-gradient(135deg, #dc2626, #b91c1c); border-color: rgba(220, 38, 38, 0.7); color: #fff; }
+.btn-export {
+    background: var(--gold);
+    color: #1a1a1a;
+    border: none;
+    padding: 0 1rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1;
+    white-space: nowrap;
+    align-self: flex-end;
+    transition: filter .15s, transform .15s;
+}
+.btn-export:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
 /* ── HERO ── */
 .hero {
@@ -1103,6 +1123,7 @@ footer {
         </select>
     </div>
     <button class="btn-fa-filter" id="btnFaFilter" style="display:none;">Show Free Agents</button>
+    <button class="btn-export" id="btnExportCsv">↓ Export to CSV</button>
 </div>
 
 <div class="fa-legend" id="faLegend" aria-hidden="true">
@@ -1162,7 +1183,7 @@ footer {
 </div><!-- /.main-content -->
 
 <footer>
-    <p>© 2026 Rankle &nbsp;·&nbsp; All prospect rankings are aggregated from publicly available expert sources. Rankle is not affiliated with MLB or any ranking publication.</p>
+    <p>© 2026 Rankle &nbsp;·&nbsp; All prospect rankings are aggregated from publicly available expert sources. Rankle is not affiliated with MLB or any ranking publication. &nbsp;·&nbsp; <a href="mailto:team.rankle@gmail.com" style="color:inherit;opacity:0.7;">team.rankle@gmail.com</a></p>
 </footer>
 
 <div class="fantasy-toast" id="fantasyToast"></div>
@@ -2543,6 +2564,56 @@ document.getElementById('leagueFilter').addEventListener('change', render);
 document.getElementById('teamFilter').addEventListener('change', render);
 document.getElementById('volFilter').addEventListener('change',  render);
 render();
+
+function exportCSV() {
+    const search = normStr(document.getElementById('searchInput').value);
+    const pos    = document.getElementById('posFilter').value;
+    const league = document.getElementById('leagueFilter').value;
+    const team   = document.getElementById('teamFilter').value;
+    const vol    = document.getElementById('volFilter').value;
+
+    const filtered = ALL_PROSPECTS.filter(p => {
+        if (search) {
+            const normName = normStr(p.name);
+            const tokens = search.split(/\s+/).filter(Boolean);
+            if (!tokens.every(t => normName.includes(t))) return false;
+        }
+        const isPitcher = p.pos === 'SP' || p.pos === 'LHP' || p.pos === 'RHP';
+        if (pos === 'SP'  && !isPitcher)                        return false;
+        if (pos !== 'ALL' && pos !== 'SP' && p.pos !== pos)     return false;
+        if (league !== 'ALL' && LEAGUE_MAP[p.team] !== league) return false;
+        if (team !== 'ALL' && getTeamName(p.team) !== team) return false;
+        if (vol  !== 'ALL' && p.volatility !== vol) return false;
+        return true;
+    });
+
+    const headers = ['Rank', 'Name', 'Team', 'Pos', 'Age', 'ETA', 'Rankle Score', 'Volatility', 'Sources', 'Best Rank', 'Worst Rank'];
+    const rows = filtered.map(p => [
+        p.displayRank,
+        p.name,
+        p.team,
+        p.pos,
+        p.age ?? '',
+        p.eta || '',
+        p.rankleScore,
+        p.volatility,
+        p.sourceCount,
+        p.minRank ?? '',
+        p.maxRank ?? ''
+    ]);
+
+    const csv = [headers, ...rows].map(row =>
+        row.map(v => { const s = String(v); return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s; }).join(',')
+    ).join('\n');
+
+    const date = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `rankle-prospects-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+document.getElementById('btnExportCsv').addEventListener('click', exportCSV);
 
 // Sync --header-height to actual header height
 function syncHeaderHeight() {
