@@ -2376,16 +2376,24 @@ function displayName(p) {
     return (stripped.length > 0 ? stripped : n);
 }
 
+function normStr(s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function render() {
     updateFaLegendVisibility();
-    const search  = document.getElementById('searchInput').value.toLowerCase();
+    const search  = normStr(document.getElementById('searchInput').value);
     const pos     = document.getElementById('posFilter').value;
     const league  = document.getElementById('leagueFilter').value;
     const team    = document.getElementById('teamFilter').value;
     const vol     = document.getElementById('volFilter').value;
 
     const filtered = ALL_PROSPECTS.filter(p => {
-        if (search && !p.name.toLowerCase().includes(search)) return false;
+        if (search) {
+            const normName = normStr(p.name);
+            const tokens = search.split(/\s+/).filter(Boolean);
+            if (!tokens.every(t => normName.includes(t))) return false;
+        }
         const isPitcher = p.pos === 'SP' || p.pos === 'LHP' || p.pos === 'RHP';
         if (pos === 'SP'  && !isPitcher)                        return false;
         if (pos !== 'ALL' && pos !== 'SP' && p.pos !== pos)     return false;
