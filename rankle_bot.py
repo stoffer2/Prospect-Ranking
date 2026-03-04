@@ -10,6 +10,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from hidden_gems import find_gems
 from team_graphic import generate_team_graphic, TEAMS
+from source_monitor import check_for_updates, get_status
 
 load_dotenv()
 
@@ -363,6 +364,65 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await check_feeds(context.application)
 
 
+async def checkupdates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Manually trigger a check of all ranking source pages for changes."""
+    await update.message.reply_text("Checking ranking sources for updates...")
+    try:
+        changed, errors = await asyncio.get_event_loop().run_in_executor(
+            None, check_for_updates
+        )
+        lines = []
+        if changed:
+            lines.append("🔔 *Changes detected:*")
+            for s in changed:
+                lines.append(f"  • {s}")
+        else:
+            lines.append("✅ No changes detected.")
+        if errors:
+            lines.append("\n⚠️ *Errors:*")
+            for s, e in errors:
+                lines.append(f"  • {s}: {e}")
+
+        status = get_status()
+        unconfigured = [r["source"] for r in status if not r["url"]]
+        if unconfigured:
+            lines.append(f"\n⏭️ *Not configured ({len(unconfigured)}):*")
+            lines.append("  " + ", ".join(unconfigured))
+
+        await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+
+async def check_sources_job(context: ContextTypes.DEFAULT_TYPE):
+    """Scheduled job — runs twice daily, notifies if any source has changed."""
+    try:
+        changed, errors = await asyncio.get_event_loop().run_in_executor(
+            None, check_for_updates
+        )
+        if changed:
+            lines = ["🔔 *Ranking source update detected:*"]
+            for s in changed:
+                lines.append(f"  • {s}")
+            lines.append("\nTime to update the data.")
+            await context.bot.send_message(
+                chat_id=CHAT_ID,
+                text="\n".join(lines),
+                parse_mode="Markdown",
+            )
+        if errors:
+            lines = ["⚠️ *Source monitor errors:*"]
+            for s, e in errors:
+                lines.append(f"  • {s}: {e}")
+            await context.bot.send_message(
+                chat_id=CHAT_ID,
+                text="\n".join(lines),
+                parse_mode="Markdown",
+            )
+    except Exception as e:
+        logging.error(f"check_sources_job error: {e}")
+
+
 async def team_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /CHW, /NYY, /LAD, etc. — generate a team prospects graphic."""
     raw = update.message.text.split()[0][1:]   # strip leading /
@@ -393,6 +453,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 Rankle Bot is running!\n\n"
         "/check — fetch latest prospect news now\n"
+        "/checkupdates — check ranking sources for list updates\n"
         "/promo — generate a Rankle promo tweet\n"
         "/gems — find hidden gem prospects in the minors\n"
         "/chw, /nyy, /lad, etc. — generate a team prospects graphic"
@@ -404,6 +465,7 @@ def main():
 
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("check", check_command))
+    app.add_handler(CommandHandler("checkupdates", checkupdates_command))
     app.add_handler(CommandHandler("promo", promo_command))
     app.add_handler(CommandHandler("gems", gems_command))
     app.add_handler(CallbackQueryHandler(button_handler))
@@ -412,6 +474,8 @@ def main():
     app.add_handler(MessageHandler(filters.COMMAND, team_command))
 
     app.job_queue.run_repeating(check_feeds_job, interval=6 * 3600, first=10)
+    # Check ranking source pages twice daily (every 12 hours, first run after 5 min)
+    app.job_queue.run_repeating(check_sources_job, interval=12 * 3600, first=300)
 
     logging.info("Rankle Bot started. Checking feeds every 6 hours.")
     app.run_polling()
