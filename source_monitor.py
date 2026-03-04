@@ -15,15 +15,15 @@ from html.parser import HTMLParser
 # ── Source URLs ───────────────────────────────────────────────────────────────
 # Fill in the direct URL to each source's top-100 prospect page.
 SOURCES = {
-    "MLB Pipeline":    "",   # TODO
-    "Baseball America": "",  # TODO
-    "FanGraphs":        "",  # TODO
-    "ESPN":             "",  # TODO
-    "RotoChamp":        "",  # TODO
-    "RotoProspects":    "",  # TODO
-    "Prospect361":      "",  # TODO
-    "Bleacher Report":  "",  # TODO
-    "Just Baseball":    "",  # TODO
+    "MLB Pipeline":     "",  # blocked — requires headless browser
+    "Baseball America": "https://www.baseballamerica.com/rankings/2026-top-100-prospects/",
+    "FanGraphs":        "https://blogs.fangraphs.com/2026-top-100-prospects/",
+    "ESPN":             "https://www.espn.com/mlb/story/_/id/47684202/top-100-mlb-prospects-2026-kiley-mcdaniel-konnor-griffin-kevin-mcgonigle-jesus-made",
+    "RotoChamp":        "https://www.rotochamp.com/baseball/TopProspects.aspx",
+    "RotoProspects":    "https://rotoprospects.com/updated-top-prospect-rankings/",
+    "Prospect361":      "https://prospect361.com/prospects/2026-top-100-prospects-in-baseball/",
+    "Bleacher Report":  "https://bleacherreport.com/articles/25292386-updated-top-100-mlb-prospect-rankings-2025-26-offseason",
+    "Just Baseball":    "https://www.justbaseball.com/prospects/top-100-mlb-prospects/",
 }
 
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
