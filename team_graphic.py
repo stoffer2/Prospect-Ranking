@@ -36,6 +36,10 @@ RANKINGS_FILES = [
     "prospect361.json", "bleacher-report.json", "just-baseball.json",
 ]
 
+# ── Render scale ──────────────────────────────────────────────────────────────
+# Render at 2× logical resolution, then downsample with LANCZOS → crisp text.
+SCALE = 2
+
 # ── Team metadata ─────────────────────────────────────────────────────────────
 TEAMS = {
     "ARI": ("Arizona Diamondbacks",    (167,  25,  48)),
@@ -232,31 +236,31 @@ GOLD_FULL  = (212, 164,  23)
 GOLD_EMPTY = ( 45,  40,  25)
 
 
-def _draw_pos_badge(draw, cx, cy, pos):
+def _draw_pos_badge(draw, cx, cy, pos, s=1):
     bg, fg = POS_COLORS.get(pos, ((80, 80, 80), (200, 200, 200)))
-    bw, bh = 54, 26
+    bw, bh = 54*s, 26*s
     bx, by = int(cx - bw / 2), int(cy - bh / 2)
-    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5,
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5*s,
                             fill=(bg[0]//5, bg[1]//5, bg[2]//5))
-    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5, outline=fg, width=1)
-    draw.text((cx, cy), pos, font=_fd(14), fill=fg, anchor="mm")
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5*s, outline=fg, width=s)
+    draw.text((cx, cy), pos, font=_fd(14*s), fill=fg, anchor="mm")
 
 
-def _draw_vol_badge(draw, cx, cy, vol):
+def _draw_vol_badge(draw, cx, cy, vol, s=1):
     bg, fg = VOL_COLORS.get(vol, VOL_COLORS["N/A"])
     label  = vol if vol != "N/A" else "—"
-    bw     = {"Low": 54, "Moderate": 90, "High": 60, "Extreme": 80, "N/A": 30}.get(vol, 70)
-    bh     = 26
+    bw     = {"Low": 54, "Moderate": 90, "High": 60, "Extreme": 80, "N/A": 30}.get(vol, 70) * s
+    bh     = 26*s
     bx, by = int(cx - bw / 2), int(cy - bh / 2)
-    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5,
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5*s,
                             fill=(bg[0]//5, bg[1]//5, bg[2]//5))
-    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5, outline=fg, width=1)
-    draw.text((cx, cy), label, font=_fd(13), fill=fg, anchor="mm")
+    draw.rounded_rectangle([bx, by, bx+bw, by+bh], radius=5*s, outline=fg, width=s)
+    draw.text((cx, cy), label, font=_fd(13*s), fill=fg, anchor="mm")
 
 
-def _draw_consensus_dots(draw, left_x, cy, filled, total=6):
-    dot_r  = 5
-    gap    = 8
+def _draw_consensus_dots(draw, left_x, cy, filled, total=6, s=1):
+    dot_r  = 5 * s
+    gap    = 8 * s
     for i in range(total):
         cx = left_x + i * (dot_r * 2 + gap) + dot_r
         color = GOLD_FULL if i < filled else GOLD_EMPTY
@@ -271,6 +275,8 @@ def generate_team_graphic(team_code: str) -> BytesIO:
 
     _ensure_fonts()
 
+    S = SCALE  # all pixel values multiplied by S; canvas downsampled at the end
+
     team_name, team_rgb = TEAMS[team_code]
 
     # Compute full global prospect list, filter to this team
@@ -278,14 +284,13 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     team_prospects = [p for p in all_prospects if p["team"] == team_code][:10]
 
     # ── Layout ────────────────────────────────────────────────────────────────
-    W        = 1080
-    HEADER_H = 162
-    COL_H    = 46
-    ROW_H    = 126
-    FOOTER_H = 102
-    PAD      = 14
+    W        = 1080 * S
+    HEADER_H = 162  * S
+    COL_H    = 46   * S
+    ROW_H    = 126  * S
+    PAD      = 14   * S
     n_rows   = max(len(team_prospects), 1)
-    H        = HEADER_H + COL_H + n_rows * ROW_H + FOOTER_H + PAD * 2
+    H        = HEADER_H + COL_H + n_rows * ROW_H + 130 * S + PAD * 2
 
     img = Image.new("RGB", (W, H), (10, 14, 22))
 
@@ -313,142 +318,142 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     HDR_BG   = (10,  12,  16)
     TEAL_DIM = (10, 110, 106)
 
-    # Luminance guard for decorative accent elements only (top bar, underline)
+    # Luminance guard: dark team colors fall back to TEAL for all colored elements
     acc_lum    = 0.299*ACCENT[0] + 0.587*ACCENT[1] + 0.114*ACCENT[2]
     BAR_COLOR  = ACCENT if acc_lum > 60 else TEAL
     RANK_COLOR = TEAL   # always high-contrast teal on dark pill
 
     # ── Top accent bar ────────────────────────────────────────────────────────
-    draw.rectangle([0, 0, W, 7], fill=BAR_COLOR)
+    draw.rectangle([0, 0, W, 7*S], fill=BAR_COLOR)
 
     # ── Header ────────────────────────────────────────────────────────────────
-    draw.rectangle([0, 7, W, HEADER_H], fill=HDR_BG)
+    draw.rectangle([0, 7*S, W, HEADER_H], fill=HDR_BG)
 
-    abbr_font = _fb(100)
-    draw.text((52, 14), team_code, font=abbr_font, fill=(255, 255, 255))
+    abbr_font = _fb(100*S)
+    # Team abbreviation in team color (BAR_COLOR handles dark-team fallback)
+    draw.text((52*S, 14*S), team_code, font=abbr_font, fill=BAR_COLOR)
 
     # Underline accent below abbr
     abbr_w = int(draw.textlength(team_code, font=abbr_font))
-    draw.rectangle([52, 120, 52 + abbr_w, 122], fill=BAR_COLOR)
-    draw.text((52, 132), team_name, font=_fd(20), fill=TEXT_MID)
+    draw.rectangle([52*S, 120*S, 52*S + abbr_w, 122*S], fill=BAR_COLOR)
+    draw.text((52*S, 132*S), team_name, font=_fd(20*S), fill=TEXT_MID)
 
     # "TOP PROSPECTS" — always legible: white on dark
-    draw.text((W - 52, 32),  "TOP",        font=_fb(50), fill=WHITE_HI,  anchor="rt")
-    draw.text((W - 52, 80),  "PROSPECTS",  font=_fb(50), fill=TEAL,      anchor="rt")
-    draw.text((W - 52, 138), "RANKLE.DEV", font=_fb(26), fill=TEAL,      anchor="rt")
+    draw.text((W - 52*S, 32*S),  "TOP",        font=_fb(50*S), fill=WHITE_HI,  anchor="rt")
+    draw.text((W - 52*S, 80*S),  "PROSPECTS",  font=_fb(50*S), fill=TEAL,      anchor="rt")
+    draw.text((W - 52*S, 138*S), "RANKLE.DEV", font=_fb(26*S), fill=TEAL,      anchor="rt")
 
     # ── Measure rank column width first (needed for header alignment) ─────────
-    rank_font = _fb(50)
+    rank_font = _fb(50*S)
     tmp_d = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     max_rw = max(
         (tmp_d.textlength(str(p["displayRank"]), font=rank_font) for p in team_prospects),
-        default=50,
+        default=50*S,
     )
-    RANK_RIGHT = 52 + int(max_rw) + 8
-    NAME_LEFT  = RANK_RIGHT + 16
+    RANK_RIGHT = 52*S + int(max_rw) + 8*S
+    NAME_LEFT  = RANK_RIGHT + 16*S
 
     # Data column centers (used for both headers and row data)
-    C_RANK = (46 + RANK_RIGHT) // 2          # center of rank pill zone
-    C_POS  = 607
-    C_SCR  = 676
-    C_VOL  = 800
-    DOT_W  = 6 * 10 + 5 * 8                 # dots block width = 100px
-    C_CONS = 876 + DOT_W // 2               # center of dots block
+    C_RANK = (46*S + RANK_RIGHT) // 2
+    C_POS  = 607*S
+    C_SCR  = 676*S
+    C_VOL  = 800*S
+    DOT_W  = (6 * 10 + 5 * 8) * S              # dots block width
+    C_CONS = 876*S + DOT_W // 2                 # center of dots block
 
     # ── Column headers ────────────────────────────────────────────────────────
-    COL_Y = HEADER_H + 12
-    hf = _fd(13)
-    HDR_COLOR = (190, 200, 215)              # brighter than TEXT_LO, below WHITE_HI
-    draw.text((C_RANK,  COL_Y), "#",          font=hf, fill=HDR_COLOR, anchor="mm")
-    draw.text((NAME_LEFT, COL_Y), "PLAYER",   font=hf, fill=HDR_COLOR, anchor="lm")
-    draw.text((C_POS,   COL_Y), "POS",        font=hf, fill=HDR_COLOR, anchor="mm")
-    draw.text((C_SCR,   COL_Y), "SCORE",      font=hf, fill=HDR_COLOR, anchor="mm")
-    draw.text((C_VOL,   COL_Y), "VOLATILITY", font=hf, fill=HDR_COLOR, anchor="mm")
-    draw.text((C_CONS,  COL_Y), "CONSENSUS",  font=hf, fill=HDR_COLOR, anchor="mm")
-    draw.rectangle([38, COL_Y + 10, W - 38, COL_Y + 11], fill=(255, 255, 255, 18))
+    COL_Y = HEADER_H + 12*S
+    hf = _fd(13*S)
+    HDR_COLOR = (190, 200, 215)
+    draw.text((C_RANK,    COL_Y), "#",          font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((NAME_LEFT, COL_Y), "PLAYER",     font=hf, fill=HDR_COLOR, anchor="lm")
+    draw.text((C_POS,     COL_Y), "POS",        font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_SCR,     COL_Y), "SCORE",      font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_VOL,     COL_Y), "VOLATILITY", font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.text((C_CONS,    COL_Y), "CONSENSUS",  font=hf, fill=HDR_COLOR, anchor="mm")
+    draw.rectangle([38*S, COL_Y + 10*S, W - 38*S, COL_Y + 11*S], fill=(255, 255, 255, 18))
 
     # ── Prospect rows ─────────────────────────────────────────────────────────
-    ROW_Y0 = COL_Y + 28
+    ROW_Y0 = COL_Y + 28*S
 
     if not team_prospects:
-        draw.text((W // 2, ROW_Y0 + 60),
+        draw.text((W // 2, ROW_Y0 + 60*S),
                   "No prospects in the consensus rankings.",
-                  font=_fd(20), fill=TEXT_LO, anchor="mm")
+                  font=_fd(20*S), fill=TEXT_LO, anchor="mm")
     else:
         for i, p in enumerate(team_prospects):
             y         = ROW_Y0 + i * ROW_H
             row_fill  = (14, 20, 33) if i % 2 == 0 else (18, 26, 42)
             mid_y     = y + ROW_H // 2
 
-            draw.rounded_rectangle([38, y, W - 38, y + ROW_H - 6],
-                                   radius=10, fill=row_fill)
-            draw.rounded_rectangle([38, y, 46, y + ROW_H - 6],
-                                   radius=4, fill=TEAL_DIM)
+            draw.rounded_rectangle([38*S, y, W - 38*S, y + ROW_H - 6*S],
+                                   radius=10*S, fill=row_fill)
+            draw.rounded_rectangle([38*S, y, 46*S, y + ROW_H - 6*S],
+                                   radius=4*S, fill=TEAL_DIM)
 
             # Overall rank number — on a dark pill for contrast
             rank_str = str(p["displayRank"])
             rank_w   = int(tmp_d.textlength(rank_str, font=rank_font))
-            pill_pad = 10
+            pill_pad = 10*S
             pill_x0  = RANK_RIGHT - rank_w - pill_pad
             pill_x1  = RANK_RIGHT + pill_pad
-            pill_y0  = mid_y - 34
-            pill_y1  = mid_y + 22
+            pill_y0  = mid_y - 34*S
+            pill_y1  = mid_y + 22*S
             draw.rounded_rectangle([pill_x0, pill_y0, pill_x1, pill_y1],
-                                   radius=8, fill=(6, 10, 18))
-            draw.text((RANK_RIGHT, mid_y - 6), rank_str,
+                                   radius=8*S, fill=(6, 10, 18))
+            draw.text((RANK_RIGHT, mid_y - 6*S), rank_str,
                       font=rank_font, fill=RANK_COLOR, anchor="rm")
 
             # Name
-            draw.text((NAME_LEFT, y + 20), p["name"],
-                      font=_fd(26), fill=(255, 255, 255))
+            draw.text((NAME_LEFT, y + 20*S), p["name"],
+                      font=_fd(26*S), fill=(255, 255, 255))
 
             # Range subtext
-            draw.text((NAME_LEFT, y + 56),
+            draw.text((NAME_LEFT, y + 56*S),
                       f"Range: #{p['minRank']}–#{p['maxRank']}",
-                      font=_fd(17), fill=TEXT_MID)
+                      font=_fd(17*S), fill=TEXT_MID)
 
             # POS badge
-            _draw_pos_badge(draw, C_POS, mid_y - 2, p["pos"])
+            _draw_pos_badge(draw, C_POS, mid_y - 2*S, p["pos"], s=S)
 
             # Rankle Score
-            draw.text((C_SCR, mid_y - 2), f"{p['rankleScore']:.1f}",
-                      font=_fd(22), fill=WHITE_HI, anchor="mm")
+            draw.text((C_SCR, mid_y - 2*S), f"{p['rankleScore']:.1f}",
+                      font=_fd(22*S), fill=WHITE_HI, anchor="mm")
 
             # Volatility badge
-            _draw_vol_badge(draw, C_VOL, mid_y - 2, p["volatility"])
+            _draw_vol_badge(draw, C_VOL, mid_y - 2*S, p["volatility"], s=S)
 
             # Consensus dots — centered on C_CONS
             dots_left = C_CONS - DOT_W // 2
-            _draw_consensus_dots(draw, dots_left, mid_y - 2,
-                                 filled=p["consensusAgreement"])
+            _draw_consensus_dots(draw, dots_left, mid_y - 2*S,
+                                 filled=p["consensusAgreement"], s=S)
 
             # Row separator
             if i < len(team_prospects) - 1:
-                sy = y + ROW_H - 4
-                draw.rectangle([54, sy, W - 54, sy + 1], fill=(255, 255, 255, 8))
+                sy = y + ROW_H - 4*S
+                draw.rectangle([54*S, sy, W - 54*S, sy + S], fill=(255, 255, 255, 8))
 
     # ── Footer / legend ───────────────────────────────────────────────────────
-    # Extra gap above legend so the divider line breathes
-    FY = ROW_Y0 + n_rows * ROW_H + PAD + 10
+    FY = ROW_Y0 + n_rows * ROW_H + PAD + 10*S
 
-    LEG_H  = 76
-    LBL_F  = _fd(13)
-    HINT_F = _fd(12)
+    LEG_H  = 76 * S
+    LBL_F  = _fd(13*S)
+    HINT_F = _fd(12*S)
     LBL_C  = (210, 218, 228)
     HINT_C = (160, 174, 192)
 
     draw.rectangle([0, FY, W, FY + LEG_H], fill=(16, 22, 34))
     # Prominent top border
-    draw.rectangle([0, FY, W, FY + 2], fill=(255, 255, 255, 30))
+    draw.rectangle([0, FY, W, FY + 2*S], fill=(255, 255, 255, 30))
 
     # Fixed separator at canvas midpoint — never overlaps content
     SEP_X = W // 2
-    TOP   = FY + 14
-    MID   = FY + 40
-    BOT   = FY + 62
+    TOP   = FY + 14*S
+    MID   = FY + 40*S
+    BOT   = FY + 62*S
 
-    # ── Group 1: Volatility (left half, x=56 … SEP_X-20) ─────────────────────
-    GX = 56
+    # ── Group 1: Volatility (left half, x=56*S … SEP_X) ──────────────────────
+    GX = 56*S
     draw.text((GX, TOP), "Volatility", font=LBL_F, fill=LBL_C, anchor="lm")
     draw.text((GX, BOT), "How much experts disagree on ranking position",
               font=HINT_F, fill=HINT_C, anchor="lm")
@@ -456,38 +461,37 @@ def generate_team_graphic(team_code: str) -> BytesIO:
     bx = GX
     for label, vol_key in [("Low","Low"),("Moderate","Moderate"),("High","High"),("Extreme","Extreme")]:
         bg_c, fg = VOL_COLORS[vol_key]
-        bw = int(_fd(13).getlength(label)) + 16
-        bh = 22
+        bw = int(_fd(13*S).getlength(label)) + 16*S
+        bh = 22*S
         by = MID - bh // 2
-        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4,
+        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4*S,
                                 fill=(bg_c[0]//5, bg_c[1]//5, bg_c[2]//5))
-        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4,
-                                outline=fg, width=1)
-        draw.text((bx + bw // 2, MID), label, font=_fd(13), fill=fg, anchor="mm")
-        bx += bw + 6
+        draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=4*S,
+                                outline=fg, width=S)
+        draw.text((bx + bw // 2, MID), label, font=_fd(13*S), fill=fg, anchor="mm")
+        bx += bw + 6*S
 
     # ── Separator at midpoint ─────────────────────────────────────────────────
-    draw.rectangle([SEP_X, FY + 12, SEP_X + 1, FY + LEG_H - 12],
+    draw.rectangle([SEP_X, FY + 12*S, SEP_X + S, FY + LEG_H - 12*S],
                    fill=(255, 255, 255, 25))
 
-    # ── Group 2: Consensus (right half, x=SEP_X+24 …) ────────────────────────
-    GX2 = SEP_X + 24
+    # ── Group 2: Consensus (right half, x=SEP_X+24*S …) ──────────────────────
+    GX2 = SEP_X + 24*S
     draw.text((GX2, TOP), "Consensus", font=LBL_F, fill=LBL_C, anchor="lm")
     draw.text((GX2, BOT), "Pips show how many sources agree on position",
               font=HINT_F, fill=HINT_C, anchor="lm")
-    _draw_consensus_dots(draw, GX2, MID, filled=6)
+    _draw_consensus_dots(draw, GX2, MID, filled=6, s=S)
 
     # ── Branding strip ────────────────────────────────────────────────────────
-    BRAND_H = 48
+    BRAND_H = 48 * S
     draw.rectangle([0, FY + LEG_H, W, FY + LEG_H + BRAND_H], fill=(10, 14, 22))
     draw.text((W // 2, FY + LEG_H + BRAND_H // 2),
-              "RANKLE.DEV", font=_fb(32), fill=TEAL, anchor="mm")
+              "RANKLE.DEV", font=_fb(32*S), fill=TEAL, anchor="mm")
 
-    FOOTER_H = LEG_H + BRAND_H + 10
-
-    # ── Crop and return ───────────────────────────────────────────────────────
-    content_h = FY + FOOTER_H
+    # ── Crop, downsample 2×→1×, return ───────────────────────────────────────
+    content_h = FY + LEG_H + BRAND_H + 10*S
     final = img.crop((0, 0, W, content_h))
+    final = final.resize((W // S, content_h // S), Image.Resampling.LANCZOS)
 
     buf = BytesIO()
     final.save(buf, "PNG")
