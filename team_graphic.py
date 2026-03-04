@@ -24,6 +24,12 @@ BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 BEBAS_PATH = os.path.join(BASE_DIR, "BebasNeue.ttf")
 DM_PATH    = os.path.join(BASE_DIR, "DMSans.ttf")
 
+# JSON data files live in Prospect-Ranking. If running from a sibling directory
+# (e.g. rankle-bot), fall back to the Prospect-Ranking sibling.
+_prospect_ranking_dir = os.path.join(os.path.dirname(BASE_DIR), "Prospect-Ranking")
+DATA_DIR = BASE_DIR if os.path.exists(os.path.join(BASE_DIR, "mlb-pipeline.json")) \
+           else _prospect_ranking_dir
+
 RANKINGS_FILES = [
     "mlb-pipeline.json", "baseball-america.json", "fangraphs.json",
     "espn.json", "rotochamp.json", "rotoprospects.json",
@@ -158,7 +164,7 @@ def _load_all_prospects():
     player_sources = defaultdict(list)   # name → [{rank, list_length, pos, age, eta, team}]
 
     for filename in RANKINGS_FILES:
-        path = os.path.join(BASE_DIR, filename)
+        path = os.path.join(DATA_DIR, filename)
         if not os.path.exists(path):
             continue
         with open(path) as f:
