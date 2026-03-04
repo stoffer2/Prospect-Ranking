@@ -176,7 +176,7 @@ header {
     background: linear-gradient(135deg, var(--gold), #d97706);
     color: #1a1a1a;
     border: 2px solid rgba(217, 119, 6, 0.7);
-    padding: 0.5rem 1.15rem;
+    padding: 0 1rem;
     border-radius: var(--radius-md);
     font-size: 0.85rem;
     font-weight: 700;
@@ -184,7 +184,9 @@ header {
     letter-spacing: 0.3px;
     display: inline-flex;
     align-items: center;
-    line-height: 1;
+    justify-content: center;
+    width: 100%;
+    white-space: nowrap;
     transition: transform .15s, box-shadow .15s, background .15s;
 }
 .btn-fa-filter:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 16px rgba(217, 119, 6, .7); }
@@ -195,7 +197,6 @@ header {
     color: #1a1a1a;
     border: none;
     padding: 0 1rem;
-    height: 2.25rem;
     border-radius: var(--radius-md);
     font-size: 0.85rem;
     font-weight: 700;
@@ -204,9 +205,9 @@ header {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    line-height: 1;
     white-space: nowrap;
-    align-self: flex-end;
+    width: 100%;
+    justify-content: center;
     transition: filter .15s, transform .15s;
 }
 .btn-export:hover { filter: brightness(1.1); transform: translateY(-1px); }
@@ -355,11 +356,17 @@ header {
 .filter-group { display:flex; flex-direction:column; gap:.3rem; flex:1; min-width:140px; }
 .filter-group label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-mid); font-weight: 600; }
 .filter-group input,
+.filter-group select,
+.filter-group--btn button {
+    height: 2.25rem;
+    box-sizing: border-box;
+}
+.filter-group input,
 .filter-group select {
     background: var(--bg-card);
     border: 1px solid var(--border-hi);
     border-radius: var(--radius-md);
-    padding: 0.5rem 0.75rem;
+    padding: 0 0.75rem;
     color: var(--text-hi);
     font-size: 0.85rem;
     font-family: inherit;
@@ -666,7 +673,7 @@ footer {
     color: var(--accent-hi);
     border: 1px solid rgba(14,165,160,0.35);
     border-radius: var(--radius-md);
-    padding: 0.5rem 1.15rem;
+    padding: 0 1rem;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -674,81 +681,14 @@ footer {
     letter-spacing: 0.3px;
     display: inline-flex;
     align-items: center;
-    line-height: 1;
+    justify-content: center;
+    width: 100%;
+    white-space: nowrap;
     transition: background .15s, border-color .15s, box-shadow .15s;
 }
 .btn-upload-roster:hover { background: rgba(14,165,160,0.2); border-color: rgba(14,165,160,0.55); box-shadow: 0 4px 16px rgba(14,165,160,.2); }
 .btn-upload-roster.loaded { background: var(--green); color: #0a0e1a; }
 .btn-upload-roster.loaded:hover { box-shadow: 0 4px 14px rgba(52,211,153,.4); }
-.fantasy-section {
-    display: block;
-    padding: 1rem 2rem;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1rem;
-    animation: fadeInUp 0.8s ease-out 0.4s both;
-}
-.fantasy-section.open { display: block; }
-.fantasy-header {
-    max-width: 1100px;
-    margin: 0 auto 1.5rem;
-    text-align: center;
-}
-.fantasy-title {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.8rem;
-    letter-spacing: 2px;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-}
-.fantasy-desc { color: var(--text-mid); font-size: 0.95rem; margin-bottom: 0.75rem; line-height: 1.6; font-weight: 500; }
-.fantasy-drop-zone {
-    position: relative;
-    border: 2px dashed var(--border);
-    border-radius: var(--radius-lg);
-    transition: border-color .2s, background .2s, box-shadow .2s;
-    max-width: 1100px;
-    margin: 0 auto;
-    background: var(--bg-card);
-    border-color: var(--border-hi);
-    box-shadow: 0 2px 8px rgba(0,0,0,.3);
-}
-.fantasy-drop-zone.drag-over { 
-    border-color: var(--gold); 
-    background: rgba(245,158,11,.12);
-    box-shadow: 0 4px 16px rgba(245,158,11,.2);
-}
-.fantasy-drop-zone.success { 
-    border-color: var(--green); 
-    background: rgba(52,211,153,.08);
-    box-shadow: 0 4px 16px rgba(52,211,153,.15);
-}
-.fantasy-drop-content {
-    padding: 1rem 2rem;
-    text-align: center;
-    position: relative;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-.fantasy-drop-placeholder {
-    color: var(--text-hi);
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.5;
-}
-.fantasy-drop-processing,
-.fantasy-drop-success { display: none; }
-.fantasy-drop-zone.processing .fantasy-drop-placeholder { display: none; }
-.fantasy-drop-zone.processing .fantasy-drop-processing { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
-.fantasy-drop-zone.processing .fantasy-drop-success { display: none; }
-.fantasy-drop-zone.success .fantasy-drop-placeholder,
-.fantasy-drop-zone.success .fantasy-drop-processing { display: none; }
-.fantasy-drop-zone.success .fantasy-drop-success { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-.fantasy-drop-processing span { color: var(--text-mid); font-size: 0.9rem; }
 .fantasy-checkmark {
     width: 48px; height: 48px;
     border-radius: 50%;
@@ -765,26 +705,6 @@ footer {
     0% { transform: scale(0); opacity: 0; }
     60% { transform: scale(1.15); }
     100% { transform: scale(1); opacity: 1; }
-}
-.fantasy-drop-success span:last-child { color: var(--green); font-weight: 600; font-size: 0.95rem; }
-.fantasy-progress-wrap {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--border);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    overflow: hidden;
-}
-.fantasy-drop-zone.processing .fantasy-progress-wrap { display: block; }
-.fantasy-drop-zone.success .fantasy-progress-wrap { display: none; }
-.fantasy-progress-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hi));
-    transition: width 0.12s ease-out;
 }
 
 /* ── TOAST ── */
@@ -841,10 +761,6 @@ footer {
     .header-right { flex-wrap: wrap; }
     .btn-pro { padding: 0.4rem 0.75rem; font-size: 0.72rem; }
     .fantasy-section { padding: 1.5rem 1rem; margin-bottom: 0.75rem; }
-    .fantasy-title { font-size: 1.3rem; }
-    .fantasy-desc { font-size: 0.85rem; }
-    .fantasy-drop-content { padding: 2rem 1rem; min-height: 100px; }
-    .fantasy-drop-placeholder { font-size: 0.9rem; }
     .hero { padding: 1.25rem 1rem 1.5rem; margin-bottom: 0; }
     .hero h1 { font-size: 1.85rem; }
     .filter-bar { margin: 0 auto 0.75rem; padding: 0 1rem; gap: 0.6rem; }
@@ -871,11 +787,6 @@ footer {
     .beta-badge { font-size: 0.68rem; padding: 0.25rem 0.6rem; }
     .btn-pro { padding: 0.4rem 0.65rem; font-size: 0.75rem; }
     .logo-title { font-size: 1.55rem; letter-spacing: 1px; }
-    .fantasy-section { padding: 1.25rem 0.75rem; margin-bottom: 0.5rem; }
-    .fantasy-title { font-size: 1.1rem; }
-    .fantasy-desc { font-size: 0.8rem; }
-    .fantasy-drop-content { padding: 1.5rem 0.75rem; min-height: 90px; }
-    .fantasy-drop-placeholder { font-size: 0.85rem; }
     .hero { padding: 1rem 0.75rem 1.25rem; }
     .hero h1 { font-size: 1.5rem; }
     .filter-bar { padding: 0 0.75rem; flex-direction: column; }
@@ -938,114 +849,11 @@ footer {
     }
 }
 
-/* Welcome Modal */
-.welcome-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-.welcome-modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border-hi);
-    border-top: 3px solid var(--accent);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    max-width: 480px;
-    width: 100%;
-    box-shadow: var(--shadow-overlay);
-}
-.welcome-modal h2 {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.8rem;
-    letter-spacing: 0.08em;
-    color: var(--text-hi);
-    margin-bottom: 0.25rem;
-}
-.welcome-modal .welcome-tagline {
-    color: var(--accent-hi);
-    font-size: 0.95rem;
-    margin-bottom: 1.25rem;
-}
-.welcome-modal .welcome-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-.welcome-modal .welcome-item {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-    font-size: 0.9rem;
-    color: var(--text-mid);
-    line-height: 1.5;
-}
-.welcome-modal .welcome-item strong {
-    color: var(--text-hi);
-}
-.welcome-item-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-}
-.welcome-modal .btn-got-it {
-    width: 100%;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: 0.75rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.welcome-modal .btn-got-it:hover {
-    background: var(--accent-hi);
-}
-.welcome-beta-note {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--text-lo);
-    margin-top: 0.75rem;
-}
 </style>
 <script data-goatcounter="https://rankledev.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 
-<!-- Welcome Modal -->
-<div class="welcome-overlay" id="welcomeOverlay">
-    <div class="welcome-modal">
-        <h2>Welcome to Rankle</h2>
-        <p class="welcome-tagline">"Like Rotten Tomatoes, but for baseball prospects."</p>
-        <div class="welcome-items">
-            <div class="welcome-item">
-                <span class="welcome-item-icon">📊</span>
-                <span><strong>Rankle Score (0–100)</strong> — Our consensus metric, built by a model that weighs each prospect's placement across multiple expert rankings — not a simple average, but a calculated score that reflects both where and how consistently a prospect appears across lists.</span>
-            </div>
-            <div class="welcome-item">
-                <span class="welcome-item-icon">🎯</span>
-                <span><strong>Consensus dots</strong> — Lit dots show how many sources place a prospect in roughly the same tier. More dots = more agreement on where they belong.</span>
-            </div>
-            <div class="welcome-item">
-                <span class="welcome-item-icon">⚡</span>
-                <span><strong>Volatility</strong> — How much the experts disagree. Low = everyone's on the same page. High = polarizing prospect worth watching closely.</span>
-            </div>
-            <div class="welcome-item">
-                <span class="welcome-item-icon">⚾</span>
-                <span><strong>Fantasy roster upload</strong> — Import your league roster to instantly highlight which top prospects are still available.</span>
-            </div>
-        </div>
-        <button class="btn-got-it" id="welcomeDismiss">Got it — show me the rankings</button>
-        <p class="welcome-beta-note">Rankle is free during beta. As a thank you, beta users will receive a discount when Rankle officially launches — leave your email in the feedback form and we'll make sure you get it.</p>
-    </div>
-</div>
 
 <header>
     <div class="header-spacer"></div>
@@ -1062,33 +870,10 @@ footer {
     <div class="hero-inner">
         <h1 class="sr-only">Consensus MLB Prospect Rankings</h1>
         <p class="hero-desc">"Like Rotten Tomatoes, but for baseball prospects."</p>
-        <p class="hero-method">Consensus rankings built from expert sources using <span style="color:var(--accent-hi);font-weight:600;">Z-score normalization</span>.</p>
     </div>
 </div>
 
-<!-- ROSTER UPLOAD SECTION -->
-<div class="fantasy-section" id="fantasySection">
-    <div class="fantasy-drop-zone" id="fantasyDropZone" tabindex="0">
-        <input type="file" id="fantasyFileInput" accept=".csv,.txt" style="display:none;">
-        <div class="fantasy-drop-content">
-            <div class="fantasy-drop-placeholder">
-                <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">📋</div>
-                <strong>Upload your league's roster CSV file to see player availability.</strong>
-                <div style="font-size: 0.85rem; color: var(--text-lo); margin-top: 0.35rem;">Tap or click to browse, or drag and drop</div>
-            </div>
-            <div class="fantasy-drop-processing">
-                <span>Processing…</span>
-            </div>
-            <div class="fantasy-drop-success">
-                <div class="fantasy-checkmark">✓</div>
-                <span>Roster imported!</span>
-            </div>
-        </div>
-        <div class="fantasy-progress-wrap">
-            <div class="fantasy-progress-bar" id="fantasyProgressBar"></div>
-        </div>
-    </div>
-</div>
+<input type="file" id="fantasyFileInput" accept=".csv,.txt" style="display:none;">
 
 <!-- FILTERS -->
 <div class="filter-bar">
@@ -1122,8 +907,18 @@ footer {
             <option value="Extreme">Extreme</option>
         </select>
     </div>
-    <button class="btn-fa-filter" id="btnFaFilter" style="display:none;">Show Free Agents</button>
-    <button class="btn-export" id="btnExportCsv">↓ Export to CSV</button>
+    <div class="filter-group filter-group--btn">
+        <label>&nbsp;</label>
+        <button class="btn-upload-roster" id="btnUploadRoster">Upload Roster</button>
+    </div>
+    <div class="filter-group filter-group--btn" id="btnFaFilterWrap" style="display:none;">
+        <label>&nbsp;</label>
+        <button class="btn-fa-filter" id="btnFaFilter">Show Free Agents</button>
+    </div>
+    <div class="filter-group filter-group--btn">
+        <label>&nbsp;</label>
+        <button class="btn-export" id="btnExportCsv">↓ Export to CSV</button>
+    </div>
 </div>
 
 <div class="fa-legend" id="faLegend" aria-hidden="true">
@@ -2120,11 +1915,12 @@ function updateFaLegendVisibility() {
     }
     
     // Show/hide the FA filter button
-    const btnFaFilter = document.getElementById('btnFaFilter');
-    if (btnFaFilter) {
-        btnFaFilter.style.display = Object.keys(ownershipMap).length > 0 ? 'inline-flex' : 'none';
-        btnFaFilter.classList.remove('active');  // Reset to default state
+    const btnFaFilterWrap = document.getElementById('btnFaFilterWrap');
+    if (btnFaFilterWrap) {
+        btnFaFilterWrap.style.display = Object.keys(ownershipMap).length > 0 ? 'flex' : 'none';
     }
+    const btnFaFilter = document.getElementById('btnFaFilter');
+    if (btnFaFilter) btnFaFilter.classList.remove('active');
 }
 
 let faFilterActive = false;
@@ -2162,10 +1958,6 @@ function applyFantasyCsv(text, opts) {
     updateFaLegendVisibility();
     render();
 
-    if (opts?.skipClose !== true) {
-        document.getElementById('fantasySection').classList.remove('open');
-    }
-
     const toast = document.getElementById('fantasyToast');
     toast.innerHTML = 'Roster imported successfully.';
     toast.classList.add('show');
@@ -2173,40 +1965,7 @@ function applyFantasyCsv(text, opts) {
 }
 
 function processAndApplyCsv(text) {
-    const zone = document.getElementById('fantasyDropZone');
-    const bar = document.getElementById('fantasyProgressBar');
-
-    zone.classList.remove('success');
-    zone.classList.add('processing');
-    bar.style.width = '0%';
-
-    // Animate loading bar 0 -> 100% over ~500ms
-    const duration = 500;
-    const start = performance.now();
-    function tick(now) {
-        const elapsed = now - start;
-        const pct = Math.min((elapsed / duration) * 100, 100);
-        bar.style.width = pct + '%';
-
-        if (pct < 100) {
-            requestAnimationFrame(tick);
-            return;
-        }
-
-        // Bar complete: apply data and show success
-        applyFantasyCsv(text, { skipClose: true });
-
-        zone.classList.remove('processing');
-        zone.classList.add('success');
-
-        // Close section and reset after showing checkmark
-        setTimeout(() => {
-            document.getElementById('fantasySection').classList.remove('open');
-            zone.classList.remove('success');
-            bar.style.width = '0%';
-        }, 1400);
-    }
-    requestAnimationFrame(tick);
+    applyFantasyCsv(text);
 }
 
 (function loadFantasyFromStorage() {
@@ -2220,30 +1979,10 @@ function processAndApplyCsv(text) {
 })();
 
 (function setupFantasyDropZone() {
-    const zone = document.getElementById('fantasyDropZone');
-    ['dragenter', 'dragover'].forEach(ev => {
-        zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
-    });
-    ['dragleave', 'drop'].forEach(ev => {
-        zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.remove('drag-over'); });
-    });
-    zone.addEventListener('drop', e => {
-        const file = e.dataTransfer?.files?.[0];
-        if (!file) return;
-        if (!/\.(csv|txt)$/i.test(file.name) && !file.type.match(/text\/|csv/)) return;
-        const reader = new FileReader();
-        reader.onload = () => processAndApplyCsv(reader.result);
-        reader.readAsText(file);
-    });
-    zone.addEventListener('paste', e => {
-        e.preventDefault();
-        const text = e.clipboardData?.getData('text/plain') || '';
-        if (text.trim()) processAndApplyCsv(text);
-    });
-
-    // Tap/click to open file picker
     const fileInput = document.getElementById('fantasyFileInput');
-    zone.addEventListener('click', () => fileInput.click());
+    const btn = document.getElementById('btnUploadRoster');
+
+    btn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => {
         const file = fileInput.files?.[0];
         if (!file) return;
@@ -2251,6 +1990,18 @@ function processAndApplyCsv(text) {
         reader.onload = () => processAndApplyCsv(reader.result);
         reader.readAsText(file);
         fileInput.value = '';
+    });
+
+    // Keep drag-and-drop working anywhere on the page
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', e => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        if (!/\.(csv|txt)$/i.test(file.name) && !file.type.match(/text\/|csv/)) return;
+        const reader = new FileReader();
+        reader.onload = () => processAndApplyCsv(reader.result);
+        reader.readAsText(file);
     });
 })();
 
@@ -2623,18 +2374,6 @@ function syncHeaderHeight() {
 syncHeaderHeight();
 window.addEventListener('resize', syncHeaderHeight);
 
-// Welcome modal
-(function() {
-    const overlay = document.getElementById('welcomeOverlay');
-    if (localStorage.getItem('rankle-welcome-seen')) {
-        overlay.style.display = 'none';
-    } else {
-        document.getElementById('welcomeDismiss').addEventListener('click', function() {
-            overlay.style.display = 'none';
-            localStorage.setItem('rankle-welcome-seen', '1');
-        });
-    }
-})();
 
 </script>
 
