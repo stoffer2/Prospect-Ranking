@@ -2229,10 +2229,9 @@ function showPlayerModal(p) {
     }
 
     const sourceRowsHtml = ranked.map(s => {
-        const pct = ((s.rank - 1) / 99 * 100).toFixed(1);
+        const pct = ((100 - s.rank) / 99 * 100).toFixed(1);
         return `
             <div class="source-row">
-                <span class="source-name">${s.label}</span>
                 <div class="source-track">
                     <div class="source-dot" style="left:${pct}%;background:${dotColor(s.rank)}" title="#${s.rank}"></div>
                 </div>
@@ -2291,8 +2290,7 @@ function showPlayerModal(p) {
             </div>
             <div class="modal-section-title">Source Rankings</div>
             <div class="source-axis-row">
-                <span class="source-axis-spacer"></span>
-                <div class="source-axis-labels"><span>1</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+                <div class="source-axis-labels"><span>100</span><span>75</span><span>50</span><span>25</span><span>1</span></div>
                 <span class="source-axis-rank"></span>
             </div>
             <div class="source-plot">${sourceRowsHtml}</div>
