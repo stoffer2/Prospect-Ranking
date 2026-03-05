@@ -2239,11 +2239,7 @@ function showPlayerModal(p) {
             </div>`;
     }).join('');
 
-    const nrHtml = notRanked.length ? `
-        <div class="modal-nr-section">
-            <div class="modal-section-title">Not Ranked</div>
-            <div class="modal-nr-pills"><span class="modal-nr-pill">${notRanked.length} source${notRanked.length > 1 ? 's' : ''}</span></div>
-        </div>` : '';
+
 
     const headshotHtml = p.mlbId
         ? `<img class="modal-headshot" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.mlbId}/headshot/67/current" alt="" onerror="this.style.display='none'">`
@@ -2294,7 +2290,6 @@ function showPlayerModal(p) {
                 <span class="source-axis-rank"></span>
             </div>
             <div class="source-plot">${sourceRowsHtml}</div>
-            ${nrHtml}
         </div>
     `;
 
