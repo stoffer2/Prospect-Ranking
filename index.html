@@ -562,6 +562,7 @@ td:first-child { padding-left:1rem; }
 .rank-arrow.rank-up { color:var(--green); }
 .rank-arrow.rank-down { color:var(--red); }
 .rank-change-num { font-size:.7em; font-weight:600; opacity:.95; }
+.rank-arrow-slot { width:2.8rem; display:inline-flex; align-items:center; flex-shrink:0; }
 
 /* single-source warning */
 .warn-badge {
@@ -1486,134 +1487,7 @@ const RANK_SET_BASELINE_REQUEST = 'rankle-set-baseline-request';
 // When non-empty, ALL visitors see rank-change arrows vs this snapshot.
 // Reset arrows for everyone: clear this object and push.
 // ────────────────────────────────────────────────────────────
-var BAKED_BASELINE = {
-    "Konnor Griffin": 1,
-    "Kevin McGonigle": 2,
-    "Jesús Made": 3,
-    "JJ Wetherholt": 4,
-    "Leo De Vries": 5,
-    "Samuel Basallo": 6,
-    "Max Clark": 7,
-    "Colt Emerson": 8,
-    "Nolan McLean": 9,
-    "Sebastian Walcott": 10,
-    "Walker Jenkins": 11,
-    "Bubba Chandler": 12,
-    "Trey Yesavage": 13,
-    "Thomas White": 14,
-    "Aidan Miller": 15,
-    "Bryce Eldridge": 16,
-    "Sal Stewart": 17,
-    "Josue De Paula": 18,
-    "Carson Benge": 19,
-    "Carter Jensen": 20,
-    "Bryce Rainer": 21,
-    "Luis Peña": 22,
-    "Eduardo Quintero": 23,
-    "Kade Anderson": 24,
-    "Andrew Painter": 25,
-    "Eli Willits": 26,
-    "Carson Williams": 27,
-    "Payton Tolle": 28,
-    "Travis Bazzana": 29,
-    "Jonah Tong": 30,
-    "Zyhir Hope": 31,
-    "Franklin Arias": 32,
-    "George Lombard Jr.": 33,
-    "Ethan Holliday": 34,
-    "Emmanuel Rodriguez": 35,
-    "Robby Snelling": 36,
-    "Seth Hernandez": 37,
-    "Moisés Ballesteros": 38,
-    "Liam Doyle": 39,
-    "Owen Caissie": 40,
-    "Josue Briceño": 41,
-    "Ike Irish": 42,
-    "Ryan Sloan": 43,
-    "Alex Freeland": 44,
-    "Alfredo Duno": 45,
-    "Connelly Early": 46,
-    "Gage Jump": 47,
-    "Lazaro Montes": 48,
-    "Edward Florentino": 49,
-    "Jamie Arnold": 50,
-    "Noah Schultz": 51,
-    "Aiva Arquette": 52,
-    "Ryan Waldschmidt": 53,
-    "Tatsuya Imai": 54,
-    "Emil Morales": 55,
-    "Jett Williams": 56,
-    "Braden Montgomery": 57,
-    "Chase DeLauter": 58,
-    "Travis Sykora": 59,
-    "Braylon Doughty": 60,
-    "Eduardo Tait": 61,
-    "Joe Mack": 62,
-    "Dylan Beavers": 63,
-    "JoJo Parker": 64,
-    "Josuar Gonzalez": 65,
-    "Caleb Bonemer": 66,
-    "Rainiel Rodriguez": 67,
-    "Theo Gillen": 68,
-    "Mike Sirota": 69,
-    "Cooper Pratt": 70,
-    "Justin Crawford": 71,
-    "Angel Genao": 72,
-    "Jeferson Quero": 73,
-    "Harry Ford": 74,
-    "Charlie Condon": 75,
-    "Arjun Nimmala": 76,
-    "Michael Arroyo": 77,
-    "Kaelen Culpepper": 78,
-    "Joshua Baez": 79,
-    "Jarlin Susana": 80,
-    "Kazuma Okamoto": 81,
-    "Jacob Reimer": 82,
-    "Jonny Farmelo": 83,
-    "Tyler Bremner": 84,
-    "Jhostynxon Garcia": 85,
-    "Ryan Johnson": 86,
-    "Cam Caminiti": 87,
-    "Brody Hopkins": 88,
-    "Leonardo Bernal": 89,
-    "Jaxon Wiggins": 90,
-    "Slade Caldwell": 91,
-    "Elmer Rodriguez-Cruz": 92,
-    "Billy Carlson": 93,
-    "Kyson Witherspoon": 94,
-    "Rhett Lowder": 95,
-    "Ethan Salas": 96,
-    "Blake Mitchell": 97,
-    "River Ryan": 98,
-    "Caden Scarborough": 99,
-    "Ralphy Velazquez": 100,
-    "Hagen Smith": 101,
-    "Ryan Clifford": 102,
-    "Brice Matthews": 103,
-    "Brandon Sproat": 104,
-    "A.J. Ewing": 105,
-    "Jacob Melton": 106,
-    "Jurrangelo Cijntje": 107,
-    "Dax Kilby": 108,
-    "Kruz Schoolcraft": 109,
-    "Khal Stephen": 110,
-    "Steele Hall": 111,
-    "Trey Gibson": 112,
-    "Hunter Barco": 113,
-    "Jhonny Level": 114,
-    "Kendry Chourio": 115,
-    "Parker Messick": 116,
-    "Carlos Lagrange": 117,
-    "JR Ritchie": 118,
-    "Cooper Ingle": 119,
-    "Nate George": 120,
-    "Bo Davidson": 121,
-    "Spencer Jones": 122,
-    "Logan Henderson": 123,
-    "Kayson Cunningham": 124,
-    "Marek Houston": 125,
-    "Luis De Leon": 126
-};
+var BAKED_BASELINE = {};
 
 let PREV_RANK_MAP = {};
 try {
@@ -2265,14 +2139,14 @@ function render() {
         const rankChange = prevRank != null ? prevRank - p.displayRank : null;
         const showArrow = rankChange != null && Math.abs(rankChange) >= RANK_CHANGE_THRESHOLD;
         const moveCount = showArrow ? Math.abs(rankChange) : 0;
-        const arrowHtml = showArrow
+        const arrowInner = showArrow
             ? (rankChange > 0
                 ? `<span class="rank-arrow rank-up" title="Up ${rankChange} spots">↑ ${moveCount}</span>`
                 : `<span class="rank-arrow rank-down" title="Down ${moveCount} spots">↓ ${moveCount}</span>`)
             : '';
 
         tr.innerHTML = `
-            <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div>${arrowHtml}</div></td>
+            <td><div class="rank-change-wrap"><div class="rank-pill ${tierClass(p.tier)}" title="Tier ${displayTier(p.tier)}">#${p.displayRank}</div><span class="rank-arrow-slot">${arrowInner}</span></div></td>
             <td><div class="p-name">${displayName(p)} ${warnHtml}</div></td>
             <td><span class="pos-badge ${posClass(p.pos)}">${p.pos || ''}</span></td>
             <td class="team-col">${getTeamShortName(p.team)}</td>
