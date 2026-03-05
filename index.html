@@ -1698,6 +1698,11 @@ const ALL_PROSPECTS = (() => {
     return calculateTalentCliffs(withDisplayRank);
 })();
 
+// Sources that have at least one real rank imported (used to filter the modal dot plot)
+const ACTIVE_SOURCE_KEYS = Object.keys(SOURCES).filter(key =>
+    RAW_DATA.some(row => row.ranks && row.ranks[key] != null)
+);
+
 // Only place we ever WRITE the user baseline: when admin set the flag and index loads.
 // This snapshot is frozen; arrows will show movement vs it until you click "Set trend baseline" again.
 try {
@@ -2213,11 +2218,9 @@ function showPlayerModal(p) {
     if (existing) existing.remove();
 
     const ranked = [];
-    const notRanked = [];
-    for (const [key, src] of Object.entries(SOURCES)) {
+    for (const key of ACTIVE_SOURCE_KEYS) {
         const rank = p.ranks ? p.ranks[key] : null;
-        if (rank != null) ranked.push({ key, label: src.label, rank });
-        else notRanked.push(src.label);
+        if (rank != null) ranked.push({ key, label: SOURCES[key].label, rank });
     }
     ranked.sort((a, b) => a.rank - b.rank);
 
