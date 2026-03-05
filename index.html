@@ -2242,8 +2242,9 @@ function showPlayerModal(p) {
     }
     ranked.sort((a, b) => a.rank - b.rank);
 
+    const avgSourceRank = ranked.reduce((sum, s) => sum + s.rank, 0) / (ranked.length || 1);
     function dotColor(rank) {
-        return Math.abs(rank - p.displayRank) > 25 ? 'var(--gold)' : 'var(--accent)';
+        return Math.abs(rank - avgSourceRank) > 25 ? 'var(--gold)' : 'var(--accent)';
     }
 
     const sourceRowsHtml = ranked.map(s => {
@@ -2309,7 +2310,7 @@ function showPlayerModal(p) {
             </div>
             <div class="source-plot">${sourceRowsHtml}</div>
             <div class="modal-legend">
-                <span class="modal-legend-dot" style="background:var(--gold)"></span> Outlier — more than 25 spots from consensus rank
+                <span class="modal-legend-dot" style="background:var(--gold)"></span> Outlier — more than 25 spots from this player's average ranking
             </div>
         </div>
     `;
