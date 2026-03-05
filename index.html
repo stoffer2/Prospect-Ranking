@@ -850,6 +850,188 @@ footer {
     }
 }
 
+/* ── Player Detail Modal ── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.72);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+    width: min(580px, 100%);
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-hi) transparent;
+}
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    font-size: 0.95rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-sm);
+    transition: color .15s, border-color .15s;
+}
+.modal-close:hover { color: var(--text-hi); border-color: var(--border-hi); }
+.modal-header {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+    padding-right: 2.5rem;
+}
+.modal-headshot {
+    width: 76px;
+    height: 76px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.modal-player-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.9rem;
+    color: var(--text-hi);
+    line-height: 1;
+    margin-bottom: 0.45rem;
+}
+.modal-player-meta {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--text-mid);
+}
+.modal-player-meta .sep { color: var(--text-lo); }
+.modal-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0.9rem;
+    background: var(--bg-deep);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+.modal-stat-item { text-align: center; }
+.modal-stat-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-hi);
+    display: block;
+    line-height: 1.2;
+}
+.modal-stat-label {
+    font-size: 0.65rem;
+    color: var(--text-lo);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-top: 0.15rem;
+}
+.modal-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-lo);
+    margin-bottom: 0.6rem;
+}
+.source-axis-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.source-axis-spacer { width: 116px; flex-shrink: 0; }
+.source-axis-labels {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    color: var(--text-lo);
+}
+.source-axis-rank { width: 28px; flex-shrink: 0; }
+.source-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+}
+.source-name {
+    width: 116px;
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.source-track {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    position: relative;
+}
+.source-dot {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: default;
+    transition: transform .12s;
+}
+.source-dot:hover { transform: translate(-50%, -50%) scale(1.5); }
+.source-rank-num {
+    width: 28px;
+    font-size: 0.72rem;
+    color: var(--text-mid);
+    text-align: left;
+    flex-shrink: 0;
+}
+.modal-nr-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+.modal-nr-pills {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+}
+.modal-nr-pill {
+    font-size: 0.7rem;
+    color: var(--text-lo);
+    padding: 0.15rem 0.5rem;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+}
 </style>
 <script data-goatcounter="https://rankledev.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -1347,7 +1529,7 @@ function buildProspects() {
             }
         }
         return computeProspect(
-            { name: row.name, pos: row.pos, team: row.team, age: calcAge(row), eta: row.eta },
+            { name: row.name, pos: row.pos, team: row.team, age: calcAge(row), eta: row.eta, mlbId: row.mlbId || null, ranks: row.ranks },
             sourceRankings
         );
     })
@@ -2026,6 +2208,107 @@ function normStr(s) {
     return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+function showPlayerModal(p) {
+    const existing = document.getElementById('rankle-player-modal');
+    if (existing) existing.remove();
+
+    const ranked = [];
+    const notRanked = [];
+    for (const [key, src] of Object.entries(SOURCES)) {
+        const rank = p.ranks ? p.ranks[key] : null;
+        if (rank != null) ranked.push({ key, label: src.label, rank });
+        else notRanked.push(src.label);
+    }
+    ranked.sort((a, b) => a.rank - b.rank);
+
+    function dotColor(rank) {
+        const diff = Math.abs(rank - p.displayRank);
+        if (diff <= 10) return 'var(--green)';
+        if (diff <= 25) return 'var(--accent)';
+        return 'var(--gold)';
+    }
+
+    const sourceRowsHtml = ranked.map(s => {
+        const pct = ((s.rank - 1) / 99 * 100).toFixed(1);
+        return `
+            <div class="source-row">
+                <span class="source-name">${s.label}</span>
+                <div class="source-track">
+                    <div class="source-dot" style="left:${pct}%;background:${dotColor(s.rank)}" title="#${s.rank}"></div>
+                </div>
+                <span class="source-rank-num">#${s.rank}</span>
+            </div>`;
+    }).join('');
+
+    const nrHtml = notRanked.length ? `
+        <div class="modal-nr-section">
+            <div class="modal-section-title">Not Ranked</div>
+            <div class="modal-nr-pills">${notRanked.map(l => `<span class="modal-nr-pill">${l}</span>`).join('')}</div>
+        </div>` : '';
+
+    const headshotHtml = p.mlbId
+        ? `<img class="modal-headshot" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.mlbId}/headshot/67/current" alt="" onerror="this.style.display='none'">`
+        : '';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'rankle-player-modal';
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-card" role="dialog" aria-modal="true">
+            <button class="modal-close" id="modal-close-btn" aria-label="Close">✕</button>
+            <div class="modal-header">
+                ${headshotHtml}
+                <div>
+                    <div class="modal-player-name">${p.name}</div>
+                    <div class="modal-player-meta">
+                        <span class="pos-badge ${posClass(p.pos)}">${p.pos}</span>
+                        <span class="sep">·</span>
+                        <span>${getTeamShortName(p.team)}</span>
+                        <span class="sep">·</span>
+                        <span>Age ${calcAge(p) ?? '—'}</span>
+                        <span class="sep">·</span>
+                        <span>ETA ${p.eta || '—'}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-stats">
+                <div class="modal-stat-item">
+                    <span class="modal-stat-value">#${p.displayRank}</span>
+                    <span class="modal-stat-label">Rank</span>
+                </div>
+                <div class="modal-stat-item">
+                    <span class="modal-stat-value">${p.rankleScore.toFixed(1)}</span>
+                    <span class="modal-stat-label">Score</span>
+                </div>
+                <div class="modal-stat-item">
+                    <span class="modal-stat-value">${p.sourceCount}<span style="font-size:.7em;color:var(--text-lo)">/11</span></span>
+                    <span class="modal-stat-label">Sources</span>
+                </div>
+                <div class="modal-stat-item">
+                    <span class="modal-stat-value"><span class="vol-badge ${volClass(p.volatility)}">${p.volatility}</span></span>
+                    <span class="modal-stat-label">Volatility</span>
+                </div>
+            </div>
+            <div class="modal-section-title">Source Rankings</div>
+            <div class="source-axis-row">
+                <span class="source-axis-spacer"></span>
+                <div class="source-axis-labels"><span>1</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+                <span class="source-axis-rank"></span>
+            </div>
+            <div class="source-plot">${sourceRowsHtml}</div>
+            ${nrHtml}
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.getElementById('modal-close-btn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    const escHandler = e => {
+        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
 function render() {
     updateFaLegendVisibility();
     const search  = normStr(document.getElementById('searchInput').value);
@@ -2094,6 +2377,7 @@ function render() {
         if (!isFree) tr.className = 'locked-ghost';
         const owner = getOwnerForProspect(p.name);
         if (Object.keys(ownershipMap).length > 0 && !owner) tr.classList.add('free-agent');
+        if (isFree) { tr.style.cursor = 'pointer'; tr.addEventListener('click', () => showPlayerModal(p)); }
 
         // 6 consensus dots (sources that agreed on position within ±10% percentile)
         const dotsHtml = [1,2,3,4,5,6].map(i =>
