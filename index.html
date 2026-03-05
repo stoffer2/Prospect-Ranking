@@ -1013,6 +1013,24 @@ footer {
     text-align: left;
     flex-shrink: 0;
 }
+.modal-legend {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.7rem;
+    color: var(--text-lo);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+.modal-legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
 .modal-nr-section {
     margin-top: 1rem;
     padding-top: 1rem;
@@ -2293,6 +2311,11 @@ function showPlayerModal(p) {
                 <span class="source-axis-rank"></span>
             </div>
             <div class="source-plot">${sourceRowsHtml}</div>
+            <div class="modal-legend">
+                <span class="modal-legend-dot" style="background:var(--green)"></span> Within 10 of consensus rank
+                <span class="modal-legend-dot" style="background:var(--accent);margin-left:.6rem"></span> Within 25
+                <span class="modal-legend-dot" style="background:var(--gold);margin-left:.6rem"></span> Outlier
+            </div>
         </div>
     `;
 
