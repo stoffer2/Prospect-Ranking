@@ -2243,10 +2243,7 @@ function showPlayerModal(p) {
     ranked.sort((a, b) => a.rank - b.rank);
 
     function dotColor(rank) {
-        const diff = Math.abs(rank - p.displayRank);
-        if (diff <= 10) return 'var(--green)';
-        if (diff <= 25) return 'var(--accent)';
-        return 'var(--gold)';
+        return Math.abs(rank - p.displayRank) > 25 ? 'var(--gold)' : 'var(--accent)';
     }
 
     const sourceRowsHtml = ranked.map(s => {
@@ -2312,9 +2309,7 @@ function showPlayerModal(p) {
             </div>
             <div class="source-plot">${sourceRowsHtml}</div>
             <div class="modal-legend">
-                <span class="modal-legend-dot" style="background:var(--green)"></span> Within 10 of consensus rank
-                <span class="modal-legend-dot" style="background:var(--accent);margin-left:.6rem"></span> Within 25
-                <span class="modal-legend-dot" style="background:var(--gold);margin-left:.6rem"></span> Outlier
+                <span class="modal-legend-dot" style="background:var(--gold)"></span> Outlier — more than 25 spots from consensus rank
             </div>
         </div>
     `;
