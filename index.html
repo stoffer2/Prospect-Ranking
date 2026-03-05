@@ -2242,7 +2242,7 @@ function showPlayerModal(p) {
     const nrHtml = notRanked.length ? `
         <div class="modal-nr-section">
             <div class="modal-section-title">Not Ranked</div>
-            <div class="modal-nr-pills">${notRanked.map(l => `<span class="modal-nr-pill">${l}</span>`).join('')}</div>
+            <div class="modal-nr-pills"><span class="modal-nr-pill">${notRanked.length} source${notRanked.length > 1 ? 's' : ''}</span></div>
         </div>` : '';
 
     const headshotHtml = p.mlbId
