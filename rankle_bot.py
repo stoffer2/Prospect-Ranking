@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from hidden_gems import find_gems
-from team_graphic import generate_team_graphic, TEAMS
+from team_graphic import generate_team_graphic, compute_team_totals, TEAMS
 from source_monitor import check_for_updates, get_status
 
 load_dotenv()
@@ -423,6 +423,22 @@ async def check_sources_job(context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"check_sources_job error: {e}")
 
 
+async def mlb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show top MLB teams by total Rankle points."""
+    try:
+        totals = compute_team_totals(top_n=100)
+        lines = ["🏆 <b>MLB Farm System Rankings</b>\n"]
+        for i, t in enumerate(totals, 1):
+            team_name = TEAMS.get(t["team"], (t["team"],))[0]
+            top100 = t["top_n_count"]
+            top100_str = f"{top100} in top 100" if top100 else "none in top 100"
+            lines.append(f"{i}. <b>{team_name}</b> — {t['total']:.0f} pts · {top100_str}")
+        await update.message.reply_text("\n".join(lines), parse_mode="HTML")
+    except Exception as e:
+        logging.error(f"mlb_command error: {e}")
+        await update.message.reply_text(f"Error: {e}")
+
+
 async def team_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /CHW, /NYY, /LAD, etc. — generate a team prospects graphic."""
     raw = update.message.text.split()[0][1:]   # strip leading /
@@ -456,6 +472,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/checkupdates — check ranking sources for list updates\n"
         "/promo — generate a Rankle promo tweet\n"
         "/gems — find hidden gem prospects in the minors\n"
+        "/mlb — MLB farm system rankings by Rankle points\n"
         "/chw, /nyy, /lad, etc. — generate a team prospects graphic"
     )
 
@@ -468,6 +485,7 @@ def main():
     app.add_handler(CommandHandler("checkupdates", checkupdates_command))
     app.add_handler(CommandHandler("promo", promo_command))
     app.add_handler(CommandHandler("gems", gems_command))
+    app.add_handler(CommandHandler("mlb", mlb_command))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
     # Catch-all for /teamcode commands — must be last so named commands take priority

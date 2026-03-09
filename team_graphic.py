@@ -48,6 +48,7 @@ TEAMS = {
     "BOS": ("Boston Red Sox",          (189,  48,  57)),
     "CHC": ("Chicago Cubs",            ( 14,  51, 134)),
     "CHW": ("Chicago White Sox",       ( 80,  80,  90)),   # near-black → use neutral silver
+    "CWS": ("Chicago White Sox",       ( 80,  80,  90)),   # alias used in some data sources
     "CIN": ("Cincinnati Reds",         (198,   1,  31)),
     "CLE": ("Cleveland Guardians",     (  0,  56,  93)),
     "COL": ("Colorado Rockies",        ( 51,  51, 102)),
@@ -156,6 +157,51 @@ def _compute_prospect(meta, source_rankings):
         "minRank":            min(raw_ranks),
         "maxRank":            max(raw_ranks),
     }
+
+
+def compute_team_totals(top_n=100):
+    """
+    Load rankings.json, score every player, group by MLB team.
+    Returns list of dicts sorted by total Rankle score desc:
+        {"team": "PIT", "total": 847.2, "top_n_count": 5, "prospects": [...]}
+    """
+    rankings_path = os.path.join(DATA_DIR, "rankings.json")
+    with open(rankings_path) as f:
+        data = json.load(f)
+
+    sources  = data["sources"]   # {key: {label, listLength}}
+    players  = data["players"]   # [{name, pos, team, age, eta, ranks: {key: int|null}}]
+
+    prospects = []
+    for p in players:
+        ranking_inputs = [
+            {"rank": rank, "list_length": sources[src_key]["listLength"]}
+            for src_key, rank in p["ranks"].items()
+            if rank is not None and src_key in sources
+        ]
+        meta = {"name": p["name"], "pos": p["pos"], "team": p["team"],
+                "age": p["age"], "eta": p["eta"]}
+        prospects.append(_compute_prospect(meta, ranking_inputs))
+
+    prospects = [p for p in prospects if p["sourceCount"] > 1]
+    prospects.sort(key=lambda p: p["rankleScore"], reverse=True)
+    for i, p in enumerate(prospects):
+        p["displayRank"] = i + 1
+
+    team_map = defaultdict(lambda: {"total": 0.0, "top_n_count": 0, "prospects": []})
+    for p in prospects:
+        t = team_map[p["team"]]
+        t["total"] += (p["rankleScore"] / 100) ** 2 * 100
+        t["prospects"].append(p)
+        if p["displayRank"] <= top_n:
+            t["top_n_count"] += 1
+
+    result = [
+        {"team": code, **stats}
+        for code, stats in team_map.items()
+    ]
+    result.sort(key=lambda x: x["total"], reverse=True)
+    return result
 
 
 def _load_all_prospects():
