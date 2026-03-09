@@ -1775,13 +1775,19 @@ function importPasted() {
         return;
     }
 
-    let matched = 0, added = 0, updated = 0;
+    let matched = 0, added = 0, changed = 0;
+
+    // Snapshot current ranks for this source before overwriting
+    const prevSourceRanks = {};
+    prospects.forEach(p => { if (p.ranks[source] != null) prevSourceRanks[p.name] = p.ranks[source]; });
 
     parsed.forEach(p => {
         const idx = fuzzyMatch(p.name, prospects);
         const firstPos = (p.pos || '').trim() || 'SS';
         if (idx !== null) {
+            const oldRank = prospects[idx].ranks[source];
             prospects[idx].ranks[source] = p.rank;
+            if (oldRank != null && oldRank !== p.rank) changed++;
             matched++;
             // Update name/team/pos from pasted row so we don't keep stale "POS Name, TEAM" or wrong team
             const cleanName = (n) => (n || '').trim().replace(/^(C|1B|2B|3B|SS|OF|IF|SP|RP|RHP|LHP|DH|SHP)\s+/i, '').replace(/, [A-Z]{2,3}$/, '').trim() || (n || '').trim();
@@ -1823,7 +1829,8 @@ function importPasted() {
     const tsDisplay = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Clear success indicator: toast + inline details
-    showToast(`Imported ${parsed.length} from ${SOURCES[source].label}` + (added ? ` (${added} new)` : ''), '✓');
+    const changeNote = changed > 0 ? ` · ${changed} rank changes` : (added === 0 ? ' · No changes' : '');
+    showToast(`Imported ${parsed.length} from ${SOURCES[source].label}` + (added ? ` (${added} new)` : '') + changeNote, '✓');
 
     // Auto-save to index.html if linked (timestamp is also written there)
     if (indexFileHandle) {
@@ -1834,7 +1841,8 @@ function importPasted() {
             const failMsg = r.error ? (isPermError ? 'save failed (re-link index.html and allow write when prompted)' : `save failed: ${r.error}`) : 'save failed — re-link index.html and try again';
             document.getElementById('pasteResult').innerHTML =
                 `<span style="color:var(--green);">✓ ${matched} matched</span>` +
-                (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
+                (added ? ` · <span style="color:var(--gold);">${added} new</span>` : '') +
+                (changed > 0 ? ` · <span style="color:var(--gold);">${changed} rank changes</span>` : (added === 0 ? ` · <span style="color:var(--text-lo);">No changes</span>` : '')) +
                 ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
                 ` · <span style="color:var(--text-mid);" title="Logged for ${SOURCES[source].label}">📅 ${tsDisplay}</span>` +
                 (r.ok ? ` · <span style="color:var(--green); font-weight:600;">💾 saved to index.html</span>`
@@ -1843,10 +1851,10 @@ function importPasted() {
     } else {
         document.getElementById('pasteResult').innerHTML =
             `<span style="color:var(--green);">✓ ${matched} matched</span>` +
-            (added ? ` · <span style="color:var(--gold);">${added} new added</span>` : '') +
+            (added ? ` · <span style="color:var(--gold);">${added} new</span>` : '') +
+            (changed > 0 ? ` · <span style="color:var(--gold);">${changed} rank changes</span>` : (added === 0 ? ` · <span style="color:var(--text-lo);">No changes</span>` : '')) +
             ` · <span style="color:var(--text-lo);">${parsed.length} total</span>` +
-            ` · <span style="color:var(--text-mid);" title="Logged for ${SOURCES[source].label}">📅 ${tsDisplay}</span>` +
-            ` · <span style="color:var(--green);">Open index.html in this browser to see the ranking page.</span>`;
+            ` · <span style="color:var(--text-mid);" title="Logged for ${SOURCES[source].label}">📅 ${tsDisplay}</span>`;
     }
 }
 
